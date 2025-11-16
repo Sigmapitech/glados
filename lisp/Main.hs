@@ -28,6 +28,16 @@ printTree (SSymbol s) = Just s
 printTree (SList exprs) = Just $ "(" ++ unwords (map printSExpr exprs) ++ ")"
   where
     printSExpr expr = fromJust (printTree expr)
+
+
+-- Abstract Syntax Tree definition
+data AST
+  = ASTInteger { intValue :: Integer }
+  | ASTSymbol { symbolName :: String }
+  | ASTBoolean { boolValue :: Bool }
+  | Define { defName :: String, defValue :: AST }
+  | Call { callFunction :: String, callArgs :: [AST] }
+  deriving Show
 main :: IO ()
 main =
   exitSuccess
