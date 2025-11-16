@@ -42,6 +42,9 @@ data AST
 sexprToAST :: SExpr -> Maybe AST
 sexprToAST (SInteger n) = Just (ASTInteger n)
 sexprToAST (SSymbol s) = Just (ASTSymbol s)
+sexprToAST (SList [SSymbol "define", SSymbol name, valueExpr]) = do
+  valueAST <- sexprToAST valueExpr
+  Just (Define name valueAST)
 sexprToAST _ = Nothing
 main :: IO ()
 main =
