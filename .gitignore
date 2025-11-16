@@ -1,0 +1,13 @@
+# haskell
+dist-newstyle
+
+# outputs
+lisp-interpreter
+
+# nix
+result
+result*
+
+# direnv
+.envrc
+.direnv
