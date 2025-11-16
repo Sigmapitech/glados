@@ -38,6 +38,11 @@ data AST
   | Define { defName :: String, defValue :: AST }
   | Call { callFunction :: String, callArgs :: [AST] }
   deriving Show
+
+sexprToAST :: SExpr -> Maybe AST
+sexprToAST (SInteger n) = Just (ASTInteger n)
+sexprToAST (SSymbol s) = Just (ASTSymbol s)
+sexprToAST _ = Nothing
 main :: IO ()
 main =
   exitSuccess
