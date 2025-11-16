@@ -45,6 +45,9 @@ sexprToAST (SSymbol s) = Just (ASTSymbol s)
 sexprToAST (SList [SSymbol "define", SSymbol name, valueExpr]) = do
   valueAST <- sexprToAST valueExpr
   Just (Define name valueAST)
+sexprToAST (SList (SSymbol func : args)) = do
+  argsAST <- mapM sexprToAST args
+  Just (Call func argsAST)
 sexprToAST _ = Nothing
 main :: IO ()
 main =
