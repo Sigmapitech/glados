@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module Main where
 
 import System.Exit (exitSuccess)
@@ -49,6 +51,49 @@ sexprToAST (SList (SSymbol func : args)) = do
   argsAST <- mapM sexprToAST args
   Just (Call func argsAST)
 sexprToAST _ = Nothing
+
+-- Helper function to extract integers from AST nodes
+extractIntegers :: [AST] -> Maybe [Integer]
+extractIntegers = mapM (\case
+                          ASTInteger n -> Just n
+                          _ -> Nothing)
+
+-- Helper function to apply binary operations
+applyBinaryOp :: (Integer -> Integer -> Integer) -> [AST] -> Maybe AST
+applyBinaryOp op args = do
+  evaluatedArgs <- mapM evalAST args
+  integers <- extractIntegers evaluatedArgs
+  case integers of
+    [x, y] -> Just (ASTInteger (op x y))
+    _ -> Nothing
+
+-- Helper function to apply binary operations with validation
+applyBinaryOpWithCheck :: (Integer -> Integer -> Maybe Integer) -> [AST] -> Maybe AST
+applyBinaryOpWithCheck op args = do
+  evaluatedArgs <- mapM evalAST args
+  integers <- extractIntegers evaluatedArgs
+  case integers of
+    [x, y] -> do
+      result <- op x y
+      Just (ASTInteger result)
+    _ -> Nothing
+
+evalAST :: AST -> Maybe AST
+evalAST (ASTInteger n) = Just (ASTInteger n)
+evalAST (ASTBoolean b) = Just (ASTBoolean b)
+evalAST (ASTSymbol s) = Just (ASTSymbol s)
+evalAST (Call "+" args) = applyBinaryOp (+) args
+evalAST (Call "-" args) = applyBinaryOp (-) args
+evalAST (Call "*" args) = applyBinaryOp (*) args
+evalAST (Call "/" args) = applyBinaryOpWithCheck (\x y -> if y == 0 then Nothing else Just (div x y)) args
+evalAST (Call "mod" args) = applyBinaryOpWithCheck (\x y -> if y == 0 then Nothing else Just (mod x y)) args
+evalAST (Call func args) = do
+  evaluatedArgs <- mapM evalAST args
+  Just (Call func evaluatedArgs)
+evalAST (Define name value) = do
+  evaluatedValue <- evalAST value
+  Just (Define name evaluatedValue)
+
 main :: IO ()
 main =
   exitSuccess
