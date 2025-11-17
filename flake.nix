@@ -21,21 +21,23 @@
       pkgs: {
         pre-commit-check = git-hooks.lib.${pkgs.system}.run {
           src = ./.;
-          hooks = {
-            commit-name = {
-              enable = true;
-              name = "commit name";
-              stages = ["commit-msg"];
-              entry = ''
-                ${pkgs.python310.interpreter} ${./scripts/apply-commit-convention.py}
-              '';
-            };
-          } // (lib.genAttrs [
-            "alejandra"
-            "cabal-fmt"
-            "ormolu"
-            "hlint"
-          ] (x: {enable = true;}));
+          hooks =
+            {
+              commit-name = {
+                enable = true;
+                name = "commit name";
+                stages = ["commit-msg"];
+                entry = ''
+                  ${pkgs.python310.interpreter} ${./scripts/apply-commit-convention.py}
+                '';
+              };
+            }
+            // (lib.genAttrs [
+              "alejandra"
+              "cabal-fmt"
+              "ormolu"
+              "hlint"
+            ] (x: {enable = true;}));
         };
       }
     );
@@ -51,12 +53,17 @@
         packages = with pkgs;
           [
             chez
+            curl
           ]
           ++ (with haskell; [
-            ghc
+            ormolu
             cabal-install
             hlint
-            ormolu
+
+            (ghcWithPackages (p: [
+              hspec
+              hspec-expectations
+            ]))
           ]);
       };
     });
