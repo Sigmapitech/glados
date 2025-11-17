@@ -3,17 +3,28 @@ name:          glados
 version:       0.0.0.1
 build-type:    Simple
 
+common lang
+  default-language: Haskell2010
+
 common warnings
   ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
 
 common release
   ghc-options: -O2
 
+library lisp-interpreter-lib
+  import:          lang
+  import:          warnings
+  exposed-modules: Bootstrap
+  hs-source-dirs:  lisp
+  build-depends:   base
+
 executable lisp-interpreter
-  import:           warnings
-  import:           release
-  main-is:          Main.hs
-  other-modules:    Bootstrap
-  build-depends:    base >=4.15.0.0
-  hs-source-dirs:   lisp
-  default-language: Haskell2010
+  import:         lang
+  import:         warnings
+  import:         release
+  main-is:        Main.hs
+  hs-source-dirs: lisp
+  build-depends:
+    , base
+    , glados:lisp-interpreter-lib
