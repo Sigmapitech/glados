@@ -21,12 +21,21 @@
       pkgs: {
         pre-commit-check = git-hooks.lib.${pkgs.system}.run {
           src = ./.;
-          hooks = lib.genAttrs [
+          hooks = {
+            commit-name = {
+              enable = true;
+              name = "commit name";
+              stages = ["commit-msg"];
+              entry = ''
+                ${pkgs.python310.interpreter} ${./scripts/apply-commit-convention.py}
+              '';
+            };
+          } // (lib.genAttrs [
             "alejandra"
             "cabal-fmt"
             "ormolu"
             "hlint"
-          ] (x: {enable = true;});
+          ] (x: {enable = true;}));
         };
       }
     );
@@ -37,6 +46,8 @@
       haskell = pkgs.haskell.packages.ghc984;
     in {
       default = pkgs.mkShell {
+        inherit (self.checks.${pkgs.system}.pre-commit-check) shellHook;
+
         packages = with pkgs;
           [
             chez
