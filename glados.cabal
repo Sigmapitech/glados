@@ -20,6 +20,8 @@ executable lisp-interpreter
   import: release
 
   main-is: Main.hs
+  other-modules:
+    Bootstrap
   build-depends:
     base >=4.15.0.0
 
