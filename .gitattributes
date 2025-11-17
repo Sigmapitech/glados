@@ -1,0 +1,4 @@
+* text=lf
+* eol=lf
+
+*.ghci linguist-language=Haskell
