@@ -1,29 +1,19 @@
 cabal-version: 3.8
-name: glados
-
-version: 0.0.0.1
-build-type: Simple
+name:          glados
+version:       0.0.0.1
+build-type:    Simple
 
 common warnings
-  ghc-options:
-    -Wall
-    -Wextra
-    -Wredundant-constraints
-    -Wname-shadowing
+  ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
 
 common release
-  ghc-options:
-    -O2
+  ghc-options: -O2
 
 executable lisp-interpreter
-  import: warnings
-  import: release
-
-  main-is: Main.hs
-  other-modules:
-    Bootstrap
-  build-depends:
-    base >=4.15.0.0
-
-  hs-source-dirs: lisp
+  import:           warnings
+  import:           release
+  main-is:          Main.hs
+  other-modules:    Bootstrap
+  build-depends:    base >=4.15.0.0
+  hs-source-dirs:   lisp
   default-language: Haskell2010
