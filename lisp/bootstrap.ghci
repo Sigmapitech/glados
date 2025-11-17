@@ -14,7 +14,7 @@ printTree $ SList [SSymbol "define", SSymbol "y", SList [SSymbol "+", SInteger 5
 
 -- < 5 >
 sexprToAST $ SInteger 5
--- Just (ASTInterger {intValue = 5})
+-- Just (ASTInteger {intValue = 5})
 
 -- < symbol >
 sexprToAST $ SSymbol "symbol"
