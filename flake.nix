@@ -75,6 +75,7 @@
             cabal-install
 
             (ghcWithPackages (p: [
+              hpc-codecov
               hspec
               hspec-expectations
             ]))
