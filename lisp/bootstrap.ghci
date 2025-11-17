@@ -1,0 +1,47 @@
+-- Empty lines to padd the first command output
+
+-- < (define x 5) >
+printTree $ SList [SSymbol "define", SSymbol "x", SInteger 5]
+-- Just "(define x 5)"
+
+-- < x >
+printTree $ SSymbol "x"
+-- Just "x"
+
+-- < (define y (+ 5 x)) >
+printTree $ SList [SSymbol "define", SSymbol "y", SList [SSymbol "+", SInteger 5, SSymbol "x"]]
+-- Just "(define y (+ 5 x))"
+
+-- < 5 >
+sexprToAST $ SInteger 5
+-- Just (ASTInterger {intValue = 5})
+
+-- < symbol >
+sexprToAST $ SSymbol "symbol"
+-- Just (ASTSymbol {Symbolname = "symbol"})
+
+-- < (define x 5) >
+sexprToAST $ SList [SSymbol "define", SSymbol "x", SInteger 5]
+-- Just (Define {defName = "x", defValue = ASTInteger {intValue = 5}})
+
+-- < (define x 5 6) >
+sexprToAST $ SList [SSymbol "define", SSymbol "x", SInteger 5, SInteger 6]
+-- Nothing
+
+-- < (+ x 4) >
+sexprToAST $ SList [SSymbol "+", SSymbol "x", SInteger 4]
+-- Just (Call {callFunction = "+", callArgs = [ASTSymbol {symbolName = "x"}, ASTInteger {intValue = 4}]})
+
+-- < (+ x (* 4 y)) >
+sexprToAST $ SList [SSymbol "+", SSymbol "x", SList [SSymbol "*", SInteger 4, SSymbol "y"]]
+-- Just (Call {callfunction = "+", callArgs = [ASTSymbol {symbolName = "x"}, Call {callFunction = "*", callArgs = [ASTInteger = {intValue = 4}, ASTSymbol = {symbolName = "y"}]}]})
+
+-- < (define fourtytwo (* 7 6)) >
+sexprToAST $ SList [SSymbol "define", SSymbol "fourtytwo", SList [SSymbol "*", SInteger 7, SInteger 6]]
+-- Just (Define {defName = "fourtytwo", defValue = Call {callFunction = "*", callArgs = [ASTInteger {intValue = 7}, ASTInteger {intValue = 6}]}})
+
+-- < ( * (+ 4 3) 6) >
+evalAST $ fromJust $ sexprToAST $ SList [SSymbol "*", SList [SSymbol "+", SInteger 4, SInteger 3], SInteger 6]
+-- Just (ASTInteger {intValue = 42})
+
+-- Final Empty line to padd the leaving debug info
