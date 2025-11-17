@@ -1,0 +1,42 @@
+name: Mirror code to target repository
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.GH_SSH_PRIVATE_KEY }}
+          known_hosts: 'github.com'
+
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add mirror remote
+        run: |
+          git remote add mirror "${{ secrets.GH_TARGET_REPO }}"
+          git fetch --all
+
+      - name: Check if main branch exists on mirror
+        id: check_main
+        run: |
+          if git ls-remote --heads mirror main | grep -q main; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push current branch to mirror
+        if: steps.check_main.outputs.exists == 'true' || github.ref_name == 'main'
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Pushing branch $BRANCH"
+          git push mirror "refs/remotes/origin/$BRANCH:refs/heads/$BRANCH" --force
