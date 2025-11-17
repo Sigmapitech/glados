@@ -81,6 +81,7 @@
               aeson
               bytestring
               containers
+              hpc-codecov
               hspec
               hspec-expectations
               megaparsec
