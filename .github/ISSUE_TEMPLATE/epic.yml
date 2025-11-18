@@ -1,0 +1,52 @@
+name: "Epic"
+description: "Large, multi-part goal tracking multiple sub-issues"
+labels: ["epic"]
+body:
+  - type: "markdown"
+    attributes:
+      value: |
+        # Epic
+
+        An epic is a large initiative broken down into multiple sub-issues.
+  - type: "textarea"
+    id: "goal"
+    attributes:
+      label: "Goal"
+      description: "High-level goal or problem being solved."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "deliverables"
+    attributes:
+      label: "Deliverables"
+      description: "List the sub-issues or milestones (use checkboxes if you want)."
+      placeholder: |
+        - [ ] Sub-issue #123
+        - [ ] Sub-issue #124
+        - [ ] Documentation #125
+    validations:
+      required: true
+  - type: "input"
+    id: "dependencies"
+    attributes:
+      label: "Dependencies"
+      description: "Blocked by / Blocking relationships (e.g., #123, #456)."
+    validations:
+      required: false
+  - type: "input"
+    id: "timeline"
+    attributes:
+      label: "Timeline"
+      description: "Estimated delivery or milestone info."
+      placeholder: "Q1 2026, Sprint 5"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "progress"
+    attributes:
+      label: "Progress / Notes"
+      description: "Optional progress bar or tracking notes."
+      placeholder: |
+        ![Progress](https://progress-bar.dev/60/?title=Done)
+    validations:
+      required: false

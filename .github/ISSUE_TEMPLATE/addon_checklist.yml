@@ -1,0 +1,33 @@
+name: "Addon: Implementation Checklist"
+description: "Add-on: Implementation checklist with structured fields"
+body:
+  - type: "markdown"
+    attributes:
+      value: |
+        # Implementation Checklist Add-on
+
+        Use this template to add implementation tracking to any issue.
+  - type: "checkboxes"
+    id: "implementation_checklist"
+    attributes:
+      label: "Implementation Progress"
+      options:
+        - label: "Design approved"
+          required: false
+        - label: "Implementation started"
+          required: false
+        - label: "Unit tests written"
+          required: false
+        - label: "Integration / E2E tests"
+          required: false
+        - label: "Documentation updated"
+          required: false
+        - label: "Release notes / changelog entry"
+          required: false
+  - type: "textarea"
+    id: "implementation_notes"
+    attributes:
+      label: "Implementation notes"
+      description: "Add details about checklist items, blockers, or links to PRs."
+    validations:
+      required: false

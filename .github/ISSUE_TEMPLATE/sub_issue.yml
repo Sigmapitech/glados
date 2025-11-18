@@ -1,0 +1,45 @@
+name: "Sub-Issue"
+description: "Track a smaller part of a larger issue or epic"
+labels: ["sub-issue"]
+body:
+  - type: "markdown"
+    attributes:
+      value: |
+        # Sub-Issue
+
+        Sub-issues are smaller components of larger epics or parent issues.
+  - type: "input"
+    id: "parent_issue"
+    attributes:
+      label: "Parent Issue / Epic"
+      description: "Link to the main issue or epic."
+      placeholder: "#123"
+    validations:
+      required: true
+  - type: "textarea"
+    id: "goal"
+    attributes:
+      label: "Goal"
+      description: "What is this sub-issue meant to accomplish?"
+    validations:
+      required: true
+  - type: "checkboxes"
+    id: "tasks"
+    attributes:
+      label: "Tasks"
+      description: "Specific tasks that need to be completed."
+      options:
+        - label: "Task 1"
+          required: false
+        - label: "Task 2"
+          required: false
+        - label: "Task 3"
+          required: false
+  - type: "input"
+    id: "dependencies"
+    attributes:
+      label: "Dependencies"
+      description: "Other issues this depends on or blocks."
+      placeholder: "Blocked by #456, Blocks #789"
+    validations:
+      required: false
