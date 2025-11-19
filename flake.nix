@@ -12,53 +12,79 @@
     nixpkgs,
     git-hooks,
   }: let
-    applySystems = nixpkgs.lib.genAttrs ["x86_64-linux"];
-    eachSystem = f: applySystems (system: f nixpkgs.legacyPackages.${system});
-
     inherit (nixpkgs) lib;
+
+    genSystems = lib.genAttrs ["x86_64-linux"];
+
+    eachSystem = f:
+      genSystems
+      (system: f nixpkgs.legacyPackages.${system});
+
+    eachSystem' = f:
+      genSystems
+      (system: f self.shared.${system});
   in {
-    checks = eachSystem (
-      pkgs: {
+    checks = eachSystem' (
+      {
+        pkgs,
+        haskell,
+      }: {
         pre-commit-check = git-hooks.lib.${pkgs.system}.run {
           src = ./.;
-          hooks = {
-            commit-name = {
-              enable = true;
-              name = "commit name";
-              stages = ["commit-msg"];
-              entry = ''
-                ${pkgs.python310.interpreter} ${./scripts/apply-commit-convention.py}
-              '';
-            };
-          } // (lib.genAttrs [
-            "alejandra"
-            "cabal-fmt"
-            "ormolu"
-            "hlint"
-          ] (x: {enable = true;}));
+          hooks =
+            {
+              commit-name = {
+                enable = true;
+                name = "commit name";
+                stages = ["commit-msg"];
+                entry = ''
+                  ${pkgs.python310.interpreter} ${./scripts/apply-commit-convention.py}
+                '';
+              };
+            }
+            // (lib.genAttrs [
+                "alejandra"
+                "cabal-fmt"
+                "ormolu"
+                "hlint"
+              ] (x: {
+                enable = true;
+                package = lib.getBin (haskell.${x} or pkgs.${x});
+              }));
         };
       }
     );
 
     formatter = eachSystem (pkgs: pkgs.alejandra);
 
-    devShells = eachSystem (pkgs: let
-      haskell = pkgs.haskell.packages.ghc984;
-    in {
+    devShells = eachSystem' ({
+      pkgs,
+      haskell,
+    }: {
       default = pkgs.mkShell {
         inherit (self.checks.${pkgs.system}.pre-commit-check) shellHook;
 
         packages = with pkgs;
           [
             chez
+            curl
           ]
+          ++ self.checks.${pkgs.system}.pre-commit-check.enabledPackages
           ++ (with haskell; [
-            ghc
             cabal-install
-            hlint
-            ormolu
+
+            (ghcWithPackages (p: [
+              hspec
+              hspec-expectations
+            ]))
           ]);
       };
+    });
+
+    shared = eachSystem (pkgs: {
+      inherit pkgs;
+
+      haskell = pkgs.haskell.packages.ghc984;
     });
   };
 }
