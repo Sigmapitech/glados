@@ -1,0 +1,6 @@
+packages:
+  lisp/
+  ast/
+  compiler/
+
+tests: True
