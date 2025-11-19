@@ -1,0 +1,51 @@
+cabal-version: 3.8
+name:          lisp
+version:       0.0.1
+build-type:    Simple
+description:   Generic Language and data operand syntax
+homepage:      https://github.com/Sigmapitech/glados
+bug-reports:   https://github.com/Sigmapitech/glados/issues
+author:        Sigmapitech
+maintainer:    Sigmapitech
+copyright:     Sigmapitech
+license:       BSD-2-Clause
+license-file:  LICENSE
+
+common lang
+  default-language: Haskell2010
+
+common warnings
+  ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
+
+common release
+  ghc-options: -O2
+
+library lisp-interpreter-lib
+  import:          lang
+  import:          warnings
+  exposed-modules: Bootstrap
+  hs-source-dirs:  src
+  build-depends:   base
+
+executable lisp-interpreter
+  import:         lang
+  import:         warnings
+  import:         release
+  main-is:        Main.hs
+  hs-source-dirs: src
+  build-depends:
+    , base
+    , glados:lisp-interpreter-lib
+
+test-suite lisp-interpreter-test
+  import:         lang
+  import:         warnings
+  type:           exitcode-stdio-1.0
+  main-is:        LispSpec.hs
+  hs-source-dirs: tests
+  build-depends:
+    , base                         >=4.7 && <5
+    , directory
+    , glados:lisp-interpreter-lib
+    , hspec
+    , hspec-expectations

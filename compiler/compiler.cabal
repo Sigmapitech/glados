@@ -1,5 +1,5 @@
 cabal-version: 3.8
-name:          glados
+name:          compiler
 version:       0.0.1
 build-type:    Simple
 description:   Generic Language and data operand syntax
@@ -20,32 +20,25 @@ common warnings
 common release
   ghc-options: -O2
 
-library lisp-interpreter-lib
-  import:          lang
-  import:          warnings
-  exposed-modules: Bootstrap
-  hs-source-dirs:  lisp
-  build-depends:   base
-
-executable lisp-interpreter
+executable compiler-exe
   import:         lang
   import:         warnings
   import:         release
   main-is:        Main.hs
-  hs-source-dirs: lisp
+  hs-source-dirs: src
   build-depends:
+    , ast:ast-lib
     , base
-    , glados:lisp-interpreter-lib
 
-test-suite lisp-interpreter-test
+test-suite compiler-test
   import:         lang
   import:         warnings
   type:           exitcode-stdio-1.0
-  main-is:        LispSpec.hs
+  main-is:        Spec.hs
   hs-source-dirs: tests
   build-depends:
-    , base                         >=4.7 && <5
+    , ast:ast-lib
+    , base                >=4.7 && <5
     , directory
-    , glados:lisp-interpreter-lib
     , hspec
     , hspec-expectations
