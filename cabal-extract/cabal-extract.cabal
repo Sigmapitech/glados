@@ -27,6 +27,9 @@ executable cabal-extract
   main-is:        Main.hs
   hs-source-dirs: .
   build-depends:
-    , base       >=4.7 && <5
+    , base          >=4.7 && <5
     , Cabal
+    , Cabal-syntax
     , directory
+    , filepath
+    , regex-tdfa
