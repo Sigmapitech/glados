@@ -13,3 +13,4 @@ result*
 .direnv
 
 *.pre-commit-config.yaml
+compiler-exe
