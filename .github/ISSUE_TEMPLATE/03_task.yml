@@ -1,0 +1,44 @@
+name: "🔵 Task (Layer 2)"
+description: "Technical code changes required for a Story."
+title: "[TASK] "
+labels: ["0. layer: task"]
+body:
+  - type: input
+    id: parent_story
+    attributes:
+      label: 🔗 Parent Story
+      description: Which Story does this task complete?
+      placeholder: "#45"
+    validations:
+      required: true
+  - type: textarea
+    id: task_description
+    attributes:
+      label: Description
+      description: Short explanation of what needs to be done.
+    validations:
+      required: true
+  - type: textarea
+    id: technical_details
+    attributes:
+      label: Implementation Details
+      description: Technical specifics (functions to edit, files to create).
+    validations:
+      required: false
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      options:
+        - "1. difficulty : easy"
+        - "1. difficulty : medium"
+        - "1. difficulty : hard"
+  - type: dropdown
+    id: type
+    attributes:
+      label: Task Type
+      options:
+        - "3. type: build-integration"
+        - "3. type: documentation"
+        - "3. type: refactor"
+        - "3. type: extra-delivery"

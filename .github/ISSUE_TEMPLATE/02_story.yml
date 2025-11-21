@@ -1,0 +1,61 @@
+name: "🟢 Story (Layer 1)"
+description: "A specific feature requirement (Roadmap Item)."
+title: "[STORY] "
+labels: ["0. layer: story"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## User Story
+        "As a [role], I want [feature], so that [benefit]."
+  - type: textarea
+    id: description
+    attributes:
+      label: Definition
+      placeholder: "As a developer, I want the parser to handle lists..."
+    validations:
+      required: true
+  - type: input
+    id: parent_epic
+    attributes:
+      label: 🔗 Parent Epic
+      description: Link the Epic this story belongs to.
+      placeholder: "#12"
+  - type: input
+    id: relationships
+    attributes:
+      label: 🔄 Relationships (Optional)
+      description: Blocked by / Blocking relationships (e.g., #123, #456).
+      value: |
+        - [] # (blocked by)
+        - [] # (blocking)
+    validations:
+      required: false
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Estimated Difficulty
+      options:
+        - "1. difficulty : easy"
+        - "1. difficulty : medium"
+        - "1. difficulty : hard"
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - "2. priority: critical"
+        - "2. priority: high"
+        - "2. priority: medium"
+        - "2. priority: low"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: ✅ Definition of Done (Acceptance Criteria)
+      description: What must be true for this to be closed?
+      value: |
+        - [ ] Unit Tests written and passing
+        - [ ] Functional implementation complete
+        - [ ] Documentation updated

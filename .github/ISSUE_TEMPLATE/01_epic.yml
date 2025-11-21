@@ -1,0 +1,47 @@
+name: "🟣 Epic (Layer 0)"
+description: "High-level feature grouping or roadmap milestone."
+title: "[EPIC] "
+labels: ["0. layer: epic", "5. scope: tracking"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Epic Overview
+        Define the high-level goal (e.g., "Implement Part 2 Compiler").
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the goal of this Epic?
+      placeholder: "As a team, we need to deliver the VM..."
+    validations:
+      required: true
+  - type: input
+    id: parent_initiative
+    attributes:
+      label: 🔗 Parent Initiative (Milestone) (Optional)
+      placeholder: "e.g., GLADOS-Part-2"
+  - type: input
+    id: relationships
+    attributes:
+      label: 🔄 Relationships (Optional)
+      description: Blocked by / Blocking relationships (e.g., #123, #456).
+      value: |
+        - [] # (blocked by)
+        - [] # (blocking)
+    validations:
+      required: false
+  - type: textarea
+    id: child_stories
+    attributes:
+      label: 📚 Child Stories
+      description: List the Stories (Layer 1) that belong to this Epic.
+      value: |
+        - [ ] #
+        - [ ] #
+  - type: input
+    id: timeline
+    attributes:
+      label: ⏳ Timeline (Optional)
+      description: Estimated delivery date or milestone info.
+      placeholder: "Sprint 1 - Ideation"

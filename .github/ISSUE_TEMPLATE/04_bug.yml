@@ -1,0 +1,70 @@
+name: "🐛 Bug Report"
+description: "Something is broken."
+title: "[BUG] "
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: input
+    id: reproduction_command
+    attributes:
+      label: ⌨️ Command to Reproduce
+      placeholder: "./glados test_file.scm"
+  - type: textarea
+    id: reproduction_snippet
+    attributes:
+      label: 📄 Code Snippet (Addon)
+      description: The specific LISP/Scheme code causing the crash.
+      render: scheme
+      value: |
+        (define foo 21)
+        (* foo) ;; Causes crash
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📉 Stack Trace / Error Output
+      render: shell
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer size
+      options:
+        - "0. layer: epic"
+        - "0. layer: story"
+        - "0. layer: task"
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      options:
+        - "1. difficulty : easy"
+        - "1. difficulty : medium"
+        - "1. difficulty : hard"
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - "2. priority: critical"
+        - "2. priority: high"
+        - "2. priority: medium"
+        - "2. priority: low"
+  - type: dropdown
+    id: status
+    attributes:
+      label: Regression?
+      options:
+        - "3. type: bug"
+        - "3. type: regression"
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "4. severity: blocker"
+        - "4. severity: security"
+        - "4. severity: regular"
