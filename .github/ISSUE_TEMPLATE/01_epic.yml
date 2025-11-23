@@ -7,12 +7,13 @@ body:
     attributes:
       value: |
         ## Epic Overview
-        Define the high-level goal (e.g., "Implement Part 2 Compiler").
+        An Epic groups multiple Stories under a common goal (e.g., "Implement Part 2 Compiler").
+
   - type: textarea
     id: description
     attributes:
       label: Description
-      description: What is the goal of this Epic?
+      description: What is the high-level goal of this Epic?
       placeholder: "As a team, we need to deliver the VM..."
     validations:
       required: true
@@ -20,28 +21,45 @@ body:
     id: parent_initiative
     attributes:
       label: 🔗 Parent Initiative (Milestone) (Optional)
-      placeholder: "e.g., GLADOS-Part-2"
-  - type: input
-    id: relationships
-    attributes:
-      label: 🔄 Relationships (Optional)
-      description: Blocked by / Blocking relationships (e.g., #123, #456).
-      value: |
-        - [] # (blocked by)
-        - [] # (blocking)
-    validations:
-      required: false
+      description: Link to GitHub Milestone if applicable
+      placeholder: "GLADOS-Part-2"
+
+# Commented out because feel useless.
+# Not removed because Epi might like it.
+  # - type: textarea
+  #   id: success_criteria
+  #   attributes:
+  #     label: Success Criteria
+  #     description: What must be achieved for this Epic to be complete?
+  #     placeholder: |
+  #       - [ ] All child stories completed
+  #       - [ ] Integration tests passing
+  #       - [ ] Documentation written
+
   - type: textarea
     id: child_stories
     attributes:
-      label: 📚 Child Stories
-      description: List the Stories (Layer 1) that belong to this Epic.
+      label: Child Stories
+      description: List the Stories (Layer 1) that belong to this Epic. (will be updated as stories are created)
       value: |
         - [ ] #
         - [ ] #
+
+  - type: textarea
+    id: relationships
+    attributes:
+      label: Relationships
+      description: Dependencies and blocking relationships.
+      value: |
+        **Blocked by:**
+        - [] #
+
+        **Blocking:**
+        - [] #
+
   - type: input
     id: timeline
     attributes:
-      label: ⏳ Timeline (Optional)
-      description: Estimated delivery date or milestone info.
-      placeholder: "Sprint 1 - Ideation"
+      label: Timeline
+      description: Target sprint or date
+      placeholder: "Sprint 1 - Ideation: Nov 17 - Nov 23"
