@@ -1,30 +1,54 @@
 name: "🔵 Task (Layer 2)"
-description: "Technical code changes required for a Story."
+description: "Specific technical implementation work required for a Story"
 title: "[TASK] "
 labels: ["0. layer: task"]
 body:
   - type: input
     id: parent_story
     attributes:
-      label: 🔗 Parent Story
-      description: Which Story does this task complete?
+      label: Parent Story
+      description: Which Story does this Task implement?
       placeholder: "#45"
     validations:
       required: true
+
   - type: textarea
     id: task_description
     attributes:
       label: Description
-      description: Short explanation of what needs to be done.
+      description: Clear explanation of what needs to be done
+      placeholder: "Implement the `lambda` special form parser to recognize (lambda (args...) body) syntax"
     validations:
       required: true
+
   - type: textarea
     id: technical_details
     attributes:
       label: Implementation Details
-      description: Technical specifics (functions to edit, files to create).
+      description: Specific functions, modules, or files to modify
+      placeholder: |
+        - Modify `lisp/src/Parser.hs`: Add `parseLambda` function
+        - Update `ast/src/AST.hs`: Add `Lambda` constructor to AST type
+        - Files: `Parser.hs`, `AST.hs`, `Types.hs`
     validations:
-      required: false
+      required: true
+
+# Commented out because feel useless.
+# Not removed because Epi might like it.
+  # - type: textarea
+  #   id: acceptance_checklist
+  #   attributes:
+  #     label: Acceptance Checklist
+  #     description: When is this task complete?
+  #     value: |
+  #       - [ ] Code implemented and compiles
+  #       - [ ] Unit tests added for new functionality
+  #       - [ ] Code passes linting (pre-commit hooks)
+  #       - [ ] No compiler warnings
+  #       - [ ] Changes documented in code comments
+  #   validations:
+  #     required: true
+
   - type: dropdown
     id: difficulty
     attributes:
@@ -33,12 +57,23 @@ body:
         - "1. difficulty : easy"
         - "1. difficulty : medium"
         - "1. difficulty : hard"
+    validations:
+      required: true
+
   - type: dropdown
     id: type
     attributes:
       label: Task Type
       options:
+        - "3. type: bug"
         - "3. type: build-integration"
+        - "3. type: chore"
+        - "3. type: cleanup"
         - "3. type: documentation"
+        - "3. type: extra-deliverable"
+        - "3. type: feature"
         - "3. type: refactor"
-        - "3. type: extra-delivery"
+        - "3. type: regression"
+        - "3. type: test"
+    validations:
+      required: true
