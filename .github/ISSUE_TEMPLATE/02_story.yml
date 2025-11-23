@@ -94,10 +94,10 @@ body:
       description: Dependencies and blocking relationships.
       value: |
         **Blocked by:**
-        - [] #
+        - [ ] #
 
         **Blocking:**
-        - [] #
+        - [ ] #
 
   - type: input
     id: sprint
