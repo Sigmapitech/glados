@@ -1,0 +1,88 @@
+# Auto-label PRs based on changed files
+# Format for actions/labeler@v5
+
+'7. component: ast':
+  - changed-files:
+    - any-glob-to-any-file: 'ast/**/*'
+
+'7. component: parser':
+  - changed-files:
+    - any-glob-to-any-file: 'parser/**/*'
+
+'7. component: vm':
+  - changed-files:
+    - any-glob-to-any-file: 'vm/**/*'
+
+'7. component: compiler':
+  - changed-files:
+    - any-glob-to-any-file: 'compiler/**/*'
+
+'7. component: stdlib':
+  - changed-files:
+    - any-glob-to-any-file: 'stdlib/**/*'
+
+'7. component: lisp-interpreter':
+  - changed-files:
+    - any-glob-to-any-file: 'lisp/**/*'
+
+'7. component: tests':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'tests/**/*'
+      - 'ast/tests/**/*'
+      - 'parser/tests/**/*'
+      - 'vm/tests/**/*'
+      - 'compiler/tests/**/*'
+      - 'stdlib/tests/**/*'
+      - 'lisp/tests/**/*'
+      - '**/*_test.hs'
+      - '**/*Test.hs'
+      - '**/*_spec.hs'
+      - '**/*Spec.hs'
+
+'7. component: ci/cd':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - '.github/**/*.yml'
+      - '.github/**/*.yaml'
+
+'7. component: nix':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'flake.nix'
+      - 'flake.lock'
+      - 'shell.nix'
+      - 'default.nix'
+      - 'nix/**/*'
+      - '**/*.nix'
+
+'7. component: alt-tooling':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'Dockerfile'
+      - '**/Dockerfile'
+      - 'docker-compose.yml'
+      - 'docker-compose.yaml'
+      - '.dockerignore'
+      - 'Vagrantfile'
+      - 'devcontainer.json'
+      - '.devcontainer/**/*'
+
+'7. component: documentation':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+      - 'LICENSE.md'
+      - 'LICENSE'
+      - 'docs/**/*'
+      - '**/docs/**/*.md'
+
+'7. component: dep-manager':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.cabal'
+      - 'cabal.project'
+      - 'cabal.project.freeze'

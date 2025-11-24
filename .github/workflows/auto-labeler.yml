@@ -1,0 +1,205 @@
+name: Auto-Label from Issue Template
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled, unlabeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-label from dropdowns
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueBody = context.payload.issue.body || '';
+            const issueTitle = context.payload.issue.title || '';
+
+            // Define template required labels based on issue title prefix
+            const templateRequiredLabels = {
+              '[EPIC]': ['0. layer: epic', '5. scope: tracking'],
+              '[STORY]': ['0. layer: story'],
+              '[TASK]': ['0. layer: task'],
+              '[BUG]': ['3. type: bug'],
+              '[DEBT]': [] // Technical debt template has no required labels
+            };
+
+            // Define label categories and their possible values
+            const labelCategories = {
+              'difficulty': {
+                prefix: '1. difficulty :',
+                values: ['easy', 'medium', 'hard']
+              },
+              'priority': {
+                prefix: '2. priority:',
+                values: ['critical', 'high', 'medium', 'low']
+              },
+              'type': {
+                prefix: '3. type:',
+                values: ['bug', 'build-integration', 'chore', 'cleanup', 'documentation',
+                         'extra-deliverable', 'feature', 'refactor', 'regression', 'test']
+              },
+              'severity': {
+                prefix: '4. severity:',
+                values: ['blocker', 'regular', 'security']
+              },
+              'component': {
+                prefix: '7. component:',
+                values: ['ci/cd', 'compiler', 'dep manager', 'documentation', 'nix',
+                         'parser', 'stdlib', 'tests', 'uncategorized', 'vm']
+              },
+              'part': {
+                prefix: '8. part:',
+                values: ['0-infrastructure', '1-lisp-interpreter', '2-custom-language']
+              }
+            };
+
+            // Parse issue body to extract dropdown selections
+            function extractDropdownValue(body, sectionHeader) {
+              const lines = body.split('\n');
+              let inSection = false;
+
+              for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line.includes(sectionHeader)) {
+                  inSection = true;
+                  continue;
+                }
+
+                // If we're in the section, look for the selected value
+                if (inSection) {
+                  if (line && !line.startsWith('#') && !line.startsWith('_') && line.length > 0) {
+                    return line.replace(/^[-*]\s*/, '').trim();
+                  }
+                }
+
+                if (inSection && line.startsWith('###')) {
+                  break;
+                }
+              }
+              return null;
+            }
+
+            // Map to extract labels based on category
+            const categoryToSectionHeader = {
+              'difficulty': ['Difficulty', 'Estimated Difficulty'],
+              'priority': ['Priority'],
+              'type': ['Type', 'Task Type', 'Bug Type'],
+              'severity': ['Severity'],
+              'component': ['Component'],
+              'part': ['Project Part', 'Part']
+            };
+
+            const currentLabels = context.payload.issue.labels.map(l => l.name);
+            const labelsToAdd = new Set();
+            const labelsToRemove = new Set();
+
+            // ===== STEP 1: Process dropdown selections =====
+            console.log('=== Processing dropdown selections ===');
+
+            for (const [category, config] of Object.entries(labelCategories)) {
+              const sectionHeaders = categoryToSectionHeader[category] || [];
+              let selectedValue = null;
+
+              for (const header of sectionHeaders) {
+                selectedValue = extractDropdownValue(issueBody, header);
+                if (selectedValue) break;
+              }
+
+              if (selectedValue) {
+                // Clean up the selected value to match label format
+                const cleanValue = selectedValue.toLowerCase()
+                  .replace(/^["']|["']$/g, '')
+                  .trim();
+
+                const matchingValue = config.values.find(v =>
+                  cleanValue.includes(v.toLowerCase()) ||
+                  v.toLowerCase().includes(cleanValue)
+                );
+
+                if (matchingValue) {
+                  const newLabel = `${config.prefix} ${matchingValue}`;
+                  labelsToAdd.add(newLabel);
+
+                  // Remove conflicting labels from same category
+                  config.values.forEach(value => {
+                    const labelToCheck = `${config.prefix} ${value}`;
+                    if (labelToCheck !== newLabel && currentLabels.includes(labelToCheck)) {
+                      labelsToRemove.add(labelToCheck);
+                    }
+                  });
+                }
+              }
+            }
+
+            // ===== STEP 2: Enforce template required labels =====
+            console.log('=== Checking template required labels ===');
+
+            // Detect which template was used based on title prefix
+            let detectedTemplate = null;
+            for (const [prefix, requiredLabels] of Object.entries(templateRequiredLabels)) {
+              if (issueTitle.startsWith(prefix)) {
+                detectedTemplate = prefix;
+                console.log(`Detected template: ${prefix}`);
+
+                for (const requiredLabel of requiredLabels) {
+                  if (!currentLabels.includes(requiredLabel)) {
+                    console.log(`Missing required label: ${requiredLabel}`);
+                    labelsToAdd.add(requiredLabel);
+                  }
+                }
+                break;
+              }
+            }
+
+            if (!detectedTemplate) {
+              console.log('No template detected from title prefix - skipping template label enforcement');
+            }
+
+            // ===== STEP 3: Apply changes =====
+            console.log('=== Applying label changes ===');
+
+            // Remove conflicting labels
+            if (labelsToRemove.size > 0) {
+              console.log('Removing labels:', Array.from(labelsToRemove));
+              for (const label of labelsToRemove) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    name: label
+                  });
+                } catch (error) {
+                  console.log(`Label "${label}" not found, skipping removal`);
+                }
+              }
+            }
+
+            // Add new labels (only those not already present)
+            const labelsToAddFiltered = Array.from(labelsToAdd).filter(
+              label => !currentLabels.includes(label)
+            );
+
+            if (labelsToAddFiltered.length > 0) {
+              console.log('Adding labels:', labelsToAddFiltered);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labelsToAddFiltered
+              });
+            }
+
+            if (labelsToAddFiltered.length === 0 && labelsToRemove.size === 0) {
+              console.log('No label changes needed');
+            } else {
+              console.log('=== Summary ===');
+              console.log(`Added: ${labelsToAddFiltered.length} labels`);
+              console.log(`Removed: ${labelsToRemove.size} labels`);
+            }
