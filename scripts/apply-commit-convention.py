@@ -8,8 +8,8 @@ def has_correct_message(msg: str) -> bool:
     print(f"Commit message:\n{msg}")
     title = msg.splitlines()[0]
 
-    # allow a bang for commit squashing
-    if title == "!":
+    # allow a bang for commit squashing and fixup
+    if title == "!" or title.startswith("fixup!"):
         return True
 
     if title.count(":") != 1:
