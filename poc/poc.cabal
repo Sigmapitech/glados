@@ -1,0 +1,48 @@
+cabal-version: 3.8
+name:          poc
+version:       0.0.1
+build-type:    Simple
+description:   Proof of concept modules for parser experiments
+homepage:      https://github.com/Sigmapitech/glados
+bug-reports:   https://github.com/Sigmapitech/glados/issues
+author:        Sigmapitech
+maintainer:    Sigmapitech
+copyright:     Sigmapitech
+license:       BSD-2-Clause
+
+common lang
+  default-language: Haskell2010
+
+common warnings
+  ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
+
+library
+  import:          lang
+  import:          warnings
+  exposed-modules:
+    MegaparsecPoC
+    ParsecPoC
+
+  hs-source-dirs:  .
+  build-depends:
+    , base
+    , megaparsec
+    , parsec
+
+executable parsec-test
+  import:        lang, warnings
+  main-is:       ParsecPoC.hs
+
+  -- Tell GHC the main function is inside module ParsecPoC, not Main
+  ghc-options:   -main-is ParsecPoC
+  build-depends:
+    , base
+    , parsec
+
+executable megaparsec-test
+  import:        lang, warnings
+  main-is:       MegaparsecPoC.hs
+  ghc-options:   -main-is MegaparsecPoC
+  build-depends:
+    , base
+    , megaparsec
