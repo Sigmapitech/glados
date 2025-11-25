@@ -29,20 +29,26 @@ library
     , megaparsec
     , parsec
 
-executable parsec-test
-  import:        lang, warnings
-  main-is:       ParsecPoC.hs
-
-  -- Tell GHC the main function is inside module ParsecPoC, not Main
-  ghc-options:   -main-is ParsecPoC
+test-suite parsec-test
+  import:         lang, warnings
+  type:           exitcode-stdio-1.0
+  main-is:        SpecParsec.hs
+  hs-source-dirs: .
+  other-modules:  ParsecPoC
   build-depends:
-    , base
+    , base                >=4.7 && <5
+    , hspec
+    , hspec-expectations
     , parsec
 
-executable megaparsec-test
-  import:        lang, warnings
-  main-is:       MegaparsecPoC.hs
-  ghc-options:   -main-is MegaparsecPoC
+test-suite megaparsec-test
+  import:         lang, warnings
+  type:           exitcode-stdio-1.0
+  main-is:        SpecMegaparsec.hs
+  hs-source-dirs: .
+  other-modules:  MegaparsecPoC
   build-depends:
-    , base
+    , base                >=4.7 && <5
+    , hspec
+    , hspec-expectations
     , megaparsec

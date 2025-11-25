@@ -64,11 +64,3 @@ parseString input = case parse parseLisp "source_file" input of
     hPutStrLn stderr $ "Parse error: " ++ show err
     exitWith (ExitFailure 84)
   Right ast -> return ast
-
-main :: IO ()
-main = do
-  putStrLn "--- Parsec Test ---"
-  res <- parseString "(define x 42)"
-  print res
-  _ <- parseString "(unclosed parenthesis" -- Will crash with 84
-  return ()

@@ -86,14 +86,3 @@ parseString input = case runParser parseLisp "source_file" input of
     hPutStrLn stderr (errorBundlePretty bundle)
     exitWith (ExitFailure 84)
   Right ast -> return ast
-
-main :: IO ()
-main = do
-  putStrLn "--- Megaparsec Test ---"
-  res <- parseString "(define x 42) (print x)"
-  print res
-
-  putStrLn "\n--- Testing Custom Error (0 is forbidden) ---"
-  -- This will trigger our custom GladosError
-  _ <- parseString "(val 0)"
-  return ()
