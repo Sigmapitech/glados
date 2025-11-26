@@ -80,6 +80,9 @@
               regex-tdfa
               Cabal-syntax
               Cabal
+              containers
+              bytestring
+              pretty-simple
             ]))
           ]);
       };
