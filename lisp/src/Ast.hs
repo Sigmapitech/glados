@@ -102,6 +102,24 @@ instance Eq Value where
   VUnit == VUnit = True
   (VFunction {}) == (VFunction {}) = False
   _ == _ = False
+
+-- | A binding associates a variable name with its value
+type Binding = (VarName, Value)
+
+-- | Environment maps variable names to their values
+type Environment = [Binding]
+
+-- | Create an empty environment
+emptyEnv :: Environment
+emptyEnv = []
+
+-- | Add a new binding to the environment
+extendEnv :: VarName -> Value -> Environment -> Environment
+extendEnv name value env = (name, value) : env
+
+-- | Look up a variable in the environment
+lookupEnv :: VarName -> Environment -> Maybe Value
+lookupEnv = lookup
 -- | Generic result type (either error or success)
 type Result a = Either ErrorMsg a
 
@@ -113,6 +131,16 @@ type ConvertResult = Either ErrorMsg Ast
 
 -- | Result of evaluating to a value
 type ValueResult = Either ErrorMsg Value
+
+-- | Complete evaluation result (value + final environment)
+--
+-- The type parameter 'a' allows us to use this for different return types:
+--   - Evaluator Value      (most common)
+--   - Evaluator [Value]    (for evaluating lists)
+--   - Evaluator Bool       (for internal checks)
+--   - etc.
+type EvalResult a = (Either ErrorMsg a, Environment)
+
 -- | Helper to create error messages
 mkError :: String -> ErrorMsg
 mkError = ErrorMsg
