@@ -79,6 +79,7 @@
               hspec-expectations
               parsec
               megaparsec
+              silently
             ]))
           ]);
       };
