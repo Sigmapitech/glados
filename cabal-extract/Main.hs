@@ -2,6 +2,7 @@ module Main (main) where
 
 import Control.Monad (forM_)
 import Data.List (intercalate)
+import qualified Data.Set as Set
 import qualified Distribution.Compat.NonEmptySet as NES
 import Distribution.PackageDescription.Configuration (flattenPackageDescription)
 import Distribution.Pretty (prettyShow)
@@ -157,10 +158,31 @@ innerComponent =
           (allComponents pkg)
     )
 
+trimComponent :: Set.Set String -> Component -> Component
+trimComponent allowed comp =
+  comp
+    { componentDependencies =
+        filter
+          (\dep -> depToString dep `Set.member` allowed)
+          (componentDependencies comp)
+    }
+
+trim :: Package -> [String] -> Package
+trim pkg comps =
+  let allowed = Set.fromList comps
+      trimC = trimComponent allowed
+   in pkg
+        { packageLibraries = map trimC (packageLibraries pkg),
+          packageExecutables = map trimC (packageExecutables pkg),
+          packageTests = map trimC (packageTests pkg),
+          packageBenchmarks = map trimC (packageBenchmarks pkg)
+        }
+
 main :: IO ()
 main =
   getCurrentDirectory >>= findCabalFiles >>= \cabalFiles -> do
     gpds <- mapM parseCabalFile cabalFiles
     let fpds = map flattenPackageDescription gpds
         pkgs = map convertPackage fpds
-    mapM_ pPrint pkgs
+        trimmedPkgs = map (`trim` innerComponent pkgs) pkgs
+    mapM_ pPrint trimmedPkgs
