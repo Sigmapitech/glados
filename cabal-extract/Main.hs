@@ -32,7 +32,8 @@ import Text.Regex.TDFA ((=~))
 
 data Component = Component
   { componentName :: String,
-    componentDependencies :: [Dependency]
+    componentDependencies :: [Dependency],
+    componentReverseDependencies :: [String]
   }
   deriving (Show)
 
@@ -79,28 +80,32 @@ convertLibrary lib =
           "library"
         LSubLibName ucn ->
           unUnqualComponentName ucn,
-      componentDependencies = targetBuildDepends (libBuildInfo lib)
+      componentDependencies = targetBuildDepends (libBuildInfo lib),
+      componentReverseDependencies = []
     }
 
 convertExecutable :: Executable -> Component
 convertExecutable exe =
   Component
     { componentName = unUnqualComponentName (exeName exe),
-      componentDependencies = targetBuildDepends (buildInfo exe)
+      componentDependencies = targetBuildDepends (buildInfo exe),
+      componentReverseDependencies = []
     }
 
 convertTest :: TestSuite -> Component
 convertTest t =
   Component
     { componentName = unUnqualComponentName (testName t),
-      componentDependencies = targetBuildDepends (testBuildInfo t)
+      componentDependencies = targetBuildDepends (testBuildInfo t),
+      componentReverseDependencies = []
     }
 
 convertBenchmark :: Benchmark -> Component
 convertBenchmark b =
   Component
     { componentName = unUnqualComponentName (benchmarkName b),
-      componentDependencies = targetBuildDepends (benchmarkBuildInfo b)
+      componentDependencies = targetBuildDepends (benchmarkBuildInfo b),
+      componentReverseDependencies = []
     }
 
 convertPackage :: PackageDescription -> Package
