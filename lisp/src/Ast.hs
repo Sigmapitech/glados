@@ -58,6 +58,12 @@ type ParseResult = Either ErrorMsg SExpr
 mkError :: String -> ErrorMsg
 mkError = ErrorMsg
 
+
+-- | Lift a string-based error into an ErrorMsg with context
+liftError :: String -> Either String a -> Either ErrorMsg a
+liftError context (Left err) = Left $ ErrorMsg $ context ++ ": " ++ err
+liftError _ (Right val) = Right val
+
 -- | Special form keywords used by the parser
 defineSymbol, lambdaSymbol, ifSymbol :: SymbolName
 defineSymbol = SymbolName "define"
