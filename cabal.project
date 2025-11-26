@@ -1,4 +1,5 @@
 packages:
+  cabal-extract/
   lisp/
   ast/
   compiler/

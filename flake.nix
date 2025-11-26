@@ -77,6 +77,12 @@
             (ghcWithPackages (p: [
               hspec
               hspec-expectations
+              regex-tdfa
+              Cabal-syntax
+              Cabal
+              containers
+              bytestring
+              pretty-simple
             ]))
           ]);
       };
