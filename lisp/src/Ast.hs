@@ -37,6 +37,14 @@ type ParseResult = Result SExpr
 mkError :: String -> ErrorMsg
 mkError = ErrorMsg
 
+liftError :: String -> Either String a -> Result a
+liftError context (Left err) = Left $ mkError $ context ++ ": " ++ err
+liftError _ (Right val) = Right val
+
+addErrContext :: String -> Result a -> Result a
+addErrContext context (Left (ErrorMsg msg)) = Left $ mkError $ context ++ ": " ++ msg
+addErrContext _ result = result
+
 defineSymbol, lambdaSymbol, ifSymbol :: SymbolName
 defineSymbol = SymbolName "define"
 lambdaSymbol = SymbolName "lambda"
