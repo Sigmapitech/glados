@@ -59,11 +59,29 @@ data Ast
   | If {ifCond :: Ast, ifThen :: Ast, ifElse :: Ast}
   deriving (Show, Eq)
 
+data RuntimeValue
+  = VInt Integer
+  | VBool Bool
+  | VProcedure [ParamName] Ast Environment
+  | VUnit -- Represents 'void' or 'no value': "() <- unit"
+  deriving (Show)
+
+-- | Make RuntimeValue an instance of Eq (useful for testing).
+-- Note: Functions are not comparable and always return False.
+instance Eq RuntimeValue where
+  (VInt a) == (VInt b) = a == b
+  (VBool a) == (VBool b) = a == b
+  VUnit == VUnit = True
+  (VProcedure {}) == (VProcedure {}) = False
+  _ == _ = False
+
 type Result a = Either ErrorMsg a
 
 type ParseResult = Result SExpr
 
 type ConvertResult = Result Ast
+
+type ValueResult = Result RuntimeValue
 
 mkError :: String -> ErrorMsg
 mkError = ErrorMsg
