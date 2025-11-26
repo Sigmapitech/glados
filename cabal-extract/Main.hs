@@ -1,11 +1,14 @@
 module Main (main) where
 
+import Control.Monad (forM_)
+import Data.List (intercalate)
+import qualified Distribution.Compat.NonEmptySet as NES
 import Distribution.PackageDescription.Configuration (flattenPackageDescription)
 import Distribution.Pretty (prettyShow)
 import Distribution.Simple.PackageDescription (readGenericPackageDescription)
 import Distribution.Types.Benchmark (Benchmark (..))
 import Distribution.Types.BuildInfo (targetBuildDepends)
-import Distribution.Types.Dependency (Dependency)
+import Distribution.Types.Dependency (Dependency (..), depLibraries, depPkgName)
 import Distribution.Types.Executable (Executable (..))
 import Distribution.Types.GenericPackageDescription (GenericPackageDescription (..))
 import Distribution.Types.Library (Library (..))
@@ -125,6 +128,34 @@ convertPackage pd =
       packageBenchmarks =
         map convertBenchmark (benchmarks pd)
     }
+
+depToString :: Dependency -> String
+depToString dep =
+  intercalate "," $
+    map fmt (NES.toList (depLibraries dep))
+  where
+    pkg = unPackageName (depPkgName dep)
+    fmt LMainLibName = pkg
+    fmt (LSubLibName subname) = pkg ++ ":" ++ unUnqualComponentName subname
+
+allComponents :: Package -> [Component]
+allComponents p =
+  packageLibraries p
+    ++ packageExecutables p
+    ++ packageTests p
+    ++ packageBenchmarks p
+
+innerComponent :: [Package] -> [String]
+innerComponent =
+  concatMap
+    ( \pkg ->
+        map
+          ( \comp -> case componentName comp of
+              "library" -> packageName pkg
+              name -> packageName pkg ++ ":" ++ name
+          )
+          (allComponents pkg)
+    )
 
 main :: IO ()
 main =
