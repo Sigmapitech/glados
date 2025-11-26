@@ -82,6 +82,26 @@ data Ast
     If {ifCond :: Ast, ifThen :: Ast, ifElse :: Ast}
   deriving (Show, Eq)
 
+-- | Runtime values produced by evaluation
+data Value
+  = -- | Integer value
+    VInt Integer
+  | -- | Boolean value
+    VBool Bool
+  | -- | Function closure
+    VFunction [ParamName] Ast Environment
+  | -- | Unit value
+    VUnit
+  deriving (Show)
+
+-- | Make Value an instance of Eq (useful for testing).
+-- Note: Functions are not comparable and always return False.
+instance Eq Value where
+  (VInt a) == (VInt b) = a == b
+  (VBool a) == (VBool b) = a == b
+  VUnit == VUnit = True
+  (VFunction {}) == (VFunction {}) = False
+  _ == _ = False
 -- | Generic result type (either error or success)
 type Result a = Either ErrorMsg a
 
@@ -91,6 +111,8 @@ type ParseResult = Either ErrorMsg SExpr
 -- | Result type for AST conversion operations
 type ConvertResult = Either ErrorMsg Ast
 
+-- | Result of evaluating to a value
+type ValueResult = Either ErrorMsg Value
 -- | Helper to create error messages
 mkError :: String -> ErrorMsg
 mkError = ErrorMsg
