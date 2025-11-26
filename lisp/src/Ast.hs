@@ -6,6 +6,8 @@
 -- AST nodes, runtime values, and environments.
 module Ast where
 
+import Control.Monad.Except (ExceptT, MonadError (throwError), runExceptT)
+import Control.Monad.State (State, runState)
 import Data.String (IsString (..))
 
 newtype VarName = VarName String
@@ -96,8 +98,29 @@ type ConvertResult = Result Ast
 
 type ValueResult = Result RuntimeValue
 
+type EvalResult = (ValueResult, Environment)
+
+-- | The Evaluator monad combines error handling and state management
+--
+-- This is a monad transformer stack:
+--   - ExceptT: provides error handling (Either ErrorMsg)
+--   - State: provides environment threading
+type Evaluator = ExceptT ErrorMsg (State Environment) RuntimeValue
+
+-- | Run an evaluator computation with an initial environment (unwrap the monad stack)
+-- Returns both the result and the final environment
+runEvaluator :: Evaluator -> Environment -> EvalResult
+runEvaluator computation = runState $ runExceptT computation
+
+--                         ^^^^^^^^  ^^^^^^^^^^^
+--                         unwrap    unwrap
+--                         State     ExceptT
+
 mkError :: String -> ErrorMsg
 mkError = ErrorMsg
+
+throwEvalError :: String -> Evaluator
+throwEvalError = throwError . mkError
 
 liftError :: String -> Either String a -> Result a
 liftError context (Left err) = Left $ mkError $ context ++ ": " ++ err
