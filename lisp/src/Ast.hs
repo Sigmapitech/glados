@@ -75,6 +75,19 @@ instance Eq RuntimeValue where
   (VProcedure {}) == (VProcedure {}) = False
   _ == _ = False
 
+type Binding = (VarName, RuntimeValue)
+
+type Environment = [Binding]
+
+emptyEnv :: Environment
+emptyEnv = []
+
+extendEnv :: VarName -> RuntimeValue -> Environment -> Environment
+extendEnv name value env = (name, value) : env
+
+lookupEnv :: VarName -> Environment -> Maybe RuntimeValue
+lookupEnv = lookup
+
 type Result a = Either ErrorMsg a
 
 type ParseResult = Result SExpr
