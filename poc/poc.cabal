@@ -40,6 +40,7 @@ test-suite parsec-test
     , hspec
     , hspec-expectations
     , parsec
+    , silently
 
 test-suite megaparsec-test
   import:         lang, warnings
@@ -52,3 +53,4 @@ test-suite megaparsec-test
     , hspec
     , hspec-expectations
     , megaparsec
+    , silently
