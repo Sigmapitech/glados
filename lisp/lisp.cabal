@@ -23,9 +23,14 @@ common release
 library lisp-interpreter-lib
   import:          lang
   import:          warnings
-  exposed-modules: Bootstrap
+  exposed-modules:
+    Ast
+    Bootstrap
+
   hs-source-dirs:  src
-  build-depends:   base
+  build-depends:
+    , base
+    , mtl
 
 executable lisp-interpreter
   import:         lang
