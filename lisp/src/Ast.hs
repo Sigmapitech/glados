@@ -1,6 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 -- | Abstract Syntax Tree definitions for the Lisp interpreter.
 -- This module defines the core data types for representing parsed S-expressions,
 -- AST nodes, runtime values, and environments.
