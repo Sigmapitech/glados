@@ -1,6 +1,6 @@
 module SexprtoAST where
 
-import Ast (Ast (..), ConvertResult, ErrorMsg (..), SExpr (..), VarName (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
+import Ast (Ast (..), ConvertResult, SExpr (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
 
 -- | Convert an SExpr to an Ast, with error handling
 sexprToAst :: SExpr -> ConvertResult
@@ -53,8 +53,3 @@ convertCall f args = do
   astF <- sexprToAst f
   astArgs <- mapM sexprToAst args
   return $ Call astF astArgs
-
--- | Helper to convert a symbol to a variable name
-symbolToVarName :: SExpr -> Either ErrorMsg VarName
-symbolToVarName (SSymbol s) = Right (symbolToVar s)
-symbolToVarName _ = Left $ mkError "Expected symbol for variable name."
