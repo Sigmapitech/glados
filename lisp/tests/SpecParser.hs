@@ -2,13 +2,16 @@ module SpecParser (parserSpec) where
 
 import Ast (SExpr (..), SymbolName (..))
 import Control.Exception (SomeException, try)
-import Parser (parseString)
+import Parser (parseFile, parseString)
 import System.IO (stderr)
 import System.IO.Silently (hSilence)
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 
 parseStringWrapper :: String -> IO [SExpr]
 parseStringWrapper = hSilence [stderr] . parseString
+
+parseFileWrapper :: FilePath -> IO [SExpr]
+parseFileWrapper = hSilence [stderr] . parseFile
 
 isLeft :: Either a b -> Bool
 isLeft (Left _) = True
@@ -172,3 +175,16 @@ parserSpec = do
                            ]
                        ]
                    ]
+
+  describe "Parser - File parsing" $ do
+    it "parse a simple file" $ do
+      resut <- parseFileWrapper "tests/fixtures/testParseFile.ss"
+      resut `shouldBe` [SList [SSymbol (SymbolName "define"), SSymbol (SymbolName "x"), SInteger 42]]
+
+    it "fails on non-existent file" $ do
+      result <- try (parseFileWrapper "tests/fixtures/nonExistent.ss") :: IO (Either SomeException [SExpr])
+      result `shouldSatisfy` isLeft
+
+    it "fails on invalid file content" $ do
+      result <- try (parseFileWrapper "tests/fixtures/testInvalidFile.ss") :: IO (Either SomeException [SExpr])
+      result `shouldSatisfy` isLeft
