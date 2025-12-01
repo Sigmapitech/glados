@@ -55,6 +55,9 @@ test-suite lisp-interpreter-test
   import:         extensions
   type:           exitcode-stdio-1.0
   main-is:        LispSpec.hs
+  other-modules:
+    LispBootstrapSpec
+
   hs-source-dirs: tests
   build-depends:
     , base                       >=4.7 && <5
