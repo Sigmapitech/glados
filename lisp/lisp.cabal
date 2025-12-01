@@ -32,6 +32,7 @@ library lisp-interpreter-lib
   exposed-modules:
     Ast
     Bootstrap
+    SexprtoAST
 
   hs-source-dirs:  src
   build-depends:
@@ -60,6 +61,7 @@ test-suite lisp-interpreter-test
     LispBootstrapSpec
 
   hs-source-dirs: tests
+  other-modules:  SexprtoASTSpec
   build-depends:
     , base                       >=4.7 && <5
     , directory
