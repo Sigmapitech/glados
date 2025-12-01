@@ -13,8 +13,10 @@ import Distribution.Pretty (prettyShow)
 import Distribution.Simple.PackageDescription (readGenericPackageDescription)
 import Distribution.Types.Benchmark (Benchmark (..))
 import Distribution.Types.BuildInfo (targetBuildDepends)
+import Distribution.Types.Component (Component (..))
 import Distribution.Types.Dependency (Dependency (..), depLibraries, depPkgName)
 import Distribution.Types.Executable (Executable (..))
+import Distribution.Types.ForeignLib (foreignLibBuildInfo, foreignLibName)
 import Distribution.Types.GenericPackageDescription (GenericPackageDescription (..))
 import Distribution.Types.Library (Library (..))
 import Distribution.Types.LibraryName (LibraryName (..))
@@ -98,41 +100,26 @@ findCabalFiles dir =
 parseCabalFile :: FilePath -> IO GenericPackageDescription
 parseCabalFile = readGenericPackageDescription deafening
 
-convertLibrary :: Library -> ComputedComponent
-convertLibrary lib =
-  ComputedComponent
-    { componentName = case libName lib of
-        LMainLibName ->
-          "library"
-        LSubLibName ucn ->
-          unUnqualComponentName ucn,
-      componentDependencies = targetBuildDepends (libBuildInfo lib),
-      componentReverseDependencies = []
-    }
+computeComponentDeps :: Component -> ComputedComponent
+computeComponentDeps = dispatcher
+  where
+    retrieveLibName lib = case libName lib of
+      LMainLibName -> "library"
+      LSubLibName ucn -> ucn
 
-convertExecutable :: Executable -> ComputedComponent
-convertExecutable exe =
-  ComputedComponent
-    { componentName = unUnqualComponentName (exeName exe),
-      componentDependencies = targetBuildDepends (buildInfo exe),
-      componentReverseDependencies = []
-    }
+    dispatcher :: Component -> ComputedComponent
+    dispatcher (CLib lib) = wrap lib retrieveLibName libBuildInfo
+    dispatcher (CExe exe) = wrap exe exeName buildInfo
+    dispatcher (CTest ts) = wrap ts testName testBuildInfo
+    dispatcher (CBench bk) = wrap bk benchmarkName benchmarkBuildInfo
+    dispatcher (CFLib lib) = wrap lib foreignLibName foreignLibBuildInfo
 
-convertTest :: TestSuite -> ComputedComponent
-convertTest t =
-  ComputedComponent
-    { componentName = unUnqualComponentName (testName t),
-      componentDependencies = targetBuildDepends (testBuildInfo t),
-      componentReverseDependencies = []
-    }
-
-convertBenchmark :: Benchmark -> ComputedComponent
-convertBenchmark b =
-  ComputedComponent
-    { componentName = unUnqualComponentName (benchmarkName b),
-      componentDependencies = targetBuildDepends (benchmarkBuildInfo b),
-      componentReverseDependencies = []
-    }
+    wrap blob nameRetriever dependencyRetriever =
+      ComputedComponent
+        { componentName = unUnqualComponentName (nameRetriever blob),
+          componentDependencies = targetBuildDepends (dependencyRetriever blob),
+          componentReverseDependencies = []
+        }
 
 convertPackage :: PackageDescription -> Package
 convertPackage pd =
@@ -142,15 +129,16 @@ convertPackage pd =
       packageVersion =
         prettyShow (pkgVersion (package pd)),
       packageLibraries =
-        maybe [] (pure . convertLibrary) (library pd)
-          ++ map convertLibrary (subLibraries pd),
-      packageExecutables =
-        map convertExecutable (executables pd),
+        maybe [] (pure . convToCC . CLib) (library pd)
+          ++ map (convToCC . CLib) (subLibraries pd),
+      packageExecutables = map (convToCC . CExe) (executables pd),
       packageTests =
-        map convertTest (testSuites pd),
+        map (convToCC . CTest) (testSuites pd),
       packageBenchmarks =
-        map convertBenchmark (benchmarks pd)
+        map (convToCC . CBench) (benchmarks pd)
     }
+  where
+    convToCC = computeComponentDeps
 
 depToString :: Dependency -> String
 depToString dep =
