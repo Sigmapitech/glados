@@ -19,7 +19,7 @@ data SExpr
   = SInteger Integer
   | SSymbol String
   | SList [SExpr]
-  deriving (Show)
+  deriving (Show, Eq)
 
 getInteger :: SExpr -> Maybe Integer
 getInteger (SInteger n) = Just n
@@ -47,7 +47,7 @@ data AST
   | ASTBoolean {boolValue :: Bool}
   | Define {defName :: String, defValue :: AST}
   | Call {callFunction :: String, callArgs :: [AST]}
-  deriving (Show)
+  deriving (Show, Eq)
 
 sexprToAST :: SExpr -> Maybe AST
 sexprToAST (SInteger n) = Just (ASTInteger n)
