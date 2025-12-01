@@ -1,3 +1,9 @@
+{-
+-- EPITECH PROJECT, 2025
+-- GLaDOS
+-- File description:
+-- Bootstrap
+-}
 {-# LANGUAGE LambdaCase #-}
 
 module Bootstrap

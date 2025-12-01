@@ -1,5 +1,9 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-
+-- EPITECH PROJECT, 2025
+-- GLaDOS
+-- File description:
+-- Lisp-Interpreter AST
+-}
 
 -- | Abstract Syntax Tree definitions for the Lisp interpreter.
 -- This module defines the core data types for representing parsed S-expressions,
