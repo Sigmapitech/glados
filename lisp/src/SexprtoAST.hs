@@ -1,6 +1,6 @@
 module SexprtoAST where
 
-import Ast
+import Ast (Ast (..), ConvertResult, ErrorMsg (..), SExpr (..), VarName (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
 
 -- | Convert an SExpr to an Ast, with error handling
 sexprToAst :: SExpr -> ConvertResult
