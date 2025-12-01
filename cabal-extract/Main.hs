@@ -37,7 +37,7 @@ import System.FilePath
   )
 import Text.Regex.TDFA ((=~))
 
-data Component = Component
+data ComputedComponent = ComputedComponent
   { componentName :: String,
     componentDependencies :: [Dependency],
     componentReverseDependencies :: [String]
@@ -47,14 +47,14 @@ data Component = Component
 data Package = Package
   { packageName :: String,
     packageVersion :: String,
-    packageExecutables :: [Component],
-    packageLibraries :: [Component],
-    packageTests :: [Component],
-    packageBenchmarks :: [Component]
+    packageExecutables :: [ComputedComponent],
+    packageLibraries :: [ComputedComponent],
+    packageTests :: [ComputedComponent],
+    packageBenchmarks :: [ComputedComponent]
   }
   deriving (Show)
 
-instance ToJSON Component where
+instance ToJSON ComputedComponent where
   toJSON comp =
     object
       [ "name" .= componentName comp,
@@ -98,9 +98,9 @@ findCabalFiles dir =
 parseCabalFile :: FilePath -> IO GenericPackageDescription
 parseCabalFile = readGenericPackageDescription deafening
 
-convertLibrary :: Library -> Component
+convertLibrary :: Library -> ComputedComponent
 convertLibrary lib =
-  Component
+  ComputedComponent
     { componentName = case libName lib of
         LMainLibName ->
           "library"
@@ -110,25 +110,25 @@ convertLibrary lib =
       componentReverseDependencies = []
     }
 
-convertExecutable :: Executable -> Component
+convertExecutable :: Executable -> ComputedComponent
 convertExecutable exe =
-  Component
+  ComputedComponent
     { componentName = unUnqualComponentName (exeName exe),
       componentDependencies = targetBuildDepends (buildInfo exe),
       componentReverseDependencies = []
     }
 
-convertTest :: TestSuite -> Component
+convertTest :: TestSuite -> ComputedComponent
 convertTest t =
-  Component
+  ComputedComponent
     { componentName = unUnqualComponentName (testName t),
       componentDependencies = targetBuildDepends (testBuildInfo t),
       componentReverseDependencies = []
     }
 
-convertBenchmark :: Benchmark -> Component
+convertBenchmark :: Benchmark -> ComputedComponent
 convertBenchmark b =
-  Component
+  ComputedComponent
     { componentName = unUnqualComponentName (benchmarkName b),
       componentDependencies = targetBuildDepends (benchmarkBuildInfo b),
       componentReverseDependencies = []
@@ -161,7 +161,7 @@ depToString dep =
     fmt LMainLibName = pkg
     fmt (LSubLibName subname) = pkg ++ ":" ++ unUnqualComponentName subname
 
-allComponents :: Package -> [Component]
+allComponents :: Package -> [ComputedComponent]
 allComponents p =
   packageLibraries p
     ++ packageExecutables p
@@ -180,7 +180,7 @@ innerComponent =
           (allComponents pkg)
     )
 
-trimComponent :: Set.Set String -> Component -> Component
+trimComponent :: Set.Set String -> ComputedComponent -> ComputedComponent
 trimComponent allowed comp =
   comp
     { componentDependencies =
