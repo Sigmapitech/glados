@@ -17,13 +17,15 @@ jobs:
 
       - name: Checkout source repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0   # Full history
+          ref: ${{ github.ref }}
 
       - name: Add mirror remote
-        run: |
-          git remote add mirror "${{ secrets.GH_TARGET_REPO }}"
+        run: git remote add mirror "${{ secrets.GH_TARGET_REPO }}"
 
       - name: Push current branch to mirror
         run: |
           BRANCH="${GITHUB_REF#refs/heads/}"
-          echo "Pushing branch $BRANCH"
-          git push mirror "refs/remotes/origin/$BRANCH:refs/heads/$BRANCH" --force
+          git push mirror HEAD:"refs/heads/$BRANCH" --force
+
