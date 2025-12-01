@@ -1,7 +1,7 @@
 module Parser (parseFile, parseString) where
 
 import Data.Void (Void)
-import SExpr (SExpr (..))
+import Ast (SExpr (..), SymbolName (..))
 import System.Exit (ExitCode (..), exitWith)
 import System.IO (hPutStrLn, stderr)
 import Text.Megaparsec
@@ -48,11 +48,11 @@ integer = lexeme $ do
     Just '-' -> negate digits
     _ -> digits
 
-identifier :: Parser String
+identifier :: Parser SymbolName
 identifier = lexeme $ do
   first <- letterChar <|> oneOf "!$%&|*+-/:<=>?@^_~"
   rest <- many (alphaNumChar <|> oneOf "!$%&|*+-/:<=>?@^_~")
-  return (first : rest)
+  return $ SymbolName (first : rest)
 
 bool :: Parser Bool
 bool =
