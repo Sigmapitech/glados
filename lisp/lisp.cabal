@@ -33,11 +33,15 @@ library lisp-interpreter-lib
     Ast
     Bootstrap
     SexprtoAST
+    Parser
 
-  hs-source-dirs:  src
   build-depends:
     , base
     , mtl
+    , megaparsec
+    , parser-combinators
+
+  hs-source-dirs:  src src/parsing
 
 executable lisp-interpreter
   import:         lang
@@ -59,6 +63,8 @@ test-suite lisp-interpreter-test
   other-modules:
     LispAstSpec
     LispBootstrapSpec
+    SpecParser
+
 
   hs-source-dirs: tests
   other-modules:  SexprtoASTSpec
@@ -68,3 +74,4 @@ test-suite lisp-interpreter-test
     , hspec
     , hspec-expectations
     , lisp:lisp-interpreter-lib
+    , silently

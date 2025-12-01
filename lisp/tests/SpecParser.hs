@@ -1,8 +1,8 @@
 module SpecParser (parserSpec) where
 
+import Ast (SExpr (..), SymbolName (..))
 import Control.Exception (SomeException, try)
 import Parser (parseString)
-import SExpr (SExpr (..))
 import System.IO (stderr)
 import System.IO.Silently (hSilence)
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
@@ -39,15 +39,15 @@ parserSpec = do
 
     it "parses a simple symbol" $ do
       result <- parseStringWrapper "foo"
-      result `shouldBe` [SSymbol "foo"]
+      result `shouldBe` [SSymbol (SymbolName "foo")]
 
     it "parses symbols with special characters" $ do
       result <- parseStringWrapper "+"
-      result `shouldBe` [SSymbol "+"]
+      result `shouldBe` [SSymbol (SymbolName "+")]
 
     it "parses symbols with mixed special chars" $ do
       result <- parseStringWrapper ">=?"
-      result `shouldBe` [SSymbol ">=?"]
+      result `shouldBe` [SSymbol (SymbolName ">=?")]
 
   describe "Parser - Lists" $ do
     it "parses an empty list" $ do
@@ -56,11 +56,11 @@ parserSpec = do
 
     it "parses a simple list" $ do
       result <- parseStringWrapper "(+ 1 2)"
-      result `shouldBe` [SList [SSymbol "+", SInteger 1, SInteger 2]]
+      result `shouldBe` [SList [SSymbol (SymbolName "+"), SInteger 1, SInteger 2]]
 
     it "parses nested lists" $ do
       result <- parseStringWrapper "(+ (* 2 3) 4)"
-      result `shouldBe` [SList [SSymbol "+", SList [SSymbol "*", SInteger 2, SInteger 3], SInteger 4]]
+      result `shouldBe` [SList [SSymbol (SymbolName "+"), SList [SSymbol (SymbolName "*"), SInteger 2, SInteger 3], SInteger 4]]
 
     it "parses deeply nested lists" $ do
       result <- parseStringWrapper "(((1)))"
@@ -68,7 +68,7 @@ parserSpec = do
 
     it "parses list with booleans" $ do
       result <- parseStringWrapper "(if #t 1 0)"
-      result `shouldBe` [SList [SSymbol "if", SBool True, SInteger 1, SInteger 0]]
+      result `shouldBe` [SList [SSymbol (SymbolName "if"), SBool True, SInteger 1, SInteger 0]]
 
   describe "Parser - Multiple expressions" $ do
     it "parses multiple atoms" $ do
@@ -77,11 +77,11 @@ parserSpec = do
 
     it "parses multiple lists" $ do
       result <- parseStringWrapper "(+ 1 2) (* 3 4)"
-      result `shouldBe` [SList [SSymbol "+", SInteger 1, SInteger 2], SList [SSymbol "*", SInteger 3, SInteger 4]]
+      result `shouldBe` [SList [SSymbol (SymbolName "+"), SInteger 1, SInteger 2], SList [SSymbol (SymbolName "*"), SInteger 3, SInteger 4]]
 
     it "parses mixed expressions" $ do
       result <- parseStringWrapper "42 (foo bar) baz"
-      result `shouldBe` [SInteger 42, SList [SSymbol "foo", SSymbol "bar"], SSymbol "baz"]
+      result `shouldBe` [SInteger 42, SList [SSymbol (SymbolName "foo"), SSymbol (SymbolName "bar")], SSymbol (SymbolName "baz")]
 
   describe "Parser - Whitespace and comments" $ do
     it "handles leading whitespace" $ do
@@ -148,26 +148,26 @@ parserSpec = do
   describe "Parser - Complex expressions" $ do
     it "parses a define expression" $ do
       result <- parseStringWrapper "(define x 42)"
-      result `shouldBe` [SList [SSymbol "define", SSymbol "x", SInteger 42]]
+      result `shouldBe` [SList [SSymbol (SymbolName "define"), SSymbol (SymbolName "x"), SInteger 42]]
 
     it "parses a lambda expression" $ do
       result <- parseStringWrapper "(lambda (x) (* x x))"
-      result `shouldBe` [SList [SSymbol "lambda", SList [SSymbol "x"], SList [SSymbol "*", SSymbol "x", SSymbol "x"]]]
+      result `shouldBe` [SList [SSymbol (SymbolName "lambda"), SList [SSymbol (SymbolName "x")], SList [SSymbol (SymbolName "*"), SSymbol (SymbolName "x"), SSymbol (SymbolName "x")]]]
 
     it "parses a complete program" $ do
       result <- parseStringWrapper "(define factorial (lambda (n) (if (= n 0) 1 (* n (factorial (- n 1))))))"
       result
         `shouldBe` [ SList
-                       [ SSymbol "define",
-                         SSymbol "factorial",
+                       [ SSymbol (SymbolName "define"),
+                         SSymbol (SymbolName "factorial"),
                          SList
-                           [ SSymbol "lambda",
-                             SList [SSymbol "n"],
+                           [ SSymbol (SymbolName "lambda"),
+                             SList [SSymbol (SymbolName "n")],
                              SList
-                               [ SSymbol "if",
-                                 SList [SSymbol "=", SSymbol "n", SInteger 0],
+                               [ SSymbol (SymbolName "if"),
+                                 SList [SSymbol (SymbolName "="), SSymbol (SymbolName "n"), SInteger 0],
                                  SInteger 1,
-                                 SList [SSymbol "*", SSymbol "n", SList [SSymbol "factorial", SList [SSymbol "-", SSymbol "n", SInteger 1]]]
+                                 SList [SSymbol (SymbolName "*"), SSymbol (SymbolName "n"), SList [SSymbol (SymbolName "factorial"), SList [SSymbol (SymbolName "-"), SSymbol (SymbolName "n"), SInteger 1]]]
                                ]
                            ]
                        ]
