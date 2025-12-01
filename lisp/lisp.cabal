@@ -56,6 +56,7 @@ test-suite lisp-interpreter-test
   type:           exitcode-stdio-1.0
   main-is:        LispSpec.hs
   other-modules:
+    LispAstSpec
     LispBootstrapSpec
 
   hs-source-dirs: tests
