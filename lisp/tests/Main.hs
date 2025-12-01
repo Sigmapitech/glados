@@ -23,3 +23,4 @@ main = hspec $ do
   EvaluatorSpec.spec
   ComplexExamplesSpec.spec
   SexprtoASTSpec.spec
+  parserSpec
