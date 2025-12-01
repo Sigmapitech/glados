@@ -67,10 +67,9 @@ test-suite lisp-interpreter-test
     LispAstSpec
     LispBootstrapSpec
     SpecParser
-
+    SexprtoASTSpec
 
   hs-source-dirs: tests
-  other-modules:  SexprtoASTSpec
   build-depends:
     , base                       >=4.7 && <5
     , directory
