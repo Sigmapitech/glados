@@ -77,6 +77,9 @@
             (ghcWithPackages (p: [
               hspec
               hspec-expectations
+              parsec
+              megaparsec
+              silently
             ]))
           ]);
       };
