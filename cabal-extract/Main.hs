@@ -41,7 +41,8 @@ instance ToJSON ComponentInfo where
     object
       [ "name" .= ciName comp,
         "deps" .= ciDependencies comp,
-        "rev-deps" .= ciReverseDependencies comp
+        "rev-deps" .= ciReverseDependencies comp,
+        "type" .= ciType comp
       ]
 
 classify :: String -> String -> FilePath -> IO [FilePath]
