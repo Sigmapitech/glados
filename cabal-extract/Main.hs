@@ -7,13 +7,14 @@ module Main (main) where
 
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.Function ((&))
 import Data.List (intercalate)
-import qualified Distribution.Compat.NonEmptySet as NES
+import qualified Distribution.Compat.NonEmptySet as NonEmptySet
 import Distribution.PackageDescription
 import Distribution.PackageDescription.Configuration (flattenPackageDescription)
 import Distribution.Simple.PackageDescription (readGenericPackageDescription)
 import Distribution.Types.Component (Component (..))
-import Distribution.Verbosity (deafening)
+import qualified Distribution.Verbosity as Verbosity
 import System.Directory
   ( doesDirectoryExist,
     doesFileExist,
@@ -27,20 +28,20 @@ import System.FilePath
   )
 import Text.Regex.TDFA ((=~))
 
-data ComputedComponent = ComputedComponent
-  { componentName :: String,
-    componentDependencies :: [String],
-    componentReverseDependencies :: [String],
-    componentType :: String
+data ComponentInfo = ComponentInfo
+  { ciName :: String,
+    ciDependencies :: [String],
+    ciReverseDependencies :: [String],
+    ciType :: String
   }
   deriving (Show)
 
-instance ToJSON ComputedComponent where
+instance ToJSON ComponentInfo where
   toJSON comp =
     object
-      [ "name" .= componentName comp,
-        "deps" .= componentDependencies comp,
-        "rev-deps" .= componentReverseDependencies comp
+      [ "name" .= ciName comp,
+        "deps" .= ciDependencies comp,
+        "rev-deps" .= ciReverseDependencies comp
       ]
 
 classify :: String -> String -> FilePath -> IO [FilePath]
@@ -65,33 +66,30 @@ findCabalFiles dir =
     allowedNamePattern :: String
     allowedNamePattern = ".*\\.cabal"
 
-parseCabalFile :: FilePath -> IO GenericPackageDescription
-parseCabalFile = readGenericPackageDescription deafening
-
-computeComponentDeps :: String -> Component -> ComputedComponent
+computeComponentDeps :: String -> Component -> ComponentInfo
 computeComponentDeps pkg = dispatcher
   where
     retrieveLibName lib = case libName lib of
       LMainLibName -> "library"
       LSubLibName ucn -> ucn
 
-    dispatcher :: Component -> ComputedComponent
+    dispatcher :: Component -> ComponentInfo
     dispatcher (CLib lib) = wrap "lib" lib retrieveLibName libBuildInfo
     dispatcher (CExe exe) = wrap "exe" exe exeName buildInfo
     dispatcher (CTest ts) = wrap "test" ts testName testBuildInfo
     dispatcher (CBench bk) = wrap "benchmark" bk benchmarkName benchmarkBuildInfo
     dispatcher (CFLib lib) = wrap "flib" lib foreignLibName foreignLibBuildInfo
 
-    wrap ctype blob nameRetriever dependencyRetriever =
-      ComputedComponent
-        { componentName = pkg ++ ":" ++ unUnqualComponentName (nameRetriever blob),
-          componentType = ctype,
-          componentDependencies = map depToString (targetBuildDepends (dependencyRetriever blob)),
-          componentReverseDependencies = []
+    wrap ctype blob nameGetter depGetter =
+      ComponentInfo
+        { ciName = pkg ++ ":" ++ unUnqualComponentName (nameGetter blob),
+          ciType = ctype,
+          ciDependencies = map depToString (targetBuildDepends (depGetter blob)),
+          ciReverseDependencies = []
         }
 
-convertPackageDescToComponents :: PackageDescription -> [ComputedComponent]
-convertPackageDescToComponents pd = map (computeComponentDeps pkg) extractComponents
+convertToComponents :: PackageDescription -> [ComponentInfo]
+convertToComponents pd = map (computeComponentDeps pkg) extractComponents
   where
     pkg = unPackageName (pkgName (package pd))
     extractComponents =
@@ -105,42 +103,45 @@ convertPackageDescToComponents pd = map (computeComponentDeps pkg) extractCompon
 depToString :: Dependency -> String
 depToString dep =
   intercalate "," $
-    map fmt (NES.toList (depLibraries dep))
+    map fmt (NonEmptySet.toList (depLibraries dep))
   where
     depPkg = unPackageName (depPkgName dep)
     fmt LMainLibName = depPkg
     fmt (LSubLibName subname) = depPkg ++ ":" ++ unUnqualComponentName subname
 
-buildReverseDependencies :: [ComputedComponent] -> [ComputedComponent]
+buildReverseDependencies :: [ComponentInfo] -> [ComponentInfo]
 buildReverseDependencies comps = map addRevDeps comps
   where
-    deps = concatMap (\comp -> map (\d -> (d, componentName comp)) (componentDependencies comp)) comps
+    deps =
+      concatMap
+        (\comp -> map (\d -> (d, ciName comp)) (ciDependencies comp))
+        comps
+
+    appendIfMatches name acc (dep, parent) =
+      if dep == name then acc ++ [parent] else acc
 
     addRevDeps comp =
       comp
-        { componentReverseDependencies =
-            foldl
-              ( \acc (dep, parent) ->
-                  if dep == componentName comp
-                    then acc ++ [parent]
-                    else acc
-              )
-              []
-              deps
+        { ciReverseDependencies = foldl (appendIfMatches (ciName comp)) [] deps
         }
 
-removeExternalDeps :: [ComputedComponent] -> [ComputedComponent]
+removeExternalDeps :: [ComponentInfo] -> [ComponentInfo]
 removeExternalDeps = map removeExt
   where
     removeExt comp =
       comp
-        { componentDependencies = filter (':' `elem`) (componentDependencies comp)
+        { ciDependencies = filter (':' `elem`) (ciDependencies comp)
         }
 
 main :: IO ()
 main =
-  getCurrentDirectory >>= findCabalFiles >>= \cabalFiles -> do
-    gpds <- mapM parseCabalFile cabalFiles
-    let fpds = map flattenPackageDescription gpds
-        cc = concatMap convertPackageDescToComponents fpds
-    BL.putStrLn (encode (removeExternalDeps (buildReverseDependencies cc)))
+  getCurrentDirectory
+    >>= findCabalFiles
+    >>= mapM (readGenericPackageDescription Verbosity.deafening)
+    >>= \cabals ->
+      BL.putStrLn $
+        cabals
+          & concatMap (convertToComponents . flattenPackageDescription)
+          & buildReverseDependencies
+          & removeExternalDeps
+          & encode
