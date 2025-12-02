@@ -8,6 +8,7 @@ module Main (main) where
 import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Function ((&))
+import Data.Functor ((<&>))
 import Data.List (intercalate)
 import qualified Distribution.Compat.NonEmptySet as NonEmptySet
 import Distribution.PackageDescription
@@ -21,6 +22,7 @@ import System.Directory
     getCurrentDirectory,
     listDirectory,
   )
+import System.Environment (getArgs)
 import System.FilePath
   ( takeExtension,
     takeFileName,
@@ -135,14 +137,21 @@ removeExternalDeps = map removeExt
         }
 
 main :: IO ()
-main =
-  getCurrentDirectory
-    >>= findCabalFiles
-    >>= mapM (readGenericPackageDescription Verbosity.deafening)
-    >>= \cabals ->
-      BL.putStrLn $
-        cabals
-          & concatMap (convertToComponents . flattenPackageDescription)
-          & buildReverseDependencies
-          & removeExternalDeps
-          & encode
+main = do
+  args <- getArgs
+
+  allCabals <- getCurrentDirectory >>= findCabalFiles >>= extractDeps
+  allTargets <- mapM findCabalFiles args >>= extractDeps . concat
+
+  filter (\c -> ciName c `elem` map ciName allTargets) allCabals
+    & encode
+    & BL.putStrLn
+  where
+    extractDeps x =
+      mapM (readGenericPackageDescription Verbosity.deafening) x
+        <&> ( \cabals ->
+                cabals
+                  & concatMap (convertToComponents . flattenPackageDescription)
+                  & buildReverseDependencies
+                  & removeExternalDeps
+            )
