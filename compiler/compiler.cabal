@@ -20,15 +20,29 @@ common warnings
 common release
   ghc-options: -O2
 
+library
+  import:          lang
+  import:          warnings
+  import:          release
+  hs-source-dirs:  src
+  exposed-modules: Compiler
+  build-depends:
+    , ast:ast-lib
+    , base
+    , optparse-applicative
+
 executable compiler-exe
   import:         lang
   import:         warnings
   import:         release
   main-is:        Main.hs
   hs-source-dirs: src
+  other-modules:  Compiler
   build-depends:
     , ast:ast-lib
     , base
+    , compiler
+    , optparse-applicative
 
 test-suite compiler-test
   import:         lang
