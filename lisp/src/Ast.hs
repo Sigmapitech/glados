@@ -1,10 +1,3 @@
-{-
--- EPITECH PROJECT, 2025
--- GLaDOS
--- File description:
--- Lisp-Interpreter AST
--}
-
 -- | Abstract Syntax Tree definitions for the Lisp interpreter.
 -- This module defines the core data types for representing parsed S-expressions,
 -- AST nodes, runtime values, and environments.
@@ -177,6 +170,11 @@ liftError :: String -> Either String a -> Either ErrorMsg a
 liftError context (Left err) = Left $ ErrorMsg $ context ++ ": " ++ err
 liftError _ (Right val) = Right val
 
+-- | Boolean keywords
+builtinTrue, builtinFalse :: VarName
+builtinTrue = VarName "#t"
+builtinFalse = VarName "#f"
+
 -- | Built-in arithmetic operators
 builtinPlus, builtinMinus, builtinMult :: VarName
 builtinPlus = VarName "+"
@@ -189,21 +187,57 @@ builtinDiv = VarName "div"
 builtinMod = VarName "mod"
 
 -- | Built-in comparison operators
-builtinEq, builtinLt :: VarName
+builtinEq, builtinNeq :: VarName
 builtinEq = VarName "eq?"
+builtinNeq = VarName "neq?"
+
+builtinLt, builtinGt, builtinLte, builtinGte :: VarName
 builtinLt = VarName "<"
+builtinGt = VarName ">"
+builtinLte = VarName "<="
+builtinGte = VarName ">="
+
+-- | Built-in bitwise operators
+builtinBitAnd, builtinBitOr, builtinBitXor, builtinBitComplement :: VarName
+builtinBitAnd = VarName "&"
+builtinBitOr = VarName "|"
+builtinBitXor = VarName "^"
+builtinBitComplement = VarName "~"
+
+builtinBitShiftLeft, builtinBitShiftRight :: VarName
+builtinBitShiftLeft = VarName "<<"
+builtinBitShiftRight = VarName ">>"
+
+-- | Built-in decrement/increment unary operators
+builtinIncrement, builtinDecrement :: VarName
+builtinIncrement = VarName "++"
+builtinDecrement = VarName "--"
 
 -- | Check if a variable name refers to a built-in function
 isBuiltin :: VarName -> Bool
 isBuiltin name =
   name
-    `elem` [ builtinPlus,
+    `elem` [ builtinTrue,
+             builtinFalse,
+             builtinPlus,
              builtinMinus,
              builtinMult,
              builtinDiv,
              builtinMod,
              builtinEq,
-             builtinLt
+             builtinNeq,
+             builtinLt,
+             builtinGt,
+             builtinLte,
+             builtinGte,
+             builtinBitAnd,
+             builtinBitOr,
+             builtinBitXor,
+             builtinBitComplement,
+             builtinBitShiftLeft,
+             builtinBitShiftRight,
+             builtinIncrement,
+             builtinDecrement
            ]
 
 -- | Special form keywords used by the parser
