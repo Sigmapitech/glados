@@ -34,7 +34,6 @@ import System.Directory
     getCurrentDirectory,
     listDirectory,
   )
-import System.Environment (getArgs)
 import System.FilePath
   ( takeExtension,
     takeFileName,
@@ -152,15 +151,11 @@ removeExternalDeps = map removeExt
         }
 
 main :: IO ()
-main = do
-  args <- getArgs
-
-  allCabals <- getCurrentDirectory >>= findCabalFiles >>= extractFlatDepTree
-  allTargets <- mapM findCabalFiles args >>= extractFlatDepTree . concat
-
-  filter (\c -> ciName c `elem` map ciName allTargets) allCabals
-    & encode
-    & BL.putStrLn
+main =
+  getCurrentDirectory
+    >>= findCabalFiles
+    >>= extractFlatDepTree
+    >>= BL.putStrLn . encode
   where
     extractFlatDepTree x =
       mapM (readGenericPackageDescription Verbosity.deafening) x
