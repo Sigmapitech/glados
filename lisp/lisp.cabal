@@ -33,13 +33,13 @@ library lisp-interpreter-lib
     Ast
     Bootstrap
     Evaluator
-    SexprtoAST
     Parser
+    SexprtoAST
 
   build-depends:
     , base
-    , mtl
     , megaparsec
+    , mtl
     , parser-combinators
 
   hs-source-dirs:  src src/parsing
@@ -54,6 +54,7 @@ executable lisp-interpreter
   build-depends:
     , base
     , lisp:lisp-interpreter-lib
+    , optparse-applicative
 
 test-suite lisp-interpreter-test
   import:         lang
@@ -66,8 +67,8 @@ test-suite lisp-interpreter-test
     EvaluatorSpec
     LispAstSpec
     LispBootstrapSpec
-    SpecParser
     SexprtoASTSpec
+    SpecParser
 
   hs-source-dirs: tests
   build-depends:
