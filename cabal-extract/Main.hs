@@ -3,6 +3,18 @@
 
 {-# HLINT ignore "Use tuple-section" #-}
 
+{-
+  cabal-extract computes the reverse dependencies of target modules
+  at the component level (executable, library, testsuite, ...).
+
+  AST depends on ByteCode
+  CodeGen depnds on ByteCode
+
+  changing ByteCode:
+  - affects VM
+  - affects AST
+-}
+
 module Main (main) where
 
 import Data.Aeson
@@ -30,6 +42,11 @@ import System.FilePath
   )
 import Text.Regex.TDFA ((=~))
 
+{-
+  For each module, a .cabal file describe the package with its inner
+  components, that can be in multile types (executable, library, testsuite, ...)
+  and have their own dependency tree.
+-}
 data ComponentInfo = ComponentInfo
   { ciName :: String,
     ciDependencies :: [String],
@@ -47,14 +64,14 @@ instance ToJSON ComponentInfo where
         "type" .= ciType comp
       ]
 
-classify :: String -> String -> FilePath -> IO [FilePath]
-classify rejectedNamePattern allowedNamePattern path = do
+collectMatchingFilesInTree :: String -> String -> FilePath -> IO [FilePath]
+collectMatchingFilesInTree acceptedPattern rejectedPattern path = do
   isDir <- doesDirectoryExist path
   isFile <- doesFileExist path
   case (takeFileName path ++ (if isFile then "." ++ takeExtension path else ""), isDir) of
     (name, _)
-      | name =~ rejectedNamePattern -> pure []
-      | name =~ allowedNamePattern -> pure [path]
+      | name =~ acceptedPattern -> pure [path]
+      | name =~ rejectedPattern -> pure []
     (_, True) -> findCabalFiles path
     _ -> pure []
 
@@ -62,28 +79,26 @@ findCabalFiles :: FilePath -> IO [FilePath]
 findCabalFiles dir =
   listDirectory dir >>= \entries ->
     let paths = map (dir </>) entries
-     in concat <$> mapM (classify rejectedNamePattern allowedNamePattern) paths
+     in concat <$> mapM (collectMatchingFilesInTree accept reject) paths
   where
-    rejectedNamePattern :: String
-    rejectedNamePattern = "^\\..*|^dist-newstyle$"
-    allowedNamePattern :: String
-    allowedNamePattern = ".*\\.cabal"
+    accept = ".*\\.cabal"
+    reject = "^\\..*|^dist-newstyle$"
 
 computeComponentDeps :: String -> Component -> ComponentInfo
-computeComponentDeps pkg = dispatcher
+computeComponentDeps pkg = dispatch
   where
     retrieveLibName lib = case libName lib of
-      LMainLibName -> "library"
-      LSubLibName ucn -> ucn
+      LMainLibName -> "library" -- they dont have a proper name
+      LSubLibName unqualComponentName -> unqualComponentName
 
-    dispatcher :: Component -> ComponentInfo
-    dispatcher (CLib lib) = wrap "lib" lib retrieveLibName libBuildInfo
-    dispatcher (CExe exe) = wrap "exe" exe exeName buildInfo
-    dispatcher (CTest ts) = wrap "test" ts testName testBuildInfo
-    dispatcher (CBench bk) = wrap "benchmark" bk benchmarkName benchmarkBuildInfo
-    dispatcher (CFLib lib) = wrap "flib" lib foreignLibName foreignLibBuildInfo
+    dispatch :: Component -> ComponentInfo
+    dispatch (CLib lib) = buildCInfo "lib" lib (retrieveLibName, libBuildInfo)
+    dispatch (CExe exe) = buildCInfo "exe" exe (exeName, buildInfo)
+    dispatch (CTest ts) = buildCInfo "test" ts (testName, testBuildInfo)
+    dispatch (CBench bk) = buildCInfo "benchmark" bk (benchmarkName, benchmarkBuildInfo)
+    dispatch (CFLib lib) = buildCInfo "flib" lib (foreignLibName, foreignLibBuildInfo)
 
-    wrap ctype blob nameGetter depGetter =
+    buildCInfo ctype blob (nameGetter, depGetter) =
       ComponentInfo
         { ciName = pkg ++ ":" ++ unUnqualComponentName (nameGetter blob),
           ciType = ctype,
@@ -140,14 +155,14 @@ main :: IO ()
 main = do
   args <- getArgs
 
-  allCabals <- getCurrentDirectory >>= findCabalFiles >>= extractDeps
-  allTargets <- mapM findCabalFiles args >>= extractDeps . concat
+  allCabals <- getCurrentDirectory >>= findCabalFiles >>= extractFlatDepTree
+  allTargets <- mapM findCabalFiles args >>= extractFlatDepTree . concat
 
   filter (\c -> ciName c `elem` map ciName allTargets) allCabals
     & encode
     & BL.putStrLn
   where
-    extractDeps x =
+    extractFlatDepTree x =
       mapM (readGenericPackageDescription Verbosity.deafening) x
         <&> ( \cabals ->
                 cabals
