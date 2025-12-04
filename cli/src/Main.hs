@@ -1,10 +1,12 @@
 module Main where
 
 import qualified Compiler (Options (..), entrypoint, options, prologue)
+import qualified Lisp (Options (..), entrypoint, options, prologue)
 import Options.Applicative
 
-newtype Command
+data Command
   = Compiler Compiler.Options
+  | Lisp Lisp.Options
   deriving (Show)
 
 commandParser :: Parser Command
@@ -18,21 +20,29 @@ commandParser =
                 <> fullDesc
             )
         )
+        <> command
+          "lisp"
+          ( info
+              (Lisp <$> Lisp.options)
+              ( progDesc Lisp.prologue
+                  <> fullDesc
+              )
+          )
+          -- \| can add <> to add more subcommands here
     )
-
--- \| can <> to add more subcommands here
 
 opts :: ParserInfo Command
 opts =
   info
     (commandParser <**> helper)
     ( fullDesc
-        <> progDesc "GLaDOS - A multi-purpose language tool"
+        <> progDesc "GLaDOS - Generic Language and Data Operand Syntax "
         <> header "glados cli"
     )
 
 runCommand :: Command -> IO ()
 runCommand (Compiler compOpts) = Compiler.entrypoint compOpts
+runCommand (Lisp compOpts) = Lisp.entrypoint compOpts
 
 main :: IO ()
 main = execParser opts >>= runCommand
