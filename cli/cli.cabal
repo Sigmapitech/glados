@@ -29,5 +29,6 @@ executable cli
   build-depends:
     , base
     , compiler
+    , lisp
     , optparse-applicative
     , process
