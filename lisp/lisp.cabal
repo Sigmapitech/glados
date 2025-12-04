@@ -52,10 +52,11 @@ executable lisp-interpreter
   import:         extensions
   import:         release
   main-is:        Main.hs
-  hs-source-dirs: src
+  hs-source-dirs: app
   build-depends:
     , base
     , lisp
+    , mtl
     , optparse-applicative
 
 test-suite lisp-interpreter-test
@@ -79,4 +80,5 @@ test-suite lisp-interpreter-test
     , hspec
     , hspec-expectations
     , lisp
+    , mtl
     , silently
