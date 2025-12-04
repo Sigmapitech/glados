@@ -36,8 +36,7 @@ executable compiler-exe
   import:         warnings
   import:         release
   main-is:        Main.hs
-  hs-source-dirs: src
-  other-modules:  Compiler
+  hs-source-dirs: app
   build-depends:
     , ast:ast-lib
     , base
