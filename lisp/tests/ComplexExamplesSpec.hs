@@ -8,13 +8,13 @@ import SexprtoAST
 import Test.Hspec
 
 -- Helper to parse and evaluate
-parseAndEval :: SExpr -> Either ErrorMsg Value
+parseAndEval :: SExpr -> Either ErrorMsg RuntimeValue
 parseAndEval sexpr = case sexprToAst sexpr of
   Left err -> Left err
   Right ast -> fst $ evalWithEnv ast initialEnv
 
 -- Helper to parse, convert, and evaluate in an existing environment
-parseAndEvalWithEnv :: SExpr -> Environment -> EvalResult Value
+parseAndEvalWithEnv :: SExpr -> Environment -> EvalResult
 parseAndEvalWithEnv sexpr env = case sexprToAst sexpr of
   Left err -> (Left err, env)
   Right ast -> evalWithEnv ast env
