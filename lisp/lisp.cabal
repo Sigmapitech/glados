@@ -17,19 +17,31 @@ common lang
 common warnings
   ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
 
+common extensions
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+
 common release
   ghc-options: -O2
 
 library lisp-interpreter-lib
   import:          lang
   import:          warnings
-  exposed-modules: Bootstrap
+  import:          extensions
+  exposed-modules:
+    Ast
+    Bootstrap
+
   hs-source-dirs:  src
-  build-depends:   base
+  build-depends:
+    , base
+    , mtl
 
 executable lisp-interpreter
   import:         lang
   import:         warnings
+  import:         extensions
   import:         release
   main-is:        Main.hs
   hs-source-dirs: src
@@ -40,8 +52,13 @@ executable lisp-interpreter
 test-suite lisp-interpreter-test
   import:         lang
   import:         warnings
+  import:         extensions
   type:           exitcode-stdio-1.0
   main-is:        LispSpec.hs
+  other-modules:
+    LispAstSpec
+    LispBootstrapSpec
+
   hs-source-dirs: tests
   build-depends:
     , base                       >=4.7 && <5
