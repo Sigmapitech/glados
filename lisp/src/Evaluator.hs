@@ -11,6 +11,29 @@ module Evaluator
 where
 
 import Ast
+  ( Ast (..),
+    Environment,
+    EvalResult,
+    Evaluator,
+    ParamName,
+    Value (..),
+    VarName,
+    builtinDiv,
+    builtinEq,
+    builtinLt,
+    builtinMinus,
+    builtinMod,
+    builtinMult,
+    builtinPlus,
+    emptyEnv,
+    extendEnv,
+    isBuiltin,
+    lookupEnv,
+    paramToVar,
+    runEvaluator,
+    throwEvalError,
+    unVarName,
+  )
 import Control.Monad.State (get, gets, put)
 
 initialEnv :: Environment
