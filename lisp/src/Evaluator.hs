@@ -3,14 +3,14 @@
 -- | Evaluator for the Lisp interpreter.
 -- This module implements the evaluation logic for AST nodes,
 -- handling VariableRef lookups, function calls, conditionals, and built-in operations.
-module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue) where
+module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue, evalManyToValue) where
 
 import Ast
-import Control.Monad.Except (throwError)
-import Control.Monad.State (get, modify, put)
+import Control.Monad.Except (runExceptT)
+import Control.Monad.State (get, modify, put, runState)
 import Data.Foldable (Foldable (foldl'))
 import Data.Function ((&))
-import Data.Functor ((<&>))
+import qualified Data.List.NonEmpty as NE
 
 createEvaluator :: Ast -> Evaluator
 createEvaluator = \case
@@ -86,21 +86,32 @@ getBuiltinEvaluator op args
       (_, _) -> throwEvalError "Unexpected type mismatch"
 
 evalFrom :: Environment -> Ast -> EvalResult
-evalFrom env ast = env & runEvaluator (createEvaluator ast)
+evalFrom env ast =
+  let (result, env') = env & runEvaluator (createEvaluator ast)
+   in (NE.singleton result, env')
 
--- | Evaluate multiple ASTs from a given environment, return last value
+-- | Evaluate multiple ASTs from a given environment, return all results
 --
--- >>>
--- -- mapM in a State monad automatically threads state:
--- mapM createEvaluator [ast1, ast2]
--- -- is equivalent to:
+-- This function evaluates each AST and collects ALL results (both successes and errors).
+--
+-- Key insight: By using runExceptT before mapM, we detach the ExceptT layer,
+-- converting errors from control flow into data (Either values). This prevents
+-- short-circuiting on errors, allowing all evaluations to proceed.
+--
+-- How it works:
+--
+-- >>> mapM (runExceptT . createEvaluator) [ast1, ast2, ast3] :: NonEmpty Ast
+-- -- Is equivalent to:
 -- do
---   v1 <- createEvaluator ast1
---   v2 <- createEvaluator ast2
---   return [v1, v2]
+--   result1 <- runExceptT (createEvaluator ast1)  -- State Environment ValueResult
+--   result2 <- runExceptT (createEvaluator ast2)  -- State Environment ValueResult
+--   result3 <- runExceptT (createEvaluator ast3)  -- State Environment ValueResult
+--   return (result1 :| [result2, result3])        -- State Environment (NonEmpty ValueResult)
+--
+-- This allows MapM to only thread States.
 evalManyFrom :: Environment -> [Ast] -> EvalResult
-evalManyFrom env [] = env & runEvaluator (throwEvalError "No expression to evaluate")
-evalManyFrom env asts = env & runEvaluator (last <$> mapM createEvaluator asts)
+evalManyFrom env [] = (NE.singleton (Left "No expression to evaluate"), env)
+evalManyFrom env asts = env & runState (mapM (runExceptT . createEvaluator) $ NE.fromList asts)
 
 eval :: Ast -> EvalResult
 eval = evalFrom initialEnv
@@ -109,5 +120,9 @@ evalMany :: [Ast] -> EvalResult
 evalMany = evalManyFrom initialEnv
 
 -- | Get only the value, discarding the final environment
-evalToValue :: [Ast] -> ValueResult
-evalToValue asts = fst $ evalMany asts
+evalToValue :: Ast -> Result RuntimeValue
+evalToValue ast = NE.head $ fst $ eval ast
+
+-- | Discard the final environment
+evalManyToValue :: [Ast] -> ValueResult
+evalManyToValue asts = fst $ evalMany asts

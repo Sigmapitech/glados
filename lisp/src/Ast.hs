@@ -5,6 +5,7 @@ module Ast where
 
 import Control.Monad.Except (ExceptT, MonadError (throwError), runExceptT)
 import Control.Monad.State (State, runState)
+import Data.List.NonEmpty (NonEmpty)
 import Data.String (IsString (..))
 
 newtype VarName = VarName String
@@ -84,6 +85,7 @@ data RuntimeValue
   | VProcedure [ParamName] Ast
   | VBuiltin BuitinOp
   | VUnit -- Represents 'void' or 'no value': "() <- unit"
+  deriving (Eq)
 
 instance Show RuntimeValue where
   show (VInt n) = show n
@@ -91,15 +93,6 @@ instance Show RuntimeValue where
   show (VProcedure params _) = "#<procedure:" ++ show params ++ ">"
   show (VBuiltin op) = "#<builtin:" ++ show op ++ ">"
   show VUnit = "#<void>"
-
--- | Make RuntimeValue an instance of Eq (useful for testing).
--- Note: Procedures are not comparable and always return False.
-instance Eq RuntimeValue where
-  (VInt a) == (VInt b) = a == b
-  (VBool a) == (VBool b) = a == b
-  VUnit == VUnit = True
-  (VBuiltin op1) == (VBuiltin op2) = op1 == op2
-  _ == _ = False
 
 type Binding = (VarName, RuntimeValue)
 
@@ -120,8 +113,9 @@ type ParseResult = Result SExpr
 
 type ConvertResult = Result Ast
 
-type ValueResult = Result RuntimeValue
+type ValueResult = NonEmpty (Result RuntimeValue)
 
+-- | Unified result type that can be either single or multiple
 type EvalResult = (ValueResult, Environment)
 
 -- | The Evaluator monad combines error handling and state management
@@ -133,7 +127,7 @@ type Evaluator = ExceptT ErrorMsg (State Environment) RuntimeValue
 
 -- | Run an evaluator computation with an initial environment (unwrap the monad stack)
 -- Returns both the result and the final environment
-runEvaluator :: Evaluator -> Environment -> EvalResult
+runEvaluator :: Evaluator -> (Environment -> (Result RuntimeValue, Environment))
 runEvaluator computation = runState $ runExceptT computation
 
 --                         ^^^^^^^^  ^^^^^^^^^^^
