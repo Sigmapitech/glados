@@ -122,6 +122,8 @@ type ConvertResult = Result Ast
 
 type ValueResult = Result RuntimeValue
 
+type ValueResults = Result [RuntimeValue]
+
 type EvalResult = (ValueResult, Environment)
 
 -- | The Evaluator monad combines error handling and state management

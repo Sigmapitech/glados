@@ -4,7 +4,7 @@
 -- | Evaluator for the Lisp interpreter.
 -- This module implements the evaluation logic for AST nodes,
 -- handling VariableRef lookups, function calls, conditionals, and built-in operations.
-module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue) where
+module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue, evalAll, evalAllFrom) where
 
 import Ast
 import Control.Monad.Except (throwError)
@@ -122,12 +122,28 @@ evalManyFrom :: Environment -> [Ast] -> EvalResult
 evalManyFrom env [] = env & runEvaluator (throwEvalError "No expression to evaluate")
 evalManyFrom env asts = env & runEvaluator (last <$> mapM createEvaluator asts)
 
+-- | Get only the value, discarding the final environment
+evalToValue :: [Ast] -> ValueResult
+evalToValue asts = fst $ evalMany asts
+
+evalAllFrom :: Environment -> [Ast] -> (ValueResults, Environment)
+evalAllFrom env [] = (Left $ mkError "No expression to evaluate", env)
+evalAllFrom env asts = collectResults env asts []
+  where
+    collectResults :: Environment -> [Ast] -> [RuntimeValue] -> (ValueResults, Environment)
+    collectResults currentEnv [] acc = (Right (reverse acc), currentEnv)
+    collectResults currentEnv (ast : rest) acc =
+      case runEvaluator (createEvaluator ast) currentEnv of
+        (Left err, finalEnv) -> (Left err, finalEnv)
+        (Right VUnit, finalEnv) -> collectResults finalEnv rest acc
+        (Right val, finalEnv) -> collectResults finalEnv rest (val : acc)
+
 eval :: Ast -> EvalResult
 eval = evalFrom initialEnv
 
 evalMany :: [Ast] -> EvalResult
 evalMany = evalManyFrom initialEnv
 
--- | Get only the value, discarding the final environment
-evalToValue :: [Ast] -> ValueResult
-evalToValue asts = fst $ evalMany asts
+-- | Evaluate multiple ASTs starting from initialEnv, return ALL values
+evalAll :: [Ast] -> (ValueResults, Environment)
+evalAll = evalAllFrom initialEnv
