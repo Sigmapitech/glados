@@ -1,6 +1,8 @@
 module Lisp (Options (..), options, entrypoint, prologue) where
 
 import Ast (unErrorMsg)
+import Control.Monad ((>=>))
+import Evaluator (evalAll)
 import Options.Applicative
 import Parser (parseFile, parseString)
 import SexprtoAST (sexprToAst)
@@ -35,17 +37,15 @@ prologue :: String
 prologue = "Interprets a LISP program"
 
 entrypoint :: Options -> IO ()
-entrypoint opts = do
-  input <- maybe getContents readFile (inputFile opts)
-  sexprs <- case inputFile opts of
-    Just file -> parseFile file
-    Nothing -> parseString input
-  case mapM sexprToAst sexprs of
-    Left err -> do
-      hPutStrLn stderr $ "AST conversion error: " ++ unErrorMsg err
-      exitWith (ExitFailure 84)
-    Right astList -> do
-      let output = unlines $ map show astList
-      case outputFile opts of
-        Just file -> writeFile file output
-        Nothing -> putStr output
+entrypoint opts =
+  maybe (getContents >>= parseString) parseFile (inputFile opts)
+    >>= either onAstErr onAstOk . mapM sexprToAst
+  where
+    errorHelper prefix errMsg =
+      hPutStrLn stderr (prefix ++ unErrorMsg errMsg)
+        >> exitWith (ExitFailure 84)
+    onAstErr = errorHelper "AST error: "
+    onEvalErr = errorHelper "Evaluation error: "
+    onAstOk = either onEvalErr onEvalOk . fst . evalAll
+    onEvalOk =
+      maybe putStr writeFile (outputFile opts) . unlines . map show
