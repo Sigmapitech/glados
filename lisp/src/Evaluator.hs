@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
 
 -- | Evaluator for the Lisp interpreter.
@@ -70,40 +69,21 @@ createEvaluator = \case
 
 getBuiltinEvaluator :: BuitinOp -> [RuntimeValue] -> Evaluator
 getBuiltinEvaluator op args
-  | BPlus <- op = evalArithmetic "+" (+) args
-  | BMinus <- op = evalArithmetic "-" (-) args
-  | BMult <- op = evalArithmetic "*" (*) args
-  | BDiv <- op = evalDivision args
-  | BMod <- op = evalModulo args
-  | BEq <- op = evalEquality args
-  | BLt <- op = evalLessThan args
-  where
-    evalArithmetic :: String -> (Integer -> Integer -> Integer) -> [RuntimeValue] -> Evaluator
-    evalArithmetic name _ [] = throwEvalError $ name ++ " requires at least one argument"
-    evalArithmetic "-" _ [VInt n] = return $ VInt (-n)
-    evalArithmetic name f argsList = mapM extractInt argsList <&> (VInt . foldl1 f)
-      where
-        extractInt (VInt n) = return n
-        extractInt _ = throwError $ mkError $ name ++ " requires integer arguments"
-
-    evalDivision :: [RuntimeValue] -> Evaluator
-    evalDivision [_, VInt 0] = throwEvalError "Division by zero"
-    evalDivision [VInt a, VInt b] = return $ VInt (a `div` b)
-    evalDivision _ = throwEvalError "div requires exactly two integer arguments"
-
-    evalModulo :: [RuntimeValue] -> Evaluator
-    evalModulo [_, VInt 0] = throwEvalError "Modulo by zero"
-    evalModulo [VInt a, VInt b] = return $ VInt (a `mod` b)
-    evalModulo _ = throwEvalError "mod requires exactly two integer arguments"
-
-    evalEquality :: [RuntimeValue] -> Evaluator
-    evalEquality [VInt a, VInt b] = return $ VBool (a == b)
-    evalEquality [VBool a, VBool b] = return $ VBool (a == b)
-    evalEquality _ = throwEvalError "eq? requires exactly two arguments of the same type"
-
-    evalLessThan :: [RuntimeValue] -> Evaluator
-    evalLessThan [VInt a, VInt b] = return $ VBool (a < b)
-    evalLessThan _ = throwEvalError "< requires exactly two integer arguments"
+  | length args /= 2 = throwEvalError $ show op ++ " expects exactly 2 arguments"
+  | otherwise = case (op, args) of
+      (BPlus, [VInt a, VInt b]) -> return $ VInt (a + b)
+      (BMinus, [VInt a, VInt b]) -> return $ VInt (a - b)
+      (BMult, [VInt a, VInt b]) -> return $ VInt (a * b)
+      (BDiv, [VInt a, VInt b])
+        | b == 0 -> throwEvalError "Unexpected division by zero"
+        | otherwise -> return $ VInt (a `div` b)
+      (BMod, [VInt a, VInt b])
+        | b == 0 -> throwEvalError "Unexpect modulo by zero"
+        | otherwise -> return $ VInt (a `mod` b)
+      (BEq, [VInt a, VInt b]) -> return $ VBool (a == b)
+      (BEq, [VBool a, VBool b]) -> return $ VBool (a == b)
+      (BLt, [VInt a, VInt b]) -> return $ VBool (a < b)
+      (_, _) -> throwEvalError "Unexpected type mismatch"
 
 evalFrom :: Environment -> Ast -> EvalResult
 evalFrom env ast = env & runEvaluator (createEvaluator ast)
