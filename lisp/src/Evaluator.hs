@@ -3,129 +3,109 @@
 -- | Evaluator for the Lisp interpreter.
 -- This module implements the evaluation logic for AST nodes,
 -- handling VariableRef lookups, function calls, conditionals, and built-in operations.
-module Evaluator
-  ( eval,
-    evalWithEnv,
-    initialEnv,
-  )
-where
+module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue) where
 
 import Ast
-import Control.Monad.Except (ExceptT, throwError)
-import Control.Monad.State (State, get, gets, put)
+import Control.Monad.State (get, modify, put)
+import Data.Foldable (Foldable (foldl'))
+import Data.Function ((&))
 
-initialEnv :: Environment
-initialEnv = emptyEnv
-
-evalWithEnv :: Ast -> Environment -> EvalResult
-evalWithEnv ast = runEvaluator (eval ast)
-
-eval :: Ast -> Evaluator
-eval = \case
-  LiteralInt n -> return $ VInt n
-  LiteralBool b -> return $ VBool b
-  VariableRef name -> evalVariable name
-  Define name expr -> evalDefine name expr
-  Lambda params body -> evalLambda params body
-  Call func args -> evalCall func args
-  If cond thenExpr elseExpr -> evalIf cond thenExpr elseExpr
-
-evalVariable :: VarName -> Evaluator
-evalVariable name = do
-  env <- get
-  case lookupEnv name env of
-    Just val -> return val
-    Nothing -> throwEvalError $ "Undefined VariableRef: " ++ unVarName name
-
-evalDefine :: VarName -> Ast -> Evaluator
-evalDefine name expr = do
-  env <- get
-  case expr of
-    Lambda params body -> do
-      let recursiveEnv = extendEnv name recursiveValue env
-          recursiveValue = VProcedure params body recursiveEnv
-      put $ extendEnv name recursiveValue env
-      return VUnit
-    _ -> do
-      value <- eval expr
-      put $ extendEnv name value env
-      return VUnit
-
-evalLambda :: [ParamName] -> Ast -> Evaluator
-evalLambda params body = do
-  gets (VProcedure params body)
-
-evalCall :: Ast -> [Ast] -> Evaluator
-evalCall funcExpr argExprs = do
-  case funcExpr of
-    VariableRef name | isBuiltin name -> do
-      args <- mapM eval argExprs
-      evalBuiltin name args
-    _ -> do
-      func <- eval funcExpr
-      case func of
-        VProcedure params body closureEnv -> do
-          args <- mapM eval argExprs
-          if length params /= length args
-            then throwEvalError $ "Function expects " ++ show (length params) ++ " arguments, got " ++ show (length args)
-            else do
-              currentEnv <- get
-              let newEnv = foldr (uncurry extendEnv) closureEnv (zip (map paramToVar params) args)
-              put newEnv
-              result <- eval body
-              put currentEnv
-              return result
-        _ -> throwEvalError "Attempted to call a non-function value"
-
-evalIf :: Ast -> Ast -> Ast -> Evaluator
-evalIf condExpr thenExpr elseExpr = do
-  cond <- eval condExpr
-  case cond of
-    VBool True -> eval thenExpr
-    VBool False -> eval elseExpr
-    _ -> throwEvalError "Condition in 'if' must evaluate to a boolean"
-
-evalBuiltin :: VarName -> [RuntimeValue] -> Evaluator
-evalBuiltin name args
-  | name == builtinPlus = evalArithmetic (+) args
-  | name == builtinMinus = evalArithmetic (-) args
-  | name == builtinMult = evalArithmetic (*) args
-  | name == builtinDiv = evalDivision args
-  | name == builtinMod = evalModulo args
-  | name == builtinEq = evalEquality args
-  | name == builtinLt = evalLessThan args
-  | otherwise = throwEvalError $ "Unknown built-in function: " ++ unVarName name
-
-evalArithmetic :: (Integer -> Integer -> Integer) -> [RuntimeValue] -> Evaluator
-evalArithmetic op args = do
-  nums <- extractInts args
-  case nums of
-    [] -> throwEvalError "Arithmetic operation requires at least one argument"
-    [x] -> return $ VInt x
-    (x : xs) -> return $ VInt $ foldl op x xs
+createEvaluator :: Ast -> Evaluator
+createEvaluator = \case
+  LiteralInt number -> return $ VInt number
+  LiteralBool bool -> return $ VBool bool
+  Lambda params body -> return $ VProcedure params body
+  VariableRef name -> variableRefEvaluator name
+  Define name expr -> defineEvaluator name expr
+  If condExpr thenExpr elseExpr -> ifEvaluator condExpr thenExpr elseExpr
+  Call funcExpr argExprs -> callEvaluator funcExpr argExprs
   where
-    extractInts :: [RuntimeValue] -> ExceptT ErrorMsg (State Environment) [Integer]
-    extractInts [] = return []
-    extractInts (VInt n : rest) = (n :) <$> extractInts rest
-    extractInts _ = throwError $ mkError "Arithmetic operation requires integer arguments"
+    variableRefEvaluator :: VarName -> Evaluator
+    variableRefEvaluator name = do
+      env <- get
+      case lookupEnv name env of
+        Just val -> return val
+        Nothing -> throwEvalError $ "Unbound variable: " ++ unVarName name
 
-evalDivision :: [RuntimeValue] -> Evaluator
-evalDivision [VInt a, VInt b]
-  | b == 0 = throwEvalError "Division by zero"
-  | otherwise = return $ VInt (a `div` b)
-evalDivision _ = throwEvalError "Division requires exactly two integer arguments"
+    defineEvaluator :: VarName -> Ast -> Evaluator
+    defineEvaluator name expr = do
+      value <- createEvaluator expr
+      modify (extendEnv name value)
+      return VUnit
 
-evalModulo :: [RuntimeValue] -> Evaluator
-evalModulo [VInt a, VInt b]
-  | b == 0 = throwEvalError "Modulo by zero"
-  | otherwise = return $ VInt (a `mod` b)
-evalModulo _ = throwEvalError "Modulo requires exactly two integer arguments"
+    ifEvaluator :: Ast -> Ast -> Ast -> Evaluator
+    ifEvaluator condExpr thenExpr elseExpr = do
+      cond <- createEvaluator condExpr
+      case cond of
+        VBool True -> createEvaluator thenExpr
+        VBool False -> createEvaluator elseExpr
+        _ -> throwEvalError "Condition in 'if' must evaluate to a boolean"
 
-evalEquality :: [RuntimeValue] -> Evaluator
-evalEquality [VInt a, VInt b] = return $ VBool (a == b)
-evalEquality [VBool a, VBool b] = return $ VBool (a == b)
-evalEquality _ = throwEvalError "Equality comparison requires exactly two arguments of the same type"
+    -- Buitin handling was defer to the function application
+    -- this allow the builting functions to show in the environment
+    callEvaluator :: Ast -> [Ast] -> Evaluator
+    callEvaluator funcExpr argExprs = do
+      func <- createEvaluator funcExpr
+      args <- mapM createEvaluator argExprs
+      applyFuncEvaluator func args
 
-evalLessThan :: [RuntimeValue] -> Evaluator
-evalLessThan [VInt a, VInt b] = return $ VBool (a < b)
-evalLessThan _ = throwEvalError "Less-than comparison requires exactly two integer arguments"
+    applyFuncEvaluator :: RuntimeValue -> [RuntimeValue] -> Evaluator
+    applyFuncEvaluator (VBuiltin op) args = getBuiltinEvaluator op args
+    applyFuncEvaluator (VProcedure params body) args
+      | length params /= length args =
+          throwEvalError $ "Expected " ++ show (length params) ++ " arguments, got" ++ show (length args)
+      | otherwise = do
+          currentEnv <- get
+          let paramNames = map paramToVar params
+              paramBindings = zip paramNames args
+              evalEnv = foldl' (flip (uncurry extendEnv)) currentEnv paramBindings
+          put evalEnv
+          result <- createEvaluator body
+          put currentEnv
+          return result
+    applyFuncEvaluator _ _ = throwEvalError "Attempted to call a non-function value"
+
+getBuiltinEvaluator :: BuitinOp -> [RuntimeValue] -> Evaluator
+getBuiltinEvaluator op args
+  | length args /= 2 = throwEvalError $ show op ++ " expects exactly 2 arguments"
+  | otherwise = case (op, args) of
+      (BPlus, [VInt a, VInt b]) -> return $ VInt (a + b)
+      (BMinus, [VInt a, VInt b]) -> return $ VInt (a - b)
+      (BMult, [VInt a, VInt b]) -> return $ VInt (a * b)
+      (BDiv, [VInt a, VInt b])
+        | b == 0 -> throwEvalError "Unexpected division by zero"
+        | otherwise -> return $ VInt (a `div` b)
+      (BMod, [VInt a, VInt b])
+        | b == 0 -> throwEvalError "Unexpect modulo by zero"
+        | otherwise -> return $ VInt (a `mod` b)
+      (BEq, [VInt a, VInt b]) -> return $ VBool (a == b)
+      (BEq, [VBool a, VBool b]) -> return $ VBool (a == b)
+      (BLt, [VInt a, VInt b]) -> return $ VBool (a < b)
+      (_, _) -> throwEvalError "Unexpected type mismatch"
+
+evalFrom :: Environment -> Ast -> EvalResult
+evalFrom env ast = env & runEvaluator (createEvaluator ast)
+
+-- | Evaluate multiple ASTs from a given environment, return last value
+--
+-- >>>
+-- -- mapM in a State monad automatically threads state:
+-- mapM createEvaluator [ast1, ast2]
+-- -- is equivalent to:
+-- do
+--   v1 <- createEvaluator ast1
+--   v2 <- createEvaluator ast2
+--   return [v1, v2]
+evalManyFrom :: Environment -> [Ast] -> EvalResult
+evalManyFrom env [] = env & runEvaluator (throwEvalError "No expression to evaluate")
+evalManyFrom env asts = env & runEvaluator (last <$> mapM createEvaluator asts)
+
+eval :: Ast -> EvalResult
+eval = evalFrom initialEnv
+
+evalMany :: [Ast] -> EvalResult
+evalMany = evalManyFrom initialEnv
+
+-- | Get only the value, discarding the final environment
+evalToValue :: [Ast] -> ValueResult
+evalToValue asts = fst $ evalMany asts
