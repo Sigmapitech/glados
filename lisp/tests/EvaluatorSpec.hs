@@ -93,7 +93,7 @@ spec = do
       it "subtracts with one argument" $ do
         let ast = Call (VariableRef "-") [LiteralInt 5]
             (result, _) = eval ast
-        result `shouldBe` Right (VInt 5)
+        result `shouldBe` Right (VInt (-5))
 
       it "subtracts multiple integers" $ do
         let ast = Call (VariableRef "-") [LiteralInt 100, LiteralInt 20, LiteralInt 30, LiteralInt 5]
