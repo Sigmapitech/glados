@@ -1,6 +1,6 @@
 module LispAstSpec (astModuleSpec) where
 
-import Ast
+import Ast hiding (initialEnv)
 import Data.Void (Void)
 import Test.Hspec
 
@@ -182,8 +182,8 @@ runtimeValueSpec = do
       VUnit == VUnit `shouldNotBe` False
 
     it "should not compare VProcedure values as equal" $ do
-      let f1 = VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1]) []
-      let f2 = VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1]) []
+      let f1 = VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1])
+      let f2 = VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1])
       f1 `shouldNotBe` f2
 
     it "should not compare different RuntimeValue constructors as equal" $ do
