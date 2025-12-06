@@ -3,21 +3,9 @@
 module ComplexExamplesSpec (spec) where
 
 import Ast
-import Evaluator (evalFrom)
-import SexprtoAST (sexprToAst)
+import qualified Data.List.NonEmpty as NE
+import Evaluator (evalManyToValue, evalToValue)
 import Test.Hspec
-
--- Helper to parse and evaluate
-parseAndEval :: SExpr -> Either ErrorMsg RuntimeValue
-parseAndEval sexpr = case sexprToAst sexpr of
-  Left err -> Left err
-  Right ast -> fst $ evalFrom initialEnv ast
-
--- Helper to parse, convert, and evaluate in an existing environment
-parseAndEvalWithEnv :: SExpr -> Environment -> EvalResult
-parseAndEvalWithEnv sexpr env = case sexprToAst sexpr of
-  Left err -> (Left err, env)
-  Right ast -> evalFrom env ast
 
 spec :: Spec
 spec = do
@@ -25,240 +13,129 @@ spec = do
     describe "Factorial Function" $ do
       it "computes factorial of 5" $ do
         let defineFactorial =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "factorial",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "n"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "eq?", SSymbol "n", SInteger 0],
-                          SInteger 1,
-                          SList [SSymbol "*", SSymbol "n", SList [SSymbol "factorial", SList [SSymbol "-", SSymbol "n", SInteger 1]]]
-                        ]
-                    ]
-                ]
-        let callFactorial = SList [SSymbol "factorial", SInteger 5]
-
-        let (defineResult, env1) = parseAndEvalWithEnv defineFactorial initialEnv
-        defineResult `shouldBe` Right VUnit
-
-        let (result, _) = parseAndEvalWithEnv callFactorial env1
-        result `shouldBe` Right (VInt 120)
+              Define "factorial" $
+                Lambda ["n"] $
+                  If
+                    (Call (VariableRef "eq?") [VariableRef "n", LiteralInt 0])
+                    (LiteralInt 1)
+                    (Call (VariableRef "*") [VariableRef "n", Call (VariableRef "factorial") [Call (VariableRef "-") [VariableRef "n", LiteralInt 1]]])
+            callFactorial = Call (VariableRef "factorial") [LiteralInt 5]
+            results = evalManyToValue [defineFactorial, callFactorial]
+        NE.last results `shouldBe` Right (VInt 120)
 
     describe "Fibonacci Function" $ do
       it "computes fibonacci of 7" $ do
         let defineFib =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "fib",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "n"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "<", SSymbol "n", SInteger 2],
-                          SSymbol "n",
-                          SList
-                            [ SSymbol "+",
-                              SList [SSymbol "fib", SList [SSymbol "-", SSymbol "n", SInteger 1]],
-                              SList [SSymbol "fib", SList [SSymbol "-", SSymbol "n", SInteger 2]]
-                            ]
-                        ]
-                    ]
-                ]
-        let callFib = SList [SSymbol "fib", SInteger 7]
-
-        let (defineResult, env1) = parseAndEvalWithEnv defineFib initialEnv
-        defineResult `shouldBe` Right VUnit
-
-        let (result, _) = parseAndEvalWithEnv callFib env1
-        result `shouldBe` Right (VInt 13)
+              Define "fib" $
+                Lambda ["n"] $
+                  If
+                    (Call (VariableRef "<") [VariableRef "n", LiteralInt 2])
+                    (VariableRef "n")
+                    (Call (VariableRef "+") [Call (VariableRef "fib") [Call (VariableRef "-") [VariableRef "n", LiteralInt 1]], Call (VariableRef "fib") [Call (VariableRef "-") [VariableRef "n", LiteralInt 2]]])
+            callFib = Call (VariableRef "fib") [LiteralInt 7]
+            results = evalManyToValue [defineFib, callFib]
+        NE.last results `shouldBe` Right (VInt 13)
 
     describe "Sum Range Function" $ do
       it "sums numbers from 1 to 10" $ do
         let defineSumRange =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "sum-range",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "a", SSymbol "b"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "<", SSymbol "b", SSymbol "a"],
-                          SInteger 0,
-                          SList
-                            [ SSymbol "+",
-                              SSymbol "a",
-                              SList [SSymbol "sum-range", SList [SSymbol "+", SSymbol "a", SInteger 1], SSymbol "b"]
-                            ]
-                        ]
-                    ]
-                ]
-        let callSumRange = SList [SSymbol "sum-range", SInteger 1, SInteger 10]
-
-        let (defineResult, env1) = parseAndEvalWithEnv defineSumRange initialEnv
-        defineResult `shouldBe` Right VUnit
-
-        let (result, _) = parseAndEvalWithEnv callSumRange env1
-        result `shouldBe` Right (VInt 55)
+              Define "sum-range" $
+                Lambda ["a", "b"] $
+                  If
+                    (Call (VariableRef "<") [VariableRef "b", VariableRef "a"])
+                    (LiteralInt 0)
+                    (Call (VariableRef "+") [VariableRef "a", Call (VariableRef "sum-range") [Call (VariableRef "+") [VariableRef "a", LiteralInt 1], VariableRef "b"]])
+            callSumRange = Call (VariableRef "sum-range") [LiteralInt 1, LiteralInt 10]
+            results = evalManyToValue [defineSumRange, callSumRange]
+        NE.last results `shouldBe` Right (VInt 55)
 
     describe "Power Function" $ do
       it "computes 2^10" $ do
         let definePower =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "power",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "x", SSymbol "n"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "eq?", SSymbol "n", SInteger 0],
-                          SInteger 1,
-                          SList
-                            [ SSymbol ifSymbol,
-                              SList [SSymbol "eq?", SSymbol "n", SInteger 1],
-                              SSymbol "x",
-                              SList [SSymbol "*", SSymbol "x", SList [SSymbol "power", SSymbol "x", SList [SSymbol "-", SSymbol "n", SInteger 1]]]
-                            ]
-                        ]
-                    ]
-                ]
-        let callPower = SList [SSymbol "power", SInteger 2, SInteger 10]
-
-        let (defineResult, env1) = parseAndEvalWithEnv definePower initialEnv
-        defineResult `shouldBe` Right VUnit
-
-        let (result, _) = parseAndEvalWithEnv callPower env1
-        result `shouldBe` Right (VInt 1024)
+              Define "power" $
+                Lambda ["x", "n"] $
+                  If
+                    (Call (VariableRef "eq?") [VariableRef "n", LiteralInt 0])
+                    (LiteralInt 1)
+                    ( If
+                        (Call (VariableRef "eq?") [VariableRef "n", LiteralInt 1])
+                        (VariableRef "x")
+                        (Call (VariableRef "*") [VariableRef "x", Call (VariableRef "power") [VariableRef "x", Call (VariableRef "-") [VariableRef "n", LiteralInt 1]]])
+                    )
+            callPower = Call (VariableRef "power") [LiteralInt 2, LiteralInt 10]
+            results = evalManyToValue [definePower, callPower]
+        NE.last results `shouldBe` Right (VInt 1024)
 
     describe "GCD Function" $ do
       it "computes GCD of 48 and 18" $ do
         let defineGcd =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "gcd",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "a", SSymbol "b"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "eq?", SSymbol "b", SInteger 0],
-                          SSymbol "a",
-                          SList [SSymbol "gcd", SSymbol "b", SList [SSymbol "mod", SSymbol "a", SSymbol "b"]]
-                        ]
-                    ]
-                ]
-        let callGcd = SList [SSymbol "gcd", SInteger 48, SInteger 18]
-
-        let (defineResult, env1) = parseAndEvalWithEnv defineGcd initialEnv
-        defineResult `shouldBe` Right VUnit
-
-        let (result, _) = parseAndEvalWithEnv callGcd env1
-        result `shouldBe` Right (VInt 6)
+              Define "gcd" $
+                Lambda ["a", "b"] $
+                  If
+                    (Call (VariableRef "eq?") [VariableRef "b", LiteralInt 0])
+                    (VariableRef "a")
+                    (Call (VariableRef "gcd") [VariableRef "b", Call (VariableRef "mod") [VariableRef "a", VariableRef "b"]])
+            callGcd = Call (VariableRef "gcd") [LiteralInt 48, LiteralInt 18]
+            results = evalManyToValue [defineGcd, callGcd]
+        NE.last results `shouldBe` Right (VInt 6)
 
     describe "Higher-Order Functions" $ do
       it "applies a function twice using higher-order function" $ do
         let defineTwice =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "twice",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "f", SSymbol "x"],
-                      SList [SSymbol "f", SList [SSymbol "f", SSymbol "x"]]
-                    ]
-                ]
-        let defineDouble =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "double",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "n"],
-                      SList [SSymbol "*", SSymbol "n", SInteger 2]
-                    ]
-                ]
-        let callTwice = SList [SSymbol "twice", SSymbol "double", SInteger 5]
-
-        let (_, env1) = parseAndEvalWithEnv defineTwice initialEnv
-        let (_, env2) = parseAndEvalWithEnv defineDouble env1
-        let (result, _) = parseAndEvalWithEnv callTwice env2
-        result `shouldBe` Right (VInt 20)
+              Define "twice" $
+                Lambda ["f", "x"] $
+                  Call (VariableRef "f") [Call (VariableRef "f") [VariableRef "x"]]
+            defineDouble =
+              Define "double" $
+                Lambda ["n"] $
+                  Call (VariableRef "*") [VariableRef "n", LiteralInt 2]
+            callTwice = Call (VariableRef "twice") [VariableRef "double", LiteralInt 5]
+            results = evalManyToValue [defineTwice, defineDouble, callTwice]
+        NE.last results `shouldBe` Right (VInt 20)
 
     describe "Complex Nested Calculations" $ do
       it "evaluates deeply nested arithmetic" $ do
         let expr =
-              SList
-                [ SSymbol "+",
-                  SList [SSymbol "*", SInteger 2, SList [SSymbol "+", SInteger 3, SInteger 4]],
-                  SList [SSymbol "-", SInteger 10, SList [SSymbol "div", SInteger 20, SInteger 4]]
+              Call
+                (VariableRef "+")
+                [ Call (VariableRef "*") [LiteralInt 2, Call (VariableRef "+") [LiteralInt 3, LiteralInt 4]],
+                  Call (VariableRef "-") [LiteralInt 10, Call (VariableRef "div") [LiteralInt 20, LiteralInt 4]]
                 ]
-        parseAndEval expr `shouldBe` Right (VInt 19)
+        evalToValue expr `shouldBe` Right (VInt 19)
 
       it "evaluates nested conditionals" $ do
         let defineComplexCalc =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "complex-calc",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "x", SSymbol "y", SSymbol "z"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "<", SSymbol "x", SSymbol "y"],
-                          SList
-                            [ SSymbol ifSymbol,
-                              SList [SSymbol "<", SSymbol "y", SSymbol "z"],
-                              SList [SSymbol "*", SSymbol "x", SList [SSymbol "+", SSymbol "y", SSymbol "z"]],
-                              SList [SSymbol "-", SList [SSymbol "*", SSymbol "x", SSymbol "y"], SSymbol "z"]
-                            ],
-                          SList
-                            [ SSymbol ifSymbol,
-                              SList [SSymbol "<", SSymbol "x", SSymbol "z"],
-                              SList [SSymbol "+", SList [SSymbol "*", SSymbol "x", SSymbol "y"], SList [SSymbol "*", SSymbol "y", SSymbol "z"]],
-                              SList [SSymbol "-", SList [SSymbol "+", SSymbol "x", SSymbol "y"], SSymbol "z"]
-                            ]
-                        ]
-                    ]
-                ]
-        let callComplexCalc = SList [SSymbol "complex-calc", SInteger 5, SInteger 10, SInteger 3]
-
-        let (_, env1) = parseAndEvalWithEnv defineComplexCalc initialEnv
-        let (result, _) = parseAndEvalWithEnv callComplexCalc env1
-        result `shouldBe` Right (VInt 47)
+              Define "complex-calc" $
+                Lambda ["x", "y", "z"] $
+                  If
+                    (Call (VariableRef "<") [VariableRef "x", VariableRef "y"])
+                    ( If
+                        (Call (VariableRef "<") [VariableRef "y", VariableRef "z"])
+                        (Call (VariableRef "*") [VariableRef "x", Call (VariableRef "+") [VariableRef "y", VariableRef "z"]])
+                        (Call (VariableRef "-") [Call (VariableRef "*") [VariableRef "x", VariableRef "y"], VariableRef "z"])
+                    )
+                    ( If
+                        (Call (VariableRef "<") [VariableRef "x", VariableRef "z"])
+                        (Call (VariableRef "+") [Call (VariableRef "*") [VariableRef "x", VariableRef "y"], Call (VariableRef "*") [VariableRef "y", VariableRef "z"]])
+                        (Call (VariableRef "-") [Call (VariableRef "+") [VariableRef "x", VariableRef "y"], VariableRef "z"])
+                    )
+            callComplexCalc = Call (VariableRef "complex-calc") [LiteralInt 5, LiteralInt 10, LiteralInt 3]
+            results = evalManyToValue [defineComplexCalc, callComplexCalc]
+        NE.last results `shouldBe` Right (VInt 47)
 
     describe "Mathematical Functions" $ do
       it "computes sum of squares" $ do
         let defineSquare =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "square",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "n"],
-                      SList [SSymbol "*", SSymbol "n", SSymbol "n"]
-                    ]
-                ]
-        let defineSumOfSquares =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "sum-of-squares",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "a", SSymbol "b"],
-                      SList [SSymbol "+", SList [SSymbol "square", SSymbol "a"], SList [SSymbol "square", SSymbol "b"]]
-                    ]
-                ]
-        let callSumOfSquares = SList [SSymbol "sum-of-squares", SInteger 3, SInteger 4]
-
-        let (_, env1) = parseAndEvalWithEnv defineSquare initialEnv
-        let (_, env2) = parseAndEvalWithEnv defineSumOfSquares env1
-        let (result, _) = parseAndEvalWithEnv callSumOfSquares env2
-        result `shouldBe` Right (VInt 25)
+              Define "square" $
+                Lambda ["n"] $
+                  Call (VariableRef "*") [VariableRef "n", VariableRef "n"]
+            defineSumOfSquares =
+              Define "sum-of-squares" $
+                Lambda ["a", "b"] $
+                  Call (VariableRef "+") [Call (VariableRef "square") [VariableRef "a"], Call (VariableRef "square") [VariableRef "b"]]
+            callSumOfSquares = Call (VariableRef "sum-of-squares") [LiteralInt 3, LiteralInt 4]
+            results = evalManyToValue [defineSquare, defineSumOfSquares, callSumOfSquares]
+        NE.last results `shouldBe` Right (VInt 25)
 
     -- Note: This test requires closure support (VProcedure capturing environment)
     -- which the current AST design doesn't provide
@@ -289,31 +166,16 @@ spec = do
     describe "Ackermann Function" $ do
       it "computes Ackermann(2, 2)" $ do
         let defineAckermann =
-              SList
-                [ SSymbol defineSymbol,
-                  SSymbol "ackermann",
-                  SList
-                    [ SSymbol lambdaSymbol,
-                      SList [SSymbol "m", SSymbol "n"],
-                      SList
-                        [ SSymbol ifSymbol,
-                          SList [SSymbol "eq?", SSymbol "m", SInteger 0],
-                          SList [SSymbol "+", SSymbol "n", SInteger 1],
-                          SList
-                            [ SSymbol ifSymbol,
-                              SList [SSymbol "eq?", SSymbol "n", SInteger 0],
-                              SList [SSymbol "ackermann", SList [SSymbol "-", SSymbol "m", SInteger 1], SInteger 1],
-                              SList
-                                [ SSymbol "ackermann",
-                                  SList [SSymbol "-", SSymbol "m", SInteger 1],
-                                  SList [SSymbol "ackermann", SSymbol "m", SList [SSymbol "-", SSymbol "n", SInteger 1]]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-        let callAckermann = SList [SSymbol "ackermann", SInteger 2, SInteger 2]
-
-        let (_, env1) = parseAndEvalWithEnv defineAckermann initialEnv
-        let (result, _) = parseAndEvalWithEnv callAckermann env1
-        result `shouldBe` Right (VInt 7)
+              Define "ackermann" $
+                Lambda ["m", "n"] $
+                  If
+                    (Call (VariableRef "eq?") [VariableRef "m", LiteralInt 0])
+                    (Call (VariableRef "+") [VariableRef "n", LiteralInt 1])
+                    ( If
+                        (Call (VariableRef "eq?") [VariableRef "n", LiteralInt 0])
+                        (Call (VariableRef "ackermann") [Call (VariableRef "-") [VariableRef "m", LiteralInt 1], LiteralInt 1])
+                        (Call (VariableRef "ackermann") [Call (VariableRef "-") [VariableRef "m", LiteralInt 1], Call (VariableRef "ackermann") [VariableRef "m", Call (VariableRef "-") [VariableRef "n", LiteralInt 1]]])
+                    )
+            callAckermann = Call (VariableRef "ackermann") [LiteralInt 2, LiteralInt 2]
+            results = evalManyToValue [defineAckermann, callAckermann]
+        NE.last results `shouldBe` Right (VInt 7)
