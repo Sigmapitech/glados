@@ -11,7 +11,7 @@ import Control.Monad.Except (throwError)
 import Control.Monad.State (get, modify, put)
 import Data.Foldable (Foldable (foldl'))
 import Data.Function ((&))
-import qualified Data.Functor
+import Data.Functor ((<&>))
 
 createEvaluator :: Ast -> Evaluator
 createEvaluator = \case
@@ -79,33 +79,31 @@ getBuiltinEvaluator op args
   | BLt <- op = evalLessThan args
   where
     evalArithmetic :: String -> (Integer -> Integer -> Integer) -> [RuntimeValue] -> Evaluator
-    evalArithmetic opName f = \case
-      [] -> throwEvalError $ opName ++ " requires at least one argument"
-      argsList -> (mapM extractInt argsList Data.Functor.<&> (VInt . foldl1 f))
+    evalArithmetic name _ [] = throwEvalError $ name ++ " requires at least one argument"
+    evalArithmetic "-" _ [VInt n] = return $ VInt (-n)
+    evalArithmetic name f argsList = mapM extractInt argsList <&> (VInt . foldl1 f)
       where
         extractInt (VInt n) = return n
-        extractInt _ = throwError $ mkError $ opName ++ " requires integer arguments"
+        extractInt _ = throwError $ mkError $ name ++ " requires integer arguments"
 
-    evalDivision = \case
-      [VInt a, VInt b]
-        | b == 0 -> throwEvalError "Division by zero"
-        | otherwise -> return $ VInt (a `div` b)
-      _ -> throwEvalError "div requires exactly two integer arguments"
+    evalDivision :: [RuntimeValue] -> Evaluator
+    evalDivision [_, VInt 0] = throwEvalError "Division by zero"
+    evalDivision [VInt a, VInt b] = return $ VInt (a `div` b)
+    evalDivision _ = throwEvalError "div requires exactly two integer arguments"
 
-    evalModulo = \case
-      [VInt a, VInt b]
-        | b == 0 -> throwEvalError "Modulo by zero"
-        | otherwise -> return $ VInt (a `mod` b)
-      _ -> throwEvalError "mod requires exactly two integer arguments"
+    evalModulo :: [RuntimeValue] -> Evaluator
+    evalModulo [_, VInt 0] = throwEvalError "Modulo by zero"
+    evalModulo [VInt a, VInt b] = return $ VInt (a `mod` b)
+    evalModulo _ = throwEvalError "mod requires exactly two integer arguments"
 
-    evalEquality = \case
-      [VInt a, VInt b] -> return $ VBool (a == b)
-      [VBool a, VBool b] -> return $ VBool (a == b)
-      _ -> throwEvalError "eq? requires exactly two arguments of the same type"
+    evalEquality :: [RuntimeValue] -> Evaluator
+    evalEquality [VInt a, VInt b] = return $ VBool (a == b)
+    evalEquality [VBool a, VBool b] = return $ VBool (a == b)
+    evalEquality _ = throwEvalError "eq? requires exactly two arguments of the same type"
 
-    evalLessThan = \case
-      [VInt a, VInt b] -> return $ VBool (a < b)
-      _ -> throwEvalError "< requires exactly two integer arguments"
+    evalLessThan :: [RuntimeValue] -> Evaluator
+    evalLessThan [VInt a, VInt b] = return $ VBool (a < b)
+    evalLessThan _ = throwEvalError "< requires exactly two integer arguments"
 
 evalFrom :: Environment -> Ast -> EvalResult
 evalFrom env ast = env & runEvaluator (createEvaluator ast)
