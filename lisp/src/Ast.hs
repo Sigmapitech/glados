@@ -5,16 +5,17 @@ module Ast where
 
 import Control.Monad.Except (ExceptT, MonadError (throwError), runExceptT)
 import Control.Monad.State (State, runState)
+import Data.List.NonEmpty (NonEmpty)
 import Data.String (IsString (..))
 
 newtype VarName = VarName String
-  deriving (Show, Eq, Ord, IsString)
+  deriving (Show, Eq, IsString)
 
 newtype ParamName = ParamName String
-  deriving (Show, Eq, Ord, IsString)
+  deriving (Show, Eq, IsString)
 
 newtype SymbolName = SymbolName String
-  deriving (Show, Eq, Ord, IsString)
+  deriving (Show, Eq, IsString)
 
 newtype ErrorMsg = ErrorMsg String
   deriving (Show, Eq, IsString)
@@ -45,7 +46,14 @@ data SExpr
   | SSymbol SymbolName
   | SBool Bool
   | SList [SExpr]
-  deriving (Show, Eq)
+  deriving (Eq)
+
+instance Show SExpr where
+  show (SInteger n) = show n
+  show (SSymbol (SymbolName s)) = s
+  show (SBool True) = "#t"
+  show (SBool False) = "#f"
+  show (SList exprs) = "(" ++ unwords (map show exprs) ++ ")"
 
 data Ast
   = LiteralInt Integer
@@ -56,23 +64,35 @@ data Ast
   | Lambda [ParamName] Ast
   | Call Ast [Ast]
   | If {ifCond :: Ast, ifThen :: Ast, ifElse :: Ast}
-  deriving (Show, Eq)
+  deriving (Eq)
+
+instance Show Ast where
+  show (LiteralInt n) = show n
+  show (LiteralBool True) = "#t"
+  show (LiteralBool False) = "#f"
+  show (VariableRef name) = unVarName name
+  show (Define name expr) = "(define " ++ unVarName name ++ " " ++ show expr ++ ")"
+  show (Lambda params body) =
+    "(lambda (" ++ unwords (map unParamName params) ++ ") " ++ show body ++ ")"
+  show (Call func args) =
+    "(" ++ show func ++ " " ++ unwords (map show args) ++ ")"
+  show (If cond thenExpr elseExpr) =
+    "(if " ++ show cond ++ " " ++ show thenExpr ++ " " ++ show elseExpr ++ ")"
 
 data RuntimeValue
   = VInt Integer
   | VBool Bool
-  | VProcedure [ParamName] Ast Environment
+  | VProcedure [ParamName] Ast
+  | VBuiltin BuitinOp
   | VUnit -- Represents 'void' or 'no value': "() <- unit"
-  deriving (Show)
+  deriving (Eq)
 
--- | Make RuntimeValue an instance of Eq (useful for testing).
--- Note: Functions are not comparable and always return False.
-instance Eq RuntimeValue where
-  (VInt a) == (VInt b) = a == b
-  (VBool a) == (VBool b) = a == b
-  VUnit == VUnit = True
-  (VProcedure {}) == (VProcedure {}) = False
-  _ == _ = False
+instance Show RuntimeValue where
+  show (VInt n) = show n
+  show (VBool b) = if b then "#t" else "#f"
+  show (VProcedure params _) = "#<procedure:" ++ show params ++ ">"
+  show (VBuiltin op) = "#<builtin:" ++ show op ++ ">"
+  show VUnit = "#<void>"
 
 type Binding = (VarName, RuntimeValue)
 
@@ -93,8 +113,9 @@ type ParseResult = Result SExpr
 
 type ConvertResult = Result Ast
 
-type ValueResult = Result RuntimeValue
+type ValueResult = NonEmpty (Result RuntimeValue)
 
+-- | Unified result type that can be either single or multiple
 type EvalResult = (ValueResult, Environment)
 
 -- | The Evaluator monad combines error handling and state management
@@ -106,7 +127,7 @@ type Evaluator = ExceptT ErrorMsg (State Environment) RuntimeValue
 
 -- | Run an evaluator computation with an initial environment (unwrap the monad stack)
 -- Returns both the result and the final environment
-runEvaluator :: Evaluator -> Environment -> EvalResult
+runEvaluator :: Evaluator -> (Environment -> (Result RuntimeValue, Environment))
 runEvaluator computation = runState $ runExceptT computation
 
 --                         ^^^^^^^^  ^^^^^^^^^^^
@@ -127,6 +148,25 @@ addErrContext :: String -> Result a -> Result a
 addErrContext context (Left (ErrorMsg msg)) = Left $ mkError $ context ++ ": " ++ msg
 addErrContext _ result = result
 
+data BuitinOp
+  = BPlus
+  | BMinus
+  | BMult
+  | BDiv
+  | BMod
+  | BEq
+  | BLt
+  deriving (Eq)
+
+instance Show BuitinOp where
+  show BPlus = "+"
+  show BMinus = "-"
+  show BMult = "*"
+  show BDiv = "div"
+  show BMod = "mod"
+  show BEq = "eq?"
+  show BLt = "<"
+
 builtinPlus, builtinMinus, builtinMult :: VarName
 builtinPlus = VarName "+"
 builtinMinus = VarName "-"
@@ -140,17 +180,30 @@ builtinEq, builtinLt :: VarName
 builtinEq = VarName "eq?"
 builtinLt = VarName "<"
 
+allBuitinName :: [VarName]
+allBuitinName =
+  [ builtinPlus,
+    builtinMinus,
+    builtinMult,
+    builtinDiv,
+    builtinMod,
+    builtinEq,
+    builtinLt
+  ]
+
 isBuiltin :: VarName -> Bool
-isBuiltin name =
-  name
-    `elem` [ builtinPlus,
-             builtinMinus,
-             builtinMult,
-             builtinDiv,
-             builtinMod,
-             builtinEq,
-             builtinLt
-           ]
+isBuiltin name = name `elem` allBuitinName
+
+initialEnv :: Environment
+initialEnv =
+  [ (builtinPlus, VBuiltin BPlus),
+    (builtinMinus, VBuiltin BMinus),
+    (builtinMult, VBuiltin BMult),
+    (builtinDiv, VBuiltin BDiv),
+    (builtinMod, VBuiltin BMod),
+    (builtinEq, VBuiltin BEq),
+    (builtinLt, VBuiltin BLt)
+  ]
 
 defineSymbol, lambdaSymbol, ifSymbol :: SymbolName
 defineSymbol = SymbolName "define"
