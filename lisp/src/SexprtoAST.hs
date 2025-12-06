@@ -11,13 +11,13 @@ sexprToAst (SList xs) = convertList xs
 
 -- | Helper to convert SExpr list to Ast
 convertList :: [SExpr] -> ConvertResult
-convertList [] = Left $ mkError "Empty S-expression list cannot be converted to AST."
 convertList (SSymbol sym : rest)
   | sym == defineSymbol = convertDefine rest
   | sym == lambdaSymbol = convertLambda rest
   | sym == ifSymbol = convertIf rest
   | otherwise = convertCall (SSymbol sym) rest
 convertList (f : args) = convertCall f args
+convertList [] = Left $ mkError "Empty S-expression list cannot be converted to AST."
 
 -- | Convert define form: (define var expr)
 convertDefine :: [SExpr] -> ConvertResult
@@ -28,6 +28,9 @@ convertDefine _ = Left $ mkError "Malformed define: expected (define var expr)"
 
 -- | Convert lambda form: (lambda (params...) body)
 convertLambda :: [SExpr] -> ConvertResult
+convertLambda [SList [], body] = do
+  astBody <- sexprToAst body
+  return $ Lambda [] astBody
 convertLambda [SList params, body] = do
   paramNames <- mapM expectSymbol params
   astBody <- sexprToAst body
@@ -49,6 +52,9 @@ convertIf _ = Left $ mkError "Malformed if: expected (if cond then else)"
 
 -- | Convert function call: (f arg1 arg2 ...)
 convertCall :: SExpr -> [SExpr] -> ConvertResult
+convertCall f [] = do
+  astF <- sexprToAst f
+  return $ Call astF []
 convertCall f args = do
   astF <- sexprToAst f
   astArgs <- mapM sexprToAst args
