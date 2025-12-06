@@ -90,10 +90,75 @@ spec = do
             (result, _) = eval ast
         result `shouldBe` Right (VInt 7)
 
+      it "subtracts with one argument" $ do
+        let ast = Call (VariableRef "-") [LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 5)
+
+      it "subtracts multiple integers" $ do
+        let ast = Call (VariableRef "-") [LiteralInt 100, LiteralInt 20, LiteralInt 30, LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 45)
+
       it "multiplies integers" $ do
         let ast = Call (VariableRef "*") [LiteralInt 2, LiteralInt 3]
             (result, _) = eval ast
         result `shouldBe` Right (VInt 6)
+
+      it "multiplies with one argument" $ do
+        let ast = Call (VariableRef "*") [LiteralInt 7]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 7)
+
+      it "multiplies multiple integers" $ do
+        let ast = Call (VariableRef "*") [LiteralInt 2, LiteralInt 3, LiteralInt 4, LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 120)
+
+      it "adds with one argument" $ do
+        let ast = Call (VariableRef "+") [LiteralInt 42]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 42)
+
+      it "adds multiple integers" $ do
+        let ast = Call (VariableRef "+") [LiteralInt 1, LiteralInt 2, LiteralInt 3, LiteralInt 4, LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 15)
+
+      it "adds many integers" $ do
+        let ast = Call (VariableRef "+") [LiteralInt 10, LiteralInt 20, LiteralInt 30, LiteralInt 40]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 100)
+
+      it "errors on add with no arguments" $ do
+        let ast = Call (VariableRef "+") []
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on subtract with no arguments" $ do
+        let ast = Call (VariableRef "-") []
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on multiply with no arguments" $ do
+        let ast = Call (VariableRef "*") []
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on add with non-integer" $ do
+        let ast = Call (VariableRef "+") [LiteralInt 1, LiteralBool True]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on subtract with non-integer" $ do
+        let ast = Call (VariableRef "-") [LiteralInt 10, LiteralBool False]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on multiply with non-integer" $ do
+        let ast = Call (VariableRef "*") [LiteralBool True, LiteralInt 3]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
 
       it "divides integers" $ do
         let ast = Call (VariableRef "div") [LiteralInt 10, LiteralInt 2]
@@ -105,10 +170,30 @@ spec = do
             (result, _) = eval ast
         result `shouldSatisfy` isLeft
 
+      it "errors on division with wrong argument count" $ do
+        let ast = Call (VariableRef "div") [LiteralInt 10, LiteralInt 2, LiteralInt 3]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on division with one argument" $ do
+        let ast = Call (VariableRef "div") [LiteralInt 10]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
       it "calculates modulo" $ do
         let ast = Call (VariableRef "mod") [LiteralInt 10, LiteralInt 3]
             (result, _) = eval ast
         result `shouldBe` Right (VInt 1)
+
+      it "errors on modulo by zero" $ do
+        let ast = Call (VariableRef "mod") [LiteralInt 10, LiteralInt 0]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on modulo with wrong argument count" $ do
+        let ast = Call (VariableRef "mod") [LiteralInt 10]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
 
     describe "Built-in Comparison" $ do
       it "checks equality for integers" $ do
@@ -119,6 +204,29 @@ spec = do
         result1 `shouldBe` Right (VBool True)
         result2 `shouldBe` Right (VBool False)
 
+      it "checks equality for booleans" $ do
+        let ast1 = Call (VariableRef "eq?") [LiteralBool True, LiteralBool True]
+            ast2 = Call (VariableRef "eq?") [LiteralBool True, LiteralBool False]
+            (result1, _) = eval ast1
+            (result2, _) = eval ast2
+        result1 `shouldBe` Right (VBool True)
+        result2 `shouldBe` Right (VBool False)
+
+      it "errors on equality with wrong argument count" $ do
+        let ast = Call (VariableRef "eq?") [LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on equality with three arguments" $ do
+        let ast = Call (VariableRef "eq?") [LiteralInt 5, LiteralInt 5, LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on equality with mixed types" $ do
+        let ast = Call (VariableRef "eq?") [LiteralInt 5, LiteralBool True]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
       it "checks less-than" $ do
         let ast1 = Call (VariableRef "<") [LiteralInt 3, LiteralInt 5]
             ast2 = Call (VariableRef "<") [LiteralInt 5, LiteralInt 3]
@@ -126,6 +234,21 @@ spec = do
             (result2, _) = eval ast2
         result1 `shouldBe` Right (VBool True)
         result2 `shouldBe` Right (VBool False)
+
+      it "checks less-than with equal values" $ do
+        let ast = Call (VariableRef "<") [LiteralInt 5, LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldBe` Right (VBool False)
+
+      it "errors on less-than with wrong argument count" $ do
+        let ast = Call (VariableRef "<") [LiteralInt 5]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
+
+      it "errors on less-than with non-integers" $ do
+        let ast = Call (VariableRef "<") [LiteralBool True, LiteralBool False]
+            (result, _) = eval ast
+        result `shouldSatisfy` isLeft
 
     describe "Conditionals" $ do
       it "evaluates then branch when condition is true" $ do
