@@ -95,6 +95,16 @@ spec = do
             (result, _) = eval ast
         result `shouldBe` Right (VInt (-5))
 
+      it "substract negative result" $ do
+        let ast = Call (VariableRef "-") [LiteralInt 3, LiteralInt 10]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt (-7))
+
+      it "subtracts negative with one argument" $ do
+        let ast = Call (VariableRef "-") [LiteralInt (-8)]
+            (result, _) = eval ast
+        result `shouldBe` Right (VInt 8)
+
       it "subtracts multiple integers" $ do
         let ast = Call (VariableRef "-") [LiteralInt 100, LiteralInt 20, LiteralInt 30, LiteralInt 5]
             (result, _) = eval ast
