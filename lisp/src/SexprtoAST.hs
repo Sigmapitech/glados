@@ -24,6 +24,9 @@ convertDefine :: [SExpr] -> ConvertResult
 convertDefine [SSymbol var, expr] = do
   astExpr <- sexprToAst expr
   return $ Define (symbolToVar var) astExpr
+-- Function form: (define (name params...) body)
+-- Desugar to: (define name (lambda (params...) body))
+convertDefine [SList (SSymbol name : params), body] = Define (symbolToVar name) <$> convertLambda [SList params, body]
 convertDefine _ = Left $ mkError "Malformed define: expected (define var expr)"
 
 -- | Convert lambda form: (lambda (params...) body)

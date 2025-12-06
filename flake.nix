@@ -77,8 +77,9 @@
             (ghcWithPackages (p: [
               hspec
               hspec-expectations
-              parsec
               megaparsec
+              optparse-applicative
+              parsec
               silently
             ]))
           ]);
