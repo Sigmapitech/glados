@@ -27,7 +27,7 @@ createEvaluator = \case
       env <- get
       case lookupEnv name env of
         Just val -> return val
-        Nothing -> throwEvalError $ "Unbound variable: " ++ unVarName name
+        Nothing -> throwEvalError $ "variable " ++ unVarName name ++ " is not bound."
 
     defineEvaluator :: VarName -> Ast -> Evaluator
     defineEvaluator name expr = do

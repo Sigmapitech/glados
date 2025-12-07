@@ -45,7 +45,7 @@ entrypoint opts =
       hPutStrLn stderr (prefix ++ unErrorMsg errMsg)
         >> exitWith (ExitFailure 84)
     onAstErr = errorHelper "AST error: "
-    onEvalErr = errorHelper "Evaluation error: "
+    onEvalErr = errorHelper "*** Error : "
 
     onAstOk asts =
       either

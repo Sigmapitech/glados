@@ -40,7 +40,7 @@ variableEvalSpec = do
 
     it "provides meaningful error message for undefined variables" $ do
       case evalToValue (VariableRef "nonexistent") of
-        Left (ErrorMsg msg) -> msg `shouldContain` "Unbound variable"
+        Left (ErrorMsg msg) -> msg `shouldContain` "variable nonexistent is not bound."
         Right _ -> expectationFailure "Expected error for undefined variable"
 
 -- | Test suite for define special form
