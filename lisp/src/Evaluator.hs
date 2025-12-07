@@ -16,7 +16,7 @@ createEvaluator :: Ast -> Evaluator
 createEvaluator = \case
   LiteralInt number -> return $ VInt number
   LiteralBool bool -> return $ VBool bool
-  Lambda params body -> return $ VProcedure params body
+  Lambda params body -> return $ VProcedure Nothing params body
   VariableRef name -> variableRefEvaluator name
   Define name expr -> defineEvaluator name expr
   If condExpr thenExpr elseExpr -> ifEvaluator condExpr thenExpr elseExpr
@@ -30,10 +30,15 @@ createEvaluator = \case
         Nothing -> throwEvalError $ "Unbound variable: " ++ unVarName name
 
     defineEvaluator :: VarName -> Ast -> Evaluator
-    defineEvaluator name expr = do
-      value <- createEvaluator expr
-      modify (extendEnv name value)
-      return VUnit
+    defineEvaluator name expr =
+      (createEvaluator expr >>= declareInEnv)
+        >> return VUnit
+      where
+        declareInEnv = (modify . extendEnv name) . nameProc
+
+        nameProc = \case
+          (VProcedure Nothing param body) -> (VProcedure (Just name) param body)
+          other -> other
 
     ifEvaluator :: Ast -> Ast -> Ast -> Evaluator
     ifEvaluator condExpr thenExpr elseExpr = do
@@ -53,7 +58,7 @@ createEvaluator = \case
 
     applyFuncEvaluator :: RuntimeValue -> [RuntimeValue] -> Evaluator
     applyFuncEvaluator (VBuiltin op) args = getBuiltinEvaluator op args
-    applyFuncEvaluator (VProcedure params body) args
+    applyFuncEvaluator (VProcedure _ params body) args
       | length params /= length args =
           throwEvalError $ "Expected " ++ show (length params) ++ " arguments, got" ++ show (length args)
       | otherwise = do
