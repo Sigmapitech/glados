@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module EvaluatorSpec (spec) where
+module SpecEvaluator (specEvaluator) where
 
-import Ast
+import AST
 import Data.Either (isLeft)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (eval, evalFrom, evalMany, evalManyToValue, evalToValue)
@@ -430,9 +430,9 @@ complexExpressionSpec = do
       evalToValue ast `shouldBe` Right (VInt 1)
 
     it "evaluates define followed by use" $ do
-      let defineAst = Define "double" (Lambda ["x"] (Call (VariableRef "*") [VariableRef "x", LiteralInt 2]))
-          callAst = Call (VariableRef "double") [LiteralInt 7]
-          result = NE.last $ evalManyToValue [defineAst, callAst]
+      let defineAST = Define "double" (Lambda ["x"] (Call (VariableRef "*") [VariableRef "x", LiteralInt 2]))
+          callAST = Call (VariableRef "double") [LiteralInt 7]
+          result = NE.last $ evalManyToValue [defineAST, callAST]
       result `shouldBe` Right (VInt 14)
 
     it "evaluates multiple defines and uses" $ do
@@ -443,8 +443,8 @@ complexExpressionSpec = do
       result `shouldBe` Right (VInt 30)
 
 -- | Exported combined spec for Evaluator
-spec :: Spec
-spec = do
+specEvaluator :: Spec
+specEvaluator = do
   describe "Evaluator" $ do
     literalEvalSpec
     variableEvalSpec

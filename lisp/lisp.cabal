@@ -31,7 +31,6 @@ library
   import:          extensions
   exposed-modules:
     Bootstrap
-    Evaluator
     Lisp
 
   build-depends:

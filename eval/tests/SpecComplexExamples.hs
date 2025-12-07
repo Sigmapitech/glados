@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ComplexExamplesSpec (spec) where
+module SpecComplexExamples (specComplexExamples) where
 
-import Ast
+import AST
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyToValue, evalToValue)
 import Test.Hspec
 
-spec :: Spec
-spec = do
+specComplexExamples :: Spec
+specComplexExamples = do
   describe "Complex Lisp Examples" $ do
     describe "Factorial Function" $ do
       it "computes factorial of 5" $ do

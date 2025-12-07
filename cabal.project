@@ -3,6 +3,7 @@ packages:
   lisp/
   ast/
   compiler/
+  eval/
   poc/
   cli/
   parser/

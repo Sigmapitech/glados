@@ -1,0 +1,58 @@
+cabal-version: 3.8
+name:          eval
+version:       0.0.1
+build-type:    Simple
+description:   Generic Language and data operand syntax
+homepage:      https://github.com/Sigmapitech/glados
+bug-reports:   https://github.com/Sigmapitech/glados/issues
+author:        Sigmapitech
+maintainer:    Sigmapitech
+copyright:     Sigmapitech
+license:       BSD-2-Clause
+license-file:  LICENSE
+
+common lang
+  default-language: Haskell2010
+
+common warnings
+  ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
+
+common release
+  ghc-options: -O2
+
+library
+  import:             lang
+  import:             warnings
+  exposed-modules:    Evaluator
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+
+  hs-source-dirs:     src
+  build-depends:
+    , ast
+    , base
+    , mtl
+
+test-suite eval-test
+  import:             lang
+  import:             warnings
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+
+  other-modules:
+    SpecComplexExamples
+    SpecEvaluator
+
+  type:               exitcode-stdio-1.0
+  main-is:            Spec.hs
+  hs-source-dirs:     tests
+  build-depends:
+    , ast
+    , base                >=4.7 && <5
+    , directory
+    , eval
+    , hspec
+    , hspec-expectations
+    , silently
