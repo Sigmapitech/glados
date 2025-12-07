@@ -1,8 +1,8 @@
 module Lisp (Options (..), options, entrypoint, prologue) where
 
 import Ast (unErrorMsg)
-import Control.Monad ((>=>))
-import Evaluator (evalAll)
+import qualified Data.List.NonEmpty as NE
+import Evaluator (evalManyToValue)
 import Options.Applicative
 import Parser (parseFile, parseString)
 import SexprtoAST (sexprToAst)
@@ -46,6 +46,11 @@ entrypoint opts =
         >> exitWith (ExitFailure 84)
     onAstErr = errorHelper "AST error: "
     onEvalErr = errorHelper "Evaluation error: "
-    onAstOk = either onEvalErr onEvalOk . fst . evalAll
+
+    onAstOk asts =
+      either
+        onEvalErr
+        (onEvalOk . NE.toList)
+        (sequence (evalManyToValue asts))
     onEvalOk =
       maybe putStr writeFile (outputFile opts) . unlines . map show
