@@ -30,12 +30,9 @@ library
   import:          warnings
   import:          extensions
   exposed-modules:
-    Ast
     Bootstrap
     Evaluator
     Lisp
-    Parser
-    SexprtoAST
 
   build-depends:
     , base
@@ -68,10 +65,7 @@ test-suite lisp-interpreter-test
   other-modules:
     ComplexExamplesSpec
     EvaluatorSpec
-    IntegrationSpec
-    LispAstSpec
     LispBootstrapSpec
-    SexprtoASTSpec
     SpecParser
 
   hs-source-dirs: tests

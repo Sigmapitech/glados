@@ -27,7 +27,6 @@ library
   hs-source-dirs:  src
   exposed-modules: Compiler
   build-depends:
-    , ast:ast-lib
     , base
     , optparse-applicative
 
@@ -38,7 +37,6 @@ executable compiler-exe
   main-is:        Main.hs
   hs-source-dirs: app
   build-depends:
-    , ast:ast-lib
     , base
     , compiler
     , optparse-applicative
@@ -50,7 +48,6 @@ test-suite compiler-test
   main-is:        Spec.hs
   hs-source-dirs: tests
   build-depends:
-    , ast:ast-lib
     , base                >=4.7 && <5
     , directory
     , hspec

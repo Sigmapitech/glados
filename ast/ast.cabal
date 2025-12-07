@@ -20,22 +20,34 @@ common warnings
 common release
   ghc-options: -O2
 
-library ast-lib
+library
   import:          lang
   import:          warnings
-  exposed-modules: AST
+  exposed-modules:
+    AST
+    SexprtoAST
+
   hs-source-dirs:  src
-  build-depends:   base
-  visibility:      public
+  build-depends:
+    , base
+    , mtl
 
 test-suite ast-test
-  import:         lang
-  import:         warnings
-  type:           exitcode-stdio-1.0
-  main-is:        Spec.hs
-  hs-source-dirs: tests
+  import:             lang
+  import:             warnings
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+
+  type:               exitcode-stdio-1.0
+  main-is:            Spec.hs
+  hs-source-dirs:     tests
+  other-modules:
+    SpecAST
+    SpecSexprtoAST
+
   build-depends:
-    , ast:ast-lib
+    , ast
     , base                >=4.7 && <5
     , directory
     , hspec
