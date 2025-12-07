@@ -82,7 +82,10 @@ instance Show Ast where
 data RuntimeValue
   = VInt Integer
   | VBool Bool
-  | VProcedure [ParamName] Ast
+  | -- we need to store the name of the procedure when it is created with
+    -- (define (name) ...)
+    -- see: https://github.com/cisco/ChezScheme/blob/v10.3.0/s/print.ss#L776-L785C43
+    VProcedure (Maybe VarName) [ParamName] Ast
   | VBuiltin BuitinOp
   | VUnit -- Represents 'void' or 'no value': "() <- unit"
   deriving (Eq)
@@ -90,7 +93,9 @@ data RuntimeValue
 instance Show RuntimeValue where
   show (VInt n) = show n
   show (VBool b) = if b then "#t" else "#f"
-  show (VProcedure _ _) = "#\\<procedure\\>"
+  show (VProcedure mName _ _) = case mName of
+    (Just name) -> "#\\<procedure " ++ unVarName name ++ "\\>"
+    Nothing -> "#\\<procedure\\>"
   show (VBuiltin op) = "#<builtin:" ++ show op ++ ">"
   show VUnit = "#<void>"
 
