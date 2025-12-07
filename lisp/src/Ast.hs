@@ -90,7 +90,7 @@ data RuntimeValue
 instance Show RuntimeValue where
   show (VInt n) = show n
   show (VBool b) = if b then "#t" else "#f"
-  show (VProcedure params _) = "#<procedure:" ++ show params ++ ">"
+  show (VProcedure _ _) = "#\\<procedure\\>"
   show (VBuiltin op) = "#<builtin:" ++ show op ++ ">"
   show VUnit = "#<void>"
 
