@@ -1,11 +1,11 @@
-module SpecParser (parserSpec) where
+module Main where
 
-import Ast (SExpr (..), SymbolName (..))
+import AST (SExpr (..), SymbolName (..))
 import Control.Exception (SomeException, try)
 import Parser (parseFile, parseString)
 import System.IO (stderr)
 import System.IO.Silently (hSilence)
-import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
+import Test.Hspec (Spec, describe, hspec, it, shouldBe, shouldSatisfy)
 
 parseStringWrapper :: String -> IO [SExpr]
 parseStringWrapper = hSilence [stderr] . parseString
@@ -178,13 +178,16 @@ parserSpec = do
 
   describe "Parser - File parsing" $ do
     it "parse a simple file" $ do
-      resut <- parseFileWrapper "tests/fixtures/testParseFile.ss"
+      resut <- parseFileWrapper "tests/testParseFile.ss"
       resut `shouldBe` [SList [SSymbol (SymbolName "define"), SSymbol (SymbolName "x"), SInteger 42]]
 
     it "fails on non-existent file" $ do
-      result <- try (parseFileWrapper "tests/fixtures/nonExistent.ss") :: IO (Either SomeException [SExpr])
+      result <- try (parseFileWrapper "tests/nonExistent.ss") :: IO (Either SomeException [SExpr])
       result `shouldSatisfy` isLeft
 
     it "fails on invalid file content" $ do
-      result <- try (parseFileWrapper "tests/fixtures/testInvalidFile.ss") :: IO (Either SomeException [SExpr])
+      result <- try (parseFileWrapper "tests/testInvalidFile.ss") :: IO (Either SomeException [SExpr])
       result `shouldSatisfy` isLeft
+
+main :: IO ()
+main = hspec parserSpec
