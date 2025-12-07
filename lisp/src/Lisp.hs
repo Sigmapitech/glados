@@ -1,6 +1,6 @@
 module Lisp (Options (..), options, entrypoint, prologue) where
 
-import Ast (unErrorMsg)
+import Ast (isVoid, unErrorMsg)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyToValue)
 import Options.Applicative
@@ -53,4 +53,4 @@ entrypoint opts =
         (onEvalOk . NE.toList)
         (sequence (evalManyToValue asts))
     onEvalOk =
-      maybe putStr writeFile (outputFile opts) . unlines . map show
+      maybe putStr writeFile (outputFile opts) . unlines . map show . filter (not . isVoid)

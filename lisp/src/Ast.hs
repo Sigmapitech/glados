@@ -194,6 +194,10 @@ allBuitinName =
 isBuiltin :: VarName -> Bool
 isBuiltin name = name `elem` allBuitinName
 
+isVoid :: RuntimeValue -> Bool
+isVoid VUnit = True
+isVoid _ = False
+
 initialEnv :: Environment
 initialEnv =
   [ (builtinPlus, VBuiltin BPlus),
