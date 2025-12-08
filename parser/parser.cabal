@@ -1,6 +1,6 @@
 cabal-version: 3.8
 name:          parser
-version:       0.0.1
+version:       0.1.0
 build-type:    Simple
 description:   Generic Language and data operand syntax
 homepage:      https://github.com/Sigmapitech/glados
