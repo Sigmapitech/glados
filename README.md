@@ -24,13 +24,64 @@ GLaDOS is a interpreted programming language implemented in Haskell that follows
 > [!NOTE]
 > We use **Nix Flakes** to ensure a reproducible development environment
 
-- [Install Nix](https://nixos.org/download/) (if you haven't already)
+#### Option 1: Using Nix (Recommended)
 
-**OR manually install:**
+- [Install Nix](https://nixos.org/download/) (if you haven't already)
+- Enter the development environment:
+  ```shell
+  nix develop
+  ```
+
+#### Option 2: Using Docker
+
+Build and run the project in a Docker container without installing dependencies:
+
+```shell
+# Build the Docker image
+docker build -t glados .
+
+# Run the container
+docker run -it --rm glados
+
+# Or run with volume mount for development
+docker run -it --rm -v $(pwd):/app glados
+```
+
+#### Option 3: Manual Installation
+
+Install the following system dependencies:
 
 - `GHC` (version `9.8.4`)
 - `cabal` (version `3.14.2.0`)
 - `make` (version `4.0+`)
+
+**On Ubuntu/Debian:**
+```shell
+sudo apt update
+sudo apt install -y ghc cabal-install make
+cabal update
+```
+
+**On Fedora**
+```shell
+sudo dnf install -y ghc cabal-install make
+cabal update
+```
+
+**On macOS:**
+```shell
+brew install ghc cabal-install
+cabal update
+```
+
+**On Arch Linux:**
+```shell
+sudo pacman -S ghc cabal-install make
+cabal update
+```
+
+> [!TIP]
+> After installing GHC and Cabal, all Haskell package dependencies (like `hspec`, `megaparsec`, `directory`, etc.) will be automatically downloaded and installed by Cabal when you run `make` or `cabal build all`.
 
 ### 🛠️ Build & Run
 
