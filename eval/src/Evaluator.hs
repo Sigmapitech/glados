@@ -8,6 +8,7 @@ module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue, evalManyT
 import AST
 import Control.Monad.Except (runExceptT)
 import Control.Monad.State (get, modify, put, runState)
+import Data.Bits (Bits (..))
 import Data.Foldable (Foldable (foldl'))
 import Data.Function ((&))
 import qualified Data.List.NonEmpty as NE
@@ -73,22 +74,42 @@ createEvaluator = \case
     applyFuncEvaluator _ _ = throwEvalError "Attempted to call a non-function value"
 
 getBuiltinEvaluator :: BuitinOp -> [RuntimeValue] -> Evaluator
-getBuiltinEvaluator op args
-  | length args /= 2 = throwEvalError $ show op ++ " expects exactly 2 arguments"
-  | otherwise = case (op, args) of
-      (BPlus, [VInt a, VInt b]) -> return $ VInt (a + b)
-      (BMinus, [VInt a, VInt b]) -> return $ VInt (a - b)
-      (BMult, [VInt a, VInt b]) -> return $ VInt (a * b)
-      (BDiv, [VInt a, VInt b])
-        | b == 0 -> throwEvalError "Unexpected division by zero"
-        | otherwise -> return $ VInt (a `div` b)
-      (BMod, [VInt a, VInt b])
-        | b == 0 -> throwEvalError "Unexpect modulo by zero"
-        | otherwise -> return $ VInt (a `mod` b)
-      (BEq, [VInt a, VInt b]) -> return $ VBool (a == b)
-      (BEq, [VBool a, VBool b]) -> return $ VBool (a == b)
-      (BLt, [VInt a, VInt b]) -> return $ VBool (a < b)
-      (_, _) -> throwEvalError "Unexpected type mismatch"
+getBuiltinEvaluator op args =
+  case (op, args) of
+    -- Arithmetic
+    (BPlus, [VInt a, VInt b]) -> return $ VInt (a + b)
+    (BMinus, [VInt a, VInt b]) -> return $ VInt (a - b)
+    (BMult, [VInt a, VInt b]) -> return $ VInt (a * b)
+    (BDiv, [VInt a, VInt b])
+      | b == 0 -> throwEvalError "Unexpected division by zero"
+      | otherwise -> return $ VInt (a `div` b)
+    (BMod, [VInt a, VInt b])
+      | b == 0 -> throwEvalError "Unexpect modulo by zero"
+      | otherwise -> return $ VInt (a `mod` b)
+    -- Comparison
+    (BEq, [VInt a, VInt b]) -> return $ VBool (a == b)
+    (BEq, [VBool a, VBool b]) -> return $ VBool (a == b)
+    (BNeq, [VInt a, VInt b]) -> return $ VBool (a /= b)
+    (BNeq, [VBool a, VBool b]) -> return $ VBool (a /= b)
+    (BLt, [VInt a, VInt b]) -> return $ VBool (a < b)
+    (BGt, [VInt a, VInt b]) -> return $ VBool (a > b)
+    (BLte, [VInt a, VInt b]) -> return $ VBool (a <= b)
+    (BGte, [VInt a, VInt b]) -> return $ VBool (a >= b)
+    (BGte, [VInt a, VInt b]) -> return $ VBool (a >= b)
+    -- Bitwise
+    (BBitAnd, [VInt a, VInt b]) -> return $ VInt (a .&. b)
+    (BBitAnd, [VBool a, VBool b]) -> return $ VBool (a .&. b)
+    (BBitOr, [VInt a, VInt b]) -> return $ VInt (a .|. b)
+    (BBitOr, [VBool a, VBool b]) -> return $ VBool (a .|. b)
+    (BBitXor, [VInt a, VInt b]) -> return $ VInt (a `xor` b)
+    (BBitXor, [VBool a, VBool b]) -> return $ VBool (a `xor` b)
+    (BBitComplement, [VInt a]) -> return $ VInt (complement a)
+    (BBitComplement, [VBool a]) -> return $ VBool (complement a)
+    (BShiftLeft, [VInt a, VInt b]) -> return $ VInt (a `shiftL` fromInteger b)
+    (BShiftRight, [VInt a, VInt b]) -> return $ VInt (a `shiftR` fromInteger b)
+    (BInc, [VInt a]) -> return $ VInt (a + 1)
+    (BDec, [VInt a]) -> return $ VInt (a - 1)
+    (_, _) -> throwEvalError "Unexpected type mismatch"
 
 evalFrom :: Environment -> AST -> EvalResult
 evalFrom env ast =
