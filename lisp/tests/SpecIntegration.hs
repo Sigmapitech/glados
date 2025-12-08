@@ -1,15 +1,15 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module IntegrationSpec (spec) where
+module SpecIntegration (specIntegration) where
 
-import Ast (RuntimeValue (..), unErrorMsg)
+import AST (RuntimeValue (..), unErrorMsg)
 import Control.Exception (SomeException, catch)
 import Data.List (isInfixOf)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyToValue)
 import Parser (parseFile)
-import SexprtoAST (sexprToAst)
+import SexprtoAST (sexprToAST)
 import System.Directory (doesFileExist)
 import Test.Hspec
 
@@ -22,7 +22,7 @@ evalFile path = do
       catch
         ( do
             sexprs <- parseFile path
-            return $ case mapM sexprToAst sexprs of
+            return $ case mapM sexprToAST sexprs of
               Left err -> Left $ "AST conversion error: " ++ unErrorMsg err
               Right asts -> case sequence (evalManyToValue asts) of
                 Left err -> Left $ "Evaluation error: " ++ unErrorMsg err
@@ -44,8 +44,8 @@ shouldFailWith path expectedErr = do
     Left err -> err `shouldContain` expectedErr
     Right values -> expectationFailure $ "Expected failure but got: " ++ show values
 
-spec :: Spec
-spec = do
+specIntegration :: Spec
+specIntegration = do
   describe "Integration Tests - Full Pipeline (Parse -> AST -> Eval)" $ do
     describe "Assignment Sample Files" $ do
       it "evaluates factorial.scm correctly" $ do
@@ -133,20 +133,6 @@ spec = do
         result `shouldSatisfy` \case
           Left _ -> True
           Right _ -> False
-
-    describe "Valid Parsing" $ do
-      it "parses and evaluates testParseFile.ss" $ do
-        result <- evalFile "tests/fixtures/testParseFile.ss"
-        result `shouldSatisfy` \case
-          Right _ -> True
-          Left _ -> False
-
-    describe "End-to-End Workflow" $ do
-      it "handles empty expressions gracefully" $ do
-        result <- evalFile "tests/fixtures/testParseFile.ss"
-        result `shouldSatisfy` \case
-          Right _ -> True
-          Left _ -> False
 
       it "evaluates multiple top-level expressions" $ do
         result <- evalFile "tests/fixtures/assignment-samples/foo.scm"

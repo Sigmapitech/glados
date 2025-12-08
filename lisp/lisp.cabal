@@ -29,20 +29,13 @@ library
   import:          lang
   import:          warnings
   import:          extensions
-  exposed-modules:
-    Ast
-    Bootstrap
-    Evaluator
-    Lisp
-    Parser
-    SexprtoAST
-
+  exposed-modules: Lisp
   build-depends:
+    , ast
     , base
-    , megaparsec
-    , mtl
+    , eval
     , optparse-applicative
-    , parser-combinators
+    , parser
 
   hs-source-dirs:  src src/parsing
 
@@ -56,7 +49,6 @@ executable lisp-interpreter
   build-depends:
     , base
     , lisp
-    , mtl
     , optparse-applicative
 
 test-suite lisp-interpreter-test
@@ -64,22 +56,17 @@ test-suite lisp-interpreter-test
   import:         warnings
   import:         extensions
   type:           exitcode-stdio-1.0
-  main-is:        LispSpec.hs
-  other-modules:
-    ComplexExamplesSpec
-    EvaluatorSpec
-    IntegrationSpec
-    LispAstSpec
-    LispBootstrapSpec
-    SexprtoASTSpec
-    SpecParser
-
+  main-is:        SpecLisp.hs
+  other-modules:  SpecIntegration
   hs-source-dirs: tests
   build-depends:
+    , ast
     , base                >=4.7 && <5
     , directory
+    , eval
     , hspec
     , hspec-expectations
     , lisp
     , mtl
+    , parser
     , silently

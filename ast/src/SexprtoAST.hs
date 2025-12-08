@@ -1,15 +1,15 @@
 module SexprtoAST where
 
-import Ast (Ast (..), ConvertResult, SExpr (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
+import AST (AST (..), ConvertResult, SExpr (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
 
--- | Convert an SExpr to an Ast, with error handling
-sexprToAst :: SExpr -> ConvertResult
-sexprToAst (SInteger n) = Right $ LiteralInt n
-sexprToAst (SBool b) = Right $ LiteralBool b
-sexprToAst (SSymbol s) = Right $ VariableRef (symbolToVar s)
-sexprToAst (SList xs) = convertList xs
+-- | Convert an SExpr to an AST, with error handling
+sexprToAST :: SExpr -> ConvertResult
+sexprToAST (SInteger n) = Right $ LiteralInt n
+sexprToAST (SBool b) = Right $ LiteralBool b
+sexprToAST (SSymbol s) = Right $ VariableRef (symbolToVar s)
+sexprToAST (SList xs) = convertList xs
 
--- | Helper to convert SExpr list to Ast
+-- | Helper to convert SExpr list to AST
 convertList :: [SExpr] -> ConvertResult
 convertList (SSymbol sym : rest)
   | sym == defineSymbol = convertDefine rest
@@ -22,7 +22,7 @@ convertList [] = Left $ mkError "Empty S-expression list cannot be converted to 
 -- | Convert define form: (define var expr)
 convertDefine :: [SExpr] -> ConvertResult
 convertDefine [SSymbol var, expr] = do
-  astExpr <- sexprToAst expr
+  astExpr <- sexprToAST expr
   return $ Define (symbolToVar var) astExpr
 -- Function form: (define (name params...) body)
 -- Desugar to: (define name (lambda (params...) body))
@@ -32,11 +32,11 @@ convertDefine _ = Left $ mkError "Malformed define: expected (define var expr)"
 -- | Convert lambda form: (lambda (params...) body)
 convertLambda :: [SExpr] -> ConvertResult
 convertLambda [SList [], body] = do
-  astBody <- sexprToAst body
+  astBody <- sexprToAST body
   return $ Lambda [] astBody
 convertLambda [SList params, body] = do
   paramNames <- mapM expectSymbol params
-  astBody <- sexprToAst body
+  astBody <- sexprToAST body
   return $ Lambda (map symbolToParam paramNames) astBody
   where
     expectSymbol (SSymbol s) = Right s
@@ -47,18 +47,18 @@ convertLambda _ = Left $ mkError "Malformed lambda: expected (lambda (params) bo
 -- | Convert if form: (if cond then else)
 convertIf :: [SExpr] -> ConvertResult
 convertIf [cond, thenExpr, elseExpr] = do
-  astCond <- sexprToAst cond
-  astThen <- sexprToAst thenExpr
-  astElse <- sexprToAst elseExpr
+  astCond <- sexprToAST cond
+  astThen <- sexprToAST thenExpr
+  astElse <- sexprToAST elseExpr
   return $ If astCond astThen astElse
 convertIf _ = Left $ mkError "Malformed if: expected (if cond then else)"
 
 -- | Convert function call: (f arg1 arg2 ...)
 convertCall :: SExpr -> [SExpr] -> ConvertResult
 convertCall f [] = do
-  astF <- sexprToAst f
+  astF <- sexprToAST f
   return $ Call astF []
 convertCall f args = do
-  astF <- sexprToAst f
-  astArgs <- mapM sexprToAst args
+  astF <- sexprToAST f
+  astArgs <- mapM sexprToAST args
   return $ Call astF astArgs

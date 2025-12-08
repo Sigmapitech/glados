@@ -1,11 +1,11 @@
 module Lisp (Options (..), options, entrypoint, prologue) where
 
-import Ast (isVoid, unErrorMsg)
+import AST (isVoid, unErrorMsg)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyToValue)
 import Options.Applicative
 import Parser (parseFile, parseString)
-import SexprtoAST (sexprToAst)
+import SexprtoAST (sexprToAST)
 import System.Exit (ExitCode (..), exitWith)
 import System.IO (hPutStrLn, stderr)
 
@@ -39,15 +39,15 @@ prologue = "Interprets a LISP program"
 entrypoint :: Options -> IO ()
 entrypoint opts =
   maybe (getContents >>= parseString) parseFile (inputFile opts)
-    >>= either onAstErr onAstOk . mapM sexprToAst
+    >>= either onASTErr onASTOk . mapM sexprToAST
   where
     errorHelper prefix errMsg =
       hPutStrLn stderr (prefix ++ unErrorMsg errMsg)
         >> exitWith (ExitFailure 84)
-    onAstErr = errorHelper "AST error: "
+    onASTErr = errorHelper "AST error: "
     onEvalErr = errorHelper "*** Error : "
 
-    onAstOk asts =
+    onASTOk asts =
       either
         onEvalErr
         (onEvalOk . NE.toList)

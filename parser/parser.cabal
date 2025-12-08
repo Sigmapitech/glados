@@ -1,5 +1,5 @@
 cabal-version: 3.8
-name:          compiler
+name:          parser
 version:       0.0.1
 build-type:    Simple
 description:   Generic Language and data operand syntax
@@ -23,32 +23,22 @@ common release
 library
   import:          lang
   import:          warnings
-  import:          release
+  exposed-modules: Parser
   hs-source-dirs:  src
-  exposed-modules: Compiler
   build-depends:
+    , ast
     , base
-    , optparse-applicative
+    , megaparsec
 
-executable compiler-exe
-  import:         lang
-  import:         warnings
-  import:         release
-  main-is:        Main.hs
-  hs-source-dirs: app
-  build-depends:
-    , base
-    , compiler
-    , optparse-applicative
-
-test-suite compiler-test
+test-suite parser-test
   import:         lang
   import:         warnings
   type:           exitcode-stdio-1.0
   main-is:        Spec.hs
   hs-source-dirs: tests
   build-depends:
-    , base                >=4.7 && <5
-    , directory
+    , ast
+    , base
     , hspec
-    , hspec-expectations
+    , parser
+    , silently

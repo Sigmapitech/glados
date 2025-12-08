@@ -3,7 +3,9 @@ packages:
   lisp/
   ast/
   compiler/
+  eval/
   poc/
   cli/
+  parser/
 
 tests: True

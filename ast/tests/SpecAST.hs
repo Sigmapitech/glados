@@ -1,12 +1,12 @@
-module LispAstSpec (astModuleSpec) where
+module SpecAST (specAST) where
 
-import Ast hiding (initialEnv)
+import AST hiding (initialEnv)
 import Data.Void (Void)
 import Test.Hspec
 
 -- | Test suite for newtype wrappers and their extractors
-newtypeSpec :: Spec
-newtypeSpec = do
+specNewtype :: Spec
+specNewtype = do
   describe "VarName" $ do
     it "should create and extract VarName" $ do
       unVarName (VarName "x") `shouldBe` "x"
@@ -57,8 +57,8 @@ newtypeSpec = do
       ErrorMsg "err1" `shouldNotBe` ErrorMsg "err2"
 
 -- | Test suite for name conversion functions
-conversionSpec :: Spec
-conversionSpec = do
+specConversion :: Spec
+specConversion = do
   describe "paramToVar" $ do
     it "should convert ParamName to VarName" $ do
       paramToVar (ParamName "x") `shouldBe` VarName "x"
@@ -84,8 +84,8 @@ conversionSpec = do
       varToParam (paramToVar param) `shouldBe` param
 
 -- | Test suite for SExpr data type
-sexprSpec :: Spec
-sexprSpec = do
+specSexpr :: Spec
+specSexpr = do
   describe "SExpr" $ do
     it "should create SInteger" $ do
       SInteger 42 `shouldBe` SInteger 42
@@ -112,10 +112,10 @@ sexprSpec = do
       SInteger 1 `shouldNotBe` SBool True
       SSymbol "x" `shouldNotBe` SList []
 
--- | Test suite for Ast data type
-astSpec :: Spec
-astSpec = do
-  describe "Ast" $ do
+-- | Test suite for AST data type
+specASTType :: Spec
+specASTType = do
+  describe "AST" $ do
     it "should create LiteralInt" $ do
       LiteralInt 42 `shouldBe` LiteralInt 42
       LiteralInt (-100) `shouldBe` LiteralInt (-100)
@@ -149,7 +149,7 @@ astSpec = do
       ifThen ifExpr `shouldBe` LiteralInt 1
       ifElse ifExpr `shouldBe` LiteralInt 0
 
-    it "should create nested Ast structures" $ do
+    it "should create nested AST structures" $ do
       let nested =
             Define
               "factorial"
@@ -164,8 +164,8 @@ astSpec = do
       nested `shouldBe` nested
 
 -- | Test suite for RuntimeValue data type
-runtimeValueSpec :: Spec
-runtimeValueSpec = do
+specRuntimeValue :: Spec
+specRuntimeValue = do
   describe "RuntimeValue" $ do
     it "should compare VInt values" $ do
       VInt 42 `shouldBe` VInt 42
@@ -200,8 +200,8 @@ runtimeValueSpec = do
       VInt 0 `shouldNotBe` VUnit
 
 -- | Test suite for Environment functions
-environmentSpec :: Spec
-environmentSpec = do
+specEnvironment :: Spec
+specEnvironment = do
   describe "emptyEnv" $ do
     it "should create an empty environment" $ do
       emptyEnv `shouldBe` []
@@ -254,8 +254,8 @@ environmentSpec = do
       lookupEnv "c" env `shouldBe` Just (VBool False)
 
 -- | Test suite for Evaluator monad
-evaluatorSpec :: Spec
-evaluatorSpec = do
+specEvaluator :: Spec
+specEvaluator = do
   describe "runEvaluator" $ do
     it "should run a successful computation" $ do
       let computation = return (VInt 42)
@@ -275,8 +275,8 @@ evaluatorSpec = do
       result `shouldBe` Left (ErrorMsg "test error")
 
 -- | Test suite for error handling helpers
-errorSpec :: Spec
-errorSpec = do
+specError :: Spec
+specError = do
   describe "mkError" $ do
     it "should create an ErrorMsg" $ do
       mkError "test" `shouldBe` ErrorMsg "test"
@@ -297,8 +297,8 @@ errorSpec = do
       addErrContext "context" (Right (VInt 10)) `shouldBe` Right (VInt 10)
 
 -- | Test suite for built-in operators
-builtinSpec :: Spec
-builtinSpec = do
+specBuiltin :: Spec
+specBuiltin = do
   describe "arithmetic operators" $ do
     it "should define builtinPlus" $ do
       builtinPlus `shouldBe` VarName "+"
@@ -340,8 +340,8 @@ builtinSpec = do
       isBuiltin (VarName "define") `shouldBe` False
 
 -- | Test suite for special form symbols
-symbolSpec :: Spec
-symbolSpec = do
+specSymbol :: Spec
+specSymbol = do
   describe "special form symbols" $ do
     it "should define defineSymbol" $ do
       defineSymbol `shouldBe` SymbolName "define"
@@ -352,17 +352,17 @@ symbolSpec = do
     it "should define ifSymbol" $ do
       ifSymbol `shouldBe` SymbolName "if"
 
--- | Exported combined spec for Ast module
-astModuleSpec :: Spec
-astModuleSpec = do
-  describe "Ast module" $ do
-    newtypeSpec
-    conversionSpec
-    sexprSpec
-    astSpec
-    runtimeValueSpec
-    environmentSpec
-    evaluatorSpec
-    errorSpec
-    builtinSpec
-    symbolSpec
+-- | Exported combined spec for AST module
+specAST :: Spec
+specAST = do
+  describe "AST module" $ do
+    specNewtype
+    specConversion
+    specSexpr
+    specASTType
+    specRuntimeValue
+    specEnvironment
+    specEvaluator
+    specError
+    specBuiltin
+    specSymbol

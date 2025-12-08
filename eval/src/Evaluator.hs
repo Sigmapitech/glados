@@ -5,14 +5,14 @@
 -- handling VariableRef lookups, function calls, conditionals, and built-in operations.
 module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue, evalManyToValue) where
 
-import Ast
+import AST
 import Control.Monad.Except (runExceptT)
 import Control.Monad.State (get, modify, put, runState)
 import Data.Foldable (Foldable (foldl'))
 import Data.Function ((&))
 import qualified Data.List.NonEmpty as NE
 
-createEvaluator :: Ast -> Evaluator
+createEvaluator :: AST -> Evaluator
 createEvaluator = \case
   LiteralInt number -> return $ VInt number
   LiteralBool bool -> return $ VBool bool
@@ -29,7 +29,7 @@ createEvaluator = \case
         Just val -> return val
         Nothing -> throwEvalError $ "variable " ++ unVarName name ++ " is not bound."
 
-    defineEvaluator :: VarName -> Ast -> Evaluator
+    defineEvaluator :: VarName -> AST -> Evaluator
     defineEvaluator name expr =
       (createEvaluator expr >>= declareInEnv)
         >> return VUnit
@@ -40,7 +40,7 @@ createEvaluator = \case
           (VProcedure Nothing param body) -> (VProcedure (Just name) param body)
           other -> other
 
-    ifEvaluator :: Ast -> Ast -> Ast -> Evaluator
+    ifEvaluator :: AST -> AST -> AST -> Evaluator
     ifEvaluator condExpr thenExpr elseExpr = do
       cond <- createEvaluator condExpr
       case cond of
@@ -50,7 +50,7 @@ createEvaluator = \case
 
     -- Buitin handling was defer to the function application
     -- this allow the builting functions to show in the environment
-    callEvaluator :: Ast -> [Ast] -> Evaluator
+    callEvaluator :: AST -> [AST] -> Evaluator
     callEvaluator funcExpr argExprs = do
       func <- createEvaluator funcExpr
       args <- mapM createEvaluator argExprs
@@ -90,7 +90,7 @@ getBuiltinEvaluator op args
       (BLt, [VInt a, VInt b]) -> return $ VBool (a < b)
       (_, _) -> throwEvalError "Unexpected type mismatch"
 
-evalFrom :: Environment -> Ast -> EvalResult
+evalFrom :: Environment -> AST -> EvalResult
 evalFrom env ast =
   let (result, env') = env & runEvaluator (createEvaluator ast)
    in (NE.singleton result, env')
@@ -105,7 +105,7 @@ evalFrom env ast =
 --
 -- How it works:
 --
--- >>> mapM (runExceptT . createEvaluator) [ast1, ast2, ast3] :: NonEmpty Ast
+-- >>> mapM (runExceptT . createEvaluator) [ast1, ast2, ast3] :: NonEmpty AST
 -- -- Is equivalent to:
 -- do
 --   result1 <- runExceptT (createEvaluator ast1)  -- State Environment ValueResult
@@ -114,20 +114,20 @@ evalFrom env ast =
 --   return (result1 :| [result2, result3])        -- State Environment (NonEmpty ValueResult)
 --
 -- This allows MapM to only thread States.
-evalManyFrom :: Environment -> [Ast] -> EvalResult
+evalManyFrom :: Environment -> [AST] -> EvalResult
 evalManyFrom env [] = (NE.singleton (Left "No expression to evaluate"), env)
 evalManyFrom env asts = env & runState (mapM (runExceptT . createEvaluator) $ NE.fromList asts)
 
-eval :: Ast -> EvalResult
+eval :: AST -> EvalResult
 eval = evalFrom initialEnv
 
-evalMany :: [Ast] -> EvalResult
+evalMany :: [AST] -> EvalResult
 evalMany = evalManyFrom initialEnv
 
 -- | Get only the value, discarding the final environment
-evalToValue :: Ast -> Result RuntimeValue
+evalToValue :: AST -> Result RuntimeValue
 evalToValue ast = NE.head $ fst $ eval ast
 
 -- | Discard the final environment
-evalManyToValue :: [Ast] -> ValueResult
+evalManyToValue :: [AST] -> ValueResult
 evalManyToValue asts = fst $ evalMany asts

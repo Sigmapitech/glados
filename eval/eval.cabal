@@ -1,5 +1,5 @@
 cabal-version: 3.8
-name:          compiler
+name:          eval
 version:       0.0.1
 build-type:    Simple
 description:   Generic Language and data operand syntax
@@ -21,34 +21,38 @@ common release
   ghc-options: -O2
 
 library
-  import:          lang
-  import:          warnings
-  import:          release
-  hs-source-dirs:  src
-  exposed-modules: Compiler
-  build-depends:
-    , base
-    , optparse-applicative
+  import:             lang
+  import:             warnings
+  exposed-modules:    Evaluator
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
 
-executable compiler-exe
-  import:         lang
-  import:         warnings
-  import:         release
-  main-is:        Main.hs
-  hs-source-dirs: app
+  hs-source-dirs:     src
   build-depends:
+    , ast
     , base
-    , compiler
-    , optparse-applicative
+    , mtl
 
-test-suite compiler-test
-  import:         lang
-  import:         warnings
-  type:           exitcode-stdio-1.0
-  main-is:        Spec.hs
-  hs-source-dirs: tests
+test-suite eval-test
+  import:             lang
+  import:             warnings
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+
+  other-modules:
+    SpecComplexExamples
+    SpecEvaluator
+
+  type:               exitcode-stdio-1.0
+  main-is:            Spec.hs
+  hs-source-dirs:     tests
   build-depends:
+    , ast
     , base                >=4.7 && <5
     , directory
+    , eval
     , hspec
     , hspec-expectations
+    , silently
