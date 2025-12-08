@@ -162,17 +162,44 @@ data BuitinOp
   | BDiv
   | BMod
   | BEq
+  | BNeq
   | BLt
+  | BGt
+  | BLte
+  | BGte
+  | BBitAnd
+  | BBitOr
+  | BBitXor
+  | BBitComplement
+  | BShiftLeft
+  | BShiftRight
+  | BInc
+  | BDec
   deriving (Eq)
 
 instance Show BuitinOp where
+  -- match scheme builtin names
+  -- see: https://github.com/cisco/ChezScheme/blob/v10.3.0/csug/tspl4/tspl.idx
+  -- (exported symbol include \scheme{name})
   show BPlus = "+"
   show BMinus = "-"
   show BMult = "*"
   show BDiv = "div"
   show BMod = "mod"
   show BEq = "eq?"
+  show BNeq = "neq?"
   show BLt = "<"
+  show BGt = ">"
+  show BLte = "<="
+  show BGte = ">="
+  show BBitAnd = "bitwise-and"
+  show BBitOr = "bitwise-or"
+  show BBitXor = "bitwise-xor"
+  show BBitComplement = "bitwise-not"
+  show BShiftLeft = "bitwise-arithmetic-shift-left"
+  show BShiftRight = "bitwise-arithmetic-shift-right"
+  show BInc = "add1"
+  show BDec = "sub1"
 
 builtinPlus, builtinMinus, builtinMult :: VarName
 builtinPlus = VarName "+"
@@ -183,9 +210,30 @@ builtinDiv, builtinMod :: VarName
 builtinDiv = VarName "div"
 builtinMod = VarName "mod"
 
-builtinEq, builtinLt :: VarName
+builtinEq, builtinNeq :: VarName
 builtinEq = VarName "eq?"
+builtinNeq = VarName "neq?"
+
+builtinLt, builtinGt, builtinLte, builtinGte :: VarName
 builtinLt = VarName "<"
+builtinGt = VarName ">"
+builtinLte = VarName "<="
+builtinGte = VarName ">="
+
+builtinBitAnd, builtinBitOr, builtinBitXor, builtinBitComplement :: VarName
+builtinBitAnd = VarName "bitwise-and"
+builtinBitOr = VarName "bitwise-or"
+builtinBitXor = VarName "bitwise-xor"
+builtinBitComplement = VarName "bitwise-not"
+
+builtinBitShiftLeft, builtinBitShiftRight :: VarName
+builtinBitShiftLeft = VarName "bitwise-arithmetic-shift-left"
+builtinBitShiftRight = VarName "bitwise-arithmetic-shift-right"
+
+-- | Built-in decrement/increment unary operators
+builtinIncrement, builtinDecrement :: VarName
+builtinIncrement = VarName "add1"
+builtinDecrement = VarName "sub1"
 
 allBuitinName :: [VarName]
 allBuitinName =
@@ -195,7 +243,19 @@ allBuitinName =
     builtinDiv,
     builtinMod,
     builtinEq,
-    builtinLt
+    builtinNeq,
+    builtinLt,
+    builtinGt,
+    builtinLte,
+    builtinGte,
+    builtinBitAnd,
+    builtinBitOr,
+    builtinBitXor,
+    builtinBitComplement,
+    builtinBitShiftLeft,
+    builtinBitShiftRight,
+    builtinIncrement,
+    builtinDecrement
   ]
 
 isBuiltin :: VarName -> Bool
@@ -213,7 +273,19 @@ initialEnv =
     (builtinDiv, VBuiltin BDiv),
     (builtinMod, VBuiltin BMod),
     (builtinEq, VBuiltin BEq),
-    (builtinLt, VBuiltin BLt)
+    (builtinNeq, VBuiltin BNeq),
+    (builtinLt, VBuiltin BLt),
+    (builtinGt, VBuiltin BGt),
+    (builtinLte, VBuiltin BLte),
+    (builtinGte, VBuiltin BGte),
+    (builtinBitAnd, VBuiltin BBitAnd),
+    (builtinBitOr, VBuiltin BBitOr),
+    (builtinBitXor, VBuiltin BBitXor),
+    (builtinBitComplement, VBuiltin BBitComplement),
+    (builtinBitShiftLeft, VBuiltin BShiftLeft),
+    (builtinBitShiftRight, VBuiltin BShiftRight),
+    (builtinIncrement, VBuiltin BInc),
+    (builtinDecrement, VBuiltin BDec)
   ]
 
 defineSymbol, lambdaSymbol, ifSymbol :: SymbolName
