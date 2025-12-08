@@ -1,0 +1,84 @@
+name: Create Release
+
+on:
+  workflow_run:
+    workflows: ["Bump Cabal Versions"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Checkout the base branch (where the version bump commit is)
+          ref: ${{ github.event.workflow_run.pull_requests[0].base.ref }}
+          fetch-depth: 2
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.8.4'
+          cabal-version: 'latest'
+
+      - name: Detect Changes, Build, and Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cabal update
+
+          changed_files=$(git diff-tree --no-commit-id --name-only -r HEAD)
+
+          echo "Files changed in last commit:"
+          echo "$changed_files"
+
+          for file in $changed_files; do
+            if [[ "$file" == *".cabal" ]]; then
+
+              version=$(grep -i "^version:" "$file" | awk '{print $2}')
+              pkg_name=$(basename "$file" .cabal)
+              tag="${pkg_name}-v${version}"
+
+              echo "----------------------------------------"
+              echo "Processing package: $pkg_name"
+              echo "Version: $version"
+              echo "Tag: $tag"
+
+              if gh release view "$tag" > /dev/null 2>&1; then
+                echo "Release $tag already exists."
+              else
+                echo "Creating release $tag..."
+                gh release create "$tag" \
+                  --title "$pkg_name v$version" \
+                  --generate-notes
+              fi
+
+              # Looks for lines starting with 'executable <name>'
+              executables=$(grep "^executable" "$file" | awk '{print $2}')
+
+              if [ -z "$executables" ]; then
+                echo "No executables found in $file. Skipping build."
+                continue
+              fi
+
+              for exe_name in $executables; do
+                echo "Building executable: $exe_name..."
+
+                cabal build "exe:$exe_name" --enable-executable-static
+
+                bin_path=$(cabal list-bin "exe:$exe_name")
+
+                echo "Found binary at: $bin_path"
+
+                echo "Uploading artifact..."
+                gh release upload "$tag" "$bin_path" --clobber
+              done
+            fi
+          done
