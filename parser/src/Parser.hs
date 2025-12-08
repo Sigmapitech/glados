@@ -1,4 +1,4 @@
-module Parser (parseFile, parseString) where
+module Parser (parseFile, parseString, parseNext) where
 
 import AST (SExpr (..), SymbolName (..))
 import Data.Void (Void)
@@ -9,6 +9,7 @@ import Text.Megaparsec
     Parsec,
     between,
     errorBundlePretty,
+    getInput,
     many,
     oneOf,
     optional,
@@ -91,3 +92,16 @@ parseFile path = do
       hPutStrLn stderr (errorBundlePretty bundle)
       exitWith (ExitFailure 84)
     Right ast -> return ast
+
+parseNext :: String -> IO (SExpr, String)
+parseNext input = case runParser parser "<input>" input of
+  Left bundle -> do
+    hPutStrLn stderr (errorBundlePretty bundle)
+    exitWith (ExitFailure 84)
+  Right res -> return res
+  where
+    parser = do
+      sc
+      ast <- parseSExpr
+      rest <- getInput
+      return (ast, rest)

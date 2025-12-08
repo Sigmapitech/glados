@@ -2,7 +2,7 @@ module Main where
 
 import AST (SExpr (..), SymbolName (..))
 import Control.Exception (SomeException, try)
-import Parser (parseFile, parseString)
+import Parser (parseFile, parseNext, parseString)
 import System.IO (stderr)
 import System.IO.Silently (hSilence)
 import Test.Hspec (Spec, describe, hspec, it, shouldBe, shouldSatisfy)
@@ -187,6 +187,58 @@ parserSpec = do
 
     it "fails on invalid file content" $ do
       result <- try (parseFileWrapper "tests/testInvalidFile.ss") :: IO (Either SomeException [SExpr])
+      result `shouldSatisfy` isLeft
+
+  describe "Parser - parseNext" $ do
+    it "parses first expression and returns rest" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "42 100"
+      expr `shouldBe` SInteger 42
+      rest `shouldBe` "100"
+
+    it "parses list and returns rest" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "(+ 1 2) (* 3 4)"
+      expr `shouldBe` SList [SSymbol (SymbolName "+"), SInteger 1, SInteger 2]
+      rest `shouldBe` "(* 3 4)"
+
+    it "returns empty string when no rest" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "42"
+      expr `shouldBe` SInteger 42
+      rest `shouldBe` ""
+
+    it "handles leading whitespace" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "   42 100"
+      expr `shouldBe` SInteger 42
+      rest `shouldBe` "100"
+
+    it "handles comments before expression" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "; comment\n42 100"
+      expr `shouldBe` SInteger 42
+      rest `shouldBe` "100"
+
+    it "preserves trailing whitespace in rest" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "42   100"
+      expr `shouldBe` SInteger 42
+      rest `shouldBe` "100"
+
+    it "parses nested expression and returns rest" $ do
+      (expr, rest) <- hSilence [stderr] $ parseNext "(define x (+ 1 2)) y"
+      expr `shouldBe` SList [SSymbol (SymbolName "define"), SSymbol (SymbolName "x"), SList [SSymbol (SymbolName "+"), SInteger 1, SInteger 2]]
+      rest `shouldBe` "y"
+
+    it "fails on empty input" $ do
+      result <- try (hSilence [stderr] $ parseNext "") :: IO (Either SomeException (SExpr, String))
+      result `shouldSatisfy` isLeft
+
+    it "fails on whitespace-only input" $ do
+      result <- try (hSilence [stderr] $ parseNext "   ") :: IO (Either SomeException (SExpr, String))
+      result `shouldSatisfy` isLeft
+
+    it "fails on comment-only input" $ do
+      result <- try (hSilence [stderr] $ parseNext "; only comment") :: IO (Either SomeException (SExpr, String))
+      result `shouldSatisfy` isLeft
+
+    it "fails on invalid syntax" $ do
+      result <- try (hSilence [stderr] $ parseNext "(+ 1 2") :: IO (Either SomeException (SExpr, String))
       result `shouldSatisfy` isLeft
 
 main :: IO ()
