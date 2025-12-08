@@ -2,6 +2,7 @@ module Main (main) where
 
 import ComplexExamplesSpec (spec)
 import EvaluatorSpec (spec)
+import IntegrationSpec (spec)
 import LispAstSpec (astModuleSpec)
 import LispBootstrapSpec (bootstrapModuleSpec)
 import SexprtoASTSpec (spec)
@@ -16,3 +17,4 @@ main = hspec $ do
   EvaluatorSpec.spec
   ComplexExamplesSpec.spec
   SexprtoASTSpec.spec
+  IntegrationSpec.spec
