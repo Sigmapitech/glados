@@ -25,7 +25,7 @@ common extensions
 common release
   ghc-options: -O2
 
-library lisp-interpreter-lib
+library
   import:          lang
   import:          warnings
   import:          extensions
@@ -33,13 +33,15 @@ library lisp-interpreter-lib
     Ast
     Bootstrap
     Evaluator
-    SexprtoAST
+    Lisp
     Parser
+    SexprtoAST
 
   build-depends:
     , base
-    , mtl
     , megaparsec
+    , mtl
+    , optparse-applicative
     , parser-combinators
 
   hs-source-dirs:  src src/parsing
@@ -50,10 +52,12 @@ executable lisp-interpreter
   import:         extensions
   import:         release
   main-is:        Main.hs
-  hs-source-dirs: src
+  hs-source-dirs: app
   build-depends:
     , base
-    , lisp:lisp-interpreter-lib
+    , lisp
+    , mtl
+    , optparse-applicative
 
 test-suite lisp-interpreter-test
   import:         lang
@@ -66,15 +70,15 @@ test-suite lisp-interpreter-test
     EvaluatorSpec
     LispAstSpec
     LispBootstrapSpec
+    SexprtoASTSpec
     SpecParser
 
-
   hs-source-dirs: tests
-  other-modules:  SexprtoASTSpec
   build-depends:
-    , base                       >=4.7 && <5
+    , base                >=4.7 && <5
     , directory
     , hspec
     , hspec-expectations
-    , lisp:lisp-interpreter-lib
+    , lisp
+    , mtl
     , silently

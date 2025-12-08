@@ -1,5 +1,5 @@
 cabal-version: 3.8
-name:          compiler
+name:          cli
 version:       0.0.1
 build-type:    Simple
 description:   Generic Language and data operand syntax
@@ -20,38 +20,15 @@ common warnings
 common release
   ghc-options: -O2
 
-library
-  import:          lang
-  import:          warnings
-  import:          release
-  hs-source-dirs:  src
-  exposed-modules: Compiler
-  build-depends:
-    , ast:ast-lib
-    , base
-    , optparse-applicative
-
-executable compiler-exe
+executable cli
   import:         lang
   import:         warnings
   import:         release
   main-is:        Main.hs
-  hs-source-dirs: app
+  hs-source-dirs: src
   build-depends:
-    , ast:ast-lib
     , base
     , compiler
+    , lisp
     , optparse-applicative
-
-test-suite compiler-test
-  import:         lang
-  import:         warnings
-  type:           exitcode-stdio-1.0
-  main-is:        Spec.hs
-  hs-source-dirs: tests
-  build-depends:
-    , ast:ast-lib
-    , base                >=4.7 && <5
-    , directory
-    , hspec
-    , hspec-expectations
+    , process
