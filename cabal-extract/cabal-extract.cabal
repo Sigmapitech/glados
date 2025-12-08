@@ -1,6 +1,6 @@
 cabal-version: 3.8
 name:          cabal-extract
-version:       0.0.1
+version:       1.0.0
 build-type:    Simple
 description:   Extract cabal build-depends informations
 homepage:      https://github.com/Sigmapitech/glados
