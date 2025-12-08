@@ -182,12 +182,12 @@ runtimeValueSpec = do
       VUnit == VUnit `shouldNotBe` False
 
     it "should compare VProcedure values" $ do
-      let f = VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1])
+      let f = VProcedure Nothing ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1])
       f `shouldBe` f
 
     it "should not compare different VProcedure values as equal" $ do
-      let f1 = VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1])
-      let f2 = VProcedure ["y"] (Call (VariableRef "+") [VariableRef "y", LiteralInt 2])
+      let f1 = VProcedure Nothing ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1])
+      let f2 = VProcedure Nothing ["y"] (Call (VariableRef "+") [VariableRef "y", LiteralInt 2])
       f1 `shouldNotBe` f2
 
     it "should compare VBuiltin values" $ do

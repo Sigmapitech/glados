@@ -95,7 +95,7 @@ spec = do
       it "evaluates lambda1.scm - simple lambda (returns procedure)" $ do
         result <- evalFile "tests/fixtures/assignment-samples/lambda1.scm"
         result `shouldSatisfy` \case
-          Right [VProcedure _ _] -> True
+          Right [VProcedure {}] -> True
           _ -> False
 
       it "evaluates lambda2.scm - lambda with immediate call" $ do

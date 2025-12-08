@@ -77,7 +77,7 @@ defineEvalSpec = do
             ast = Define "increment" lambda
             (results, env) = eval ast
         NE.head results `shouldBe` Right VUnit
-        lookupEnv "increment" env `shouldBe` Just (VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1]))
+        lookupEnv "increment" env `shouldBe` Just (VProcedure (Just "increment") ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1]))
 
       it "defines a function and calls it" $ do
         let lambda = Lambda ["x"] (Call (VariableRef "*") [VariableRef "x", LiteralInt 2])
@@ -92,15 +92,15 @@ defineEvalSpec = do
             define1 = Define "inc" add
             define2 = Define "double" mul
             (_, env) = evalMany [define1, define2]
-        lookupEnv "inc" env `shouldBe` Just (VProcedure ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1]))
-        lookupEnv "double" env `shouldBe` Just (VProcedure ["x"] (Call (VariableRef "*") [VariableRef "x", LiteralInt 2]))
+        lookupEnv "inc" env `shouldBe` Just (VProcedure (Just "inc") ["x"] (Call (VariableRef "+") [VariableRef "x", LiteralInt 1]))
+        lookupEnv "double" env `shouldBe` Just (VProcedure (Just "double") ["x"] (Call (VariableRef "*") [VariableRef "x", LiteralInt 2]))
 
       it "defines a function with multiple parameters" $ do
         let lambda = Lambda ["x", "y"] (Call (VariableRef "+") [VariableRef "x", VariableRef "y"])
             ast = Define "add" lambda
             (_, env) = eval ast
         case lookupEnv "add" env of
-          Just (VProcedure params _) -> params `shouldBe` ["x", "y"]
+          Just (VProcedure _ params _) -> params `shouldBe` ["x", "y"]
           _ -> expectationFailure "Expected VProcedure with two parameters"
 
       it "defines a recursive function structure" $ do
@@ -115,14 +115,14 @@ defineEvalSpec = do
             ast = Define "factorial" lambda
             (_, env) = eval ast
         case lookupEnv "factorial" env of
-          Just (VProcedure _ _) -> True `shouldBe` True
+          Just (VProcedure {}) -> True `shouldBe` True
           _ -> expectationFailure "Expected VProcedure"
 
       it "defines a function with no parameters" $ do
         let lambda = Lambda [] (LiteralInt 42)
             ast = Define "constant" lambda
             (_, env) = eval ast
-        lookupEnv "constant" env `shouldBe` Just (VProcedure [] (LiteralInt 42))
+        lookupEnv "constant" env `shouldBe` Just (VProcedure (Just "constant") [] (LiteralInt 42))
 
 -- | Test suite for lambda expressions
 lambdaEvalSpec :: Spec
@@ -131,17 +131,17 @@ lambdaEvalSpec = do
     it "creates a closure with single parameter" $ do
       let ast = Lambda ["x"] (VariableRef "x")
           result = evalToValue ast
-      result `shouldBe` Right (VProcedure ["x"] (VariableRef "x"))
+      result `shouldBe` Right (VProcedure Nothing ["x"] (VariableRef "x"))
 
     it "creates a closure with multiple parameters" $ do
       let ast = Lambda ["x", "y"] (Call (VariableRef "+") [VariableRef "x", VariableRef "y"])
           result = evalToValue ast
-      result `shouldBe` Right (VProcedure ["x", "y"] (Call (VariableRef "+") [VariableRef "x", VariableRef "y"]))
+      result `shouldBe` Right (VProcedure Nothing ["x", "y"] (Call (VariableRef "+") [VariableRef "x", VariableRef "y"]))
 
     it "creates a closure with no parameters" $ do
       let ast = Lambda [] (LiteralInt 42)
           result = evalToValue ast
-      result `shouldBe` Right (VProcedure [] (LiteralInt 42))
+      result `shouldBe` Right (VProcedure Nothing [] (LiteralInt 42))
 
     it "creates a closure with complex body" $ do
       let body =
@@ -151,7 +151,7 @@ lambdaEvalSpec = do
               (VariableRef "n")
           ast = Lambda ["n"] body
           result = evalToValue ast
-      result `shouldBe` Right (VProcedure ["n"] body)
+      result `shouldBe` Right (VProcedure Nothing ["n"] body)
 
 -- | Test suite for function call evaluation
 callEvalSpec :: Spec
