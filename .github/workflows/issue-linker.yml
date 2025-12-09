@@ -32,11 +32,11 @@ jobs:
         with:
           script: |
             let issueNumber, issueData;
-            
+
             if (context.eventName === 'workflow_dispatch') {
               issueNumber = '${{ inputs.issue_number }}';
-              
-              
+
+
               const response = await github.rest.issues.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -47,7 +47,7 @@ jobs:
               issueData = context.payload.issue;
               issueNumber = issueData?.number;
             }
-            
+
             const body = issueData.body || '';
             const childId = issueData.node_id;
 
@@ -60,41 +60,33 @@ jobs:
             if (!parentMatch && !inputParentNumber) {
               throw new Error('No parent issue found in body and no parent_number input provided');
             }
-            
-            const parentNumber = '${{ inputs.parent_number }}' || parseInt(parentMatch[1]);
+
+            const parentNumber = inputParentNumber || parseInt(parentMatch[1]);
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            
+
             console.log(`Linking task #${issueNumber} to parent #${parentNumber}`);
-            
-            try {
-              const parentResponse = await github.rest.issues.get({
-                owner,
-                repo,
-                issue_number: parentNumber
-              });
-              const parentNodeId = parentResponse.data.node_id;
-              
-              const mutation = `
-                mutation {
-                  addSubIssue(input: {
-                    issueId: "${parentNodeId}"
-                    subIssueId: "${childId}"
-                  }) {
-                    issue {
-                      number
-                    }
+
+            const parentResponse = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: parentNumber
+            });
+            const parentNodeId = parentResponse.data.node_id;
+
+            const mutation = `
+              mutation {
+                addSubIssue(input: {
+                  issueId: "${parentNodeId}"
+                  subIssueId: "${childId}"
+                }) {
+                  issue {
+                    number
                   }
                 }
-              `;
-              
-              await github.graphql(mutation);
-              
-              console.log(`Successfully linked #${issueNumber} as sub-issue of #${parentNumber}`);
-            } catch (error) {
-              console.error(`Error linking to parent: ${error.message}`);
-              
-              if (error.status === 404) {
-                console.error(`Parent issue #${parentNumber} not found`);
               }
-            }
+            `;
+
+            await github.graphql(mutation);
+
+            console.log(`Successfully linked #${issueNumber} as sub-issue of #${parentNumber}`);
