@@ -1,6 +1,7 @@
 module Lisp (Options (..), options, entrypoint, prologue) where
 
 import AST (Environment, ErrorMsg, SExpr, initialEnv, isVoid, unErrorMsg)
+import Control.Exception (SomeException, try)
 import Control.Monad (unless)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyFrom, evalManyToValue)
@@ -61,12 +62,15 @@ evaluateSExpr opts = either onAstErr evalAst . mapM sexprToAST
 evaluateSExprWithEnv :: Options -> Environment -> [SExpr] -> IO ()
 evaluateSExprWithEnv opts env = either onAstErr evalAst . mapM sexprToAST
   where
-    onAstErr = errorHelper "AST error: "
+    errorHelperWithoutExit prefix errMsg =
+      hPutStrLn stderr (prefix ++ unErrorMsg errMsg)
+    onAstErr = errorHelperWithoutExit "AST error: "
+    evalAst [] = return ()
     evalAst asts =
       let (results, env') = evalManyFrom env asts
        in either onEvalErr (`onEvalOk` env') (sequence results)
 
-    onEvalErr = errorHelper "*** Error : "
+    onEvalErr = errorHelperWithoutExit "*** Error : "
     onEvalOk vals env' =
       let output = unlines . map show . filter (not . isVoid) $ NE.toList vals
        in maybe putStr writeFile (outputFile opts) output
@@ -79,8 +83,15 @@ runReplWithEnv opts env =
     >>= \line ->
       unless
         (null line)
-        (parseString line >>= evaluateSExprWithEnv opts env)
+        (wrapper line >>= evaluateSExprWithEnv opts env)
         >> runReplWithEnv opts env
+  where
+    wrapper :: String -> IO [SExpr]
+    wrapper line = do
+      result <- try (parseString line) :: IO (Either SomeException [SExpr])
+      case result of
+        Left _ -> return []
+        Right res -> return res
 
 entrypoint :: Options -> IO ()
 entrypoint opts = case inputFile opts of
