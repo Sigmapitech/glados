@@ -38,7 +38,9 @@ symbol :: String -> Parser String
 symbol = L.symbol sc
 
 parens :: Parser a -> Parser a
-parens = between (symbol "(") (symbol ")")
+parens p = boxed "(" ")" p <|> boxed "[" "]" p
+  where
+    boxed open close = between (symbol open) (symbol close)
 
 -- Parsers
 integer :: Parser Integer
