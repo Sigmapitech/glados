@@ -92,6 +92,10 @@
               regex-tdfa
               silently
             ]))
+          ])
+          ++ (with pkgs; [
+            pnpm
+            nodejs
           ]);
       };
     });
