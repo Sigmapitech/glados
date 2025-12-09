@@ -7,6 +7,12 @@ all:
 clean:
 	cabal clean
 
+test:
+	cabal test all
+
+coverage:
+	cabal test --enable-coverage
+
 fclean: clean
 
 .NOTPARALLEL: re
