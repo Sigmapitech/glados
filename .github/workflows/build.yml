@@ -1,0 +1,31 @@
+name: Build and test
+
+on:
+  pull_request:
+    types:
+      [
+        opened,
+        synchronize,
+        reopened,
+      ]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.8.4'
+          cabal-version: 'latest'
+
+      - name: Build all modules
+        run: cabal build all
+
+      - name: Run all tests
+        run: cabal test all
