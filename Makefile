@@ -63,6 +63,12 @@ clean:
 	@ $(RM) .build/mk.*
 
 .PHONY: fclean
+test:
+	cabal test all
+
+coverage:
+	cabal test --enable-coverage
+
 fclean: clean
 	@ cabal clean
 
