@@ -49,29 +49,4 @@ Remove this section if not needed.
 <!-- The different checklists of the related Story/Task
 should be completed before merging -->
 
-### Testing
-
-<!--
-Describe the tests that you ran to verify your changes.
-Provide instructions so we can reproduce. Include details of your test
-environment, and the tests you ran to see how your change affects
-other areas of the code, if applicable.
-Remove this section if not needed.
--->
-
-### Screenshots / Examples
-
-<!--
-If applicable, add screenshots or code examples to help explain your changes.
-Remove this section if not needed.
--->
-
-### Deployment Notes
-
-<!--
-Any special notes regarding deployment of this PR?
-e.g. list breaking changes, write migration guides
-Remove this section if not needed.
--->
-
 ---

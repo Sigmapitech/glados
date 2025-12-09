@@ -37,39 +37,6 @@ body:
       description: Link to GitHub Milestone if applicable
       placeholder: "GLADOS-Part-2"
 
-# Commented out because feel useless.
-# Not removed because Epi might like it.
-  # - type: textarea
-  #   id: success_criteria
-  #   attributes:
-  #     label: Success Criteria
-  #     description: What must be achieved for this Epic to be complete?
-  #     placeholder: |
-  #       - [ ] All child stories completed
-  #       - [ ] Integration tests passing
-  #       - [ ] Documentation written
-
-  - type: textarea
-    id: child_stories
-    attributes:
-      label: Child Stories
-      description: List the Stories (Layer 1) that belong to this Epic. (will be updated as stories are created)
-      value: |
-        - [ ] #
-        - [ ] #
-
-  - type: textarea
-    id: relationships
-    attributes:
-      label: Relationships
-      description: Dependencies and blocking relationships.
-      value: |
-        **Blocked by:**
-        - [ ] #
-
-        **Blocking:**
-        - [ ] #
-
   - type: input
     id: timeline
     attributes:

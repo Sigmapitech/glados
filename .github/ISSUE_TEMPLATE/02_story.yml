@@ -20,22 +20,6 @@ body:
     validations:
       required: true
 
-# Commented out because feel useless.
-# Not removed because Epi might like it.
-  # - type: textarea
-  #   id: acceptance_criteria
-  #   attributes:
-  #     label: Definition of Done (Acceptance Criteria)
-  #     description: What must be true for this Story to be complete?
-  #     value: |
-  #       - [ ] Functional implementation complete
-  #       - [ ] Unit tests written and passing
-  #       - [ ] Integration tests added
-  #       - [ ] Documentation updated (user manual + code comments)
-  #       - [ ] No regressions in existing functionality
-  #   validations:
-  #     required: true
-
   - type: input
     id: parent_epic
     attributes:
@@ -43,7 +27,7 @@ body:
       description: Link the Epic this Story belongs to
       placeholder: "#12"
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: difficulty
@@ -77,27 +61,6 @@ body:
         - Must handle recursive calls without stack overflow
         - Consider tail-call optimization
         - Need to maintain closure environments
-
-  - type: textarea
-    id: child_tasks
-    attributes:
-      label: Child Tasks
-      description: Specific implementation tasks (will be created as separate issues)
-      value: |
-        - [ ] #
-        - [ ] #
-
-  - type: textarea
-    id: relationships
-    attributes:
-      label: Relationships
-      description: Dependencies and blocking relationships.
-      value: |
-        **Blocked by:**
-        - [ ] #
-
-        **Blocking:**
-        - [ ] #
 
   - type: input
     id: sprint
