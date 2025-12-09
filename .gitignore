@@ -12,4 +12,6 @@ result*
 .envrc
 .direnv
 
+.build
 *.pre-commit-config.yaml
+glados
