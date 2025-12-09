@@ -1,3 +1,8 @@
+---
+title: Parsing Library Research & PoCs
+description: Comparison of Haskell parsing libraries (Parsec, Megaparsec, Attoparsec) and proof of concepts
+---
+
 # Parsing Lib Research & PoCs
 
 ## 1. Options Comparison
