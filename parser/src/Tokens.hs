@@ -1,7 +1,5 @@
 module Tokens where
 
--- | The raw lexical units (Tokens) of the language.
--- This is NOT the AST.
 data Token
   = TokKeyword String
   | TokIdentifier String
@@ -9,5 +7,6 @@ data Token
   | TokInt Integer
   | TokBool Bool
   | TokString String
+  | TokChar Char
   | TokEOF
   deriving (Show, Eq)
