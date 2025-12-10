@@ -23,12 +23,19 @@ common release
 library
   import:          lang
   import:          warnings
-  exposed-modules: Parser
   hs-source-dirs:  src
+  exposed-modules:
+    Error
+    Lexer
+    Lib
+    Parser
+    Tokens
+
   build-depends:
     , ast:ast-lisp
     , base
     , megaparsec
+    , text
 
 test-suite parser-test
   import:         lang
@@ -40,5 +47,6 @@ test-suite parser-test
     , ast:ast-lisp
     , base
     , hspec
+    , megaparsec
     , parser
     , silently
