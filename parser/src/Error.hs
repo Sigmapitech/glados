@@ -1,8 +1,10 @@
+{-# LANGUAGE InstanceSigs #-}
+
 module Error where
 
 import Text.Megaparsec (ShowErrorComponent (..))
 
--- | Custom Error Type for Lexical Errors
+-- | Custom Error Type
 data GLaDOSError
   = ErrUnclosedComment
   | ErrUnclosedString
@@ -10,63 +12,51 @@ data GLaDOSError
   | ErrGeneric String
   deriving (Show, Eq, Ord)
 
-createANSICode :: String -> String
-createANSICode code = "\ESC[" ++ code ++ "m"
+esc :: String -> String
+esc code = "\ESC[" ++ code ++ "m"
 
--- | ANSI Color Codes
-bold, red, green, yellow, cyan, reset :: String
-bold = createANSICode "1"
-red = createANSICode "1;31"
-green = createANSICode "1;32"
-yellow = createANSICode "1;33"
-cyan = createANSICode "1;36"
-reset = createANSICode "0"
+reset, bold :: String
+reset = esc "0"
+bold = esc "1"
+
+red, cyan, yellow, magenta :: String
+red = esc "31"
+cyan = esc "36"
+yellow = esc "33"
+magenta = esc "35"
+
+-- Symbols for highlighting code in messages
+codeSym :: String -> String
+codeSym s = bold ++ magenta ++ s ++ reset
 
 instance ShowErrorComponent GLaDOSError where
+  showErrorComponent :: GLaDOSError -> String
   showErrorComponent ErrUnclosedComment =
-    red
-      ++ "✖ Lexical Error: "
-      ++ reset
-      ++ "Unclosed block comment.\n"
-      ++ cyan
-      ++ "  Hint: "
-      ++ reset
-      ++ "You opened a comment with "
-      ++ bold
-      ++ "/*"
-      ++ reset
-      ++ " but never closed it with "
-      ++ bold
-      ++ "*/"
-      ++ reset
-      ++ "."
+    unlines
+      [ "",
+        bold ++ red ++ "✖ Lexical Error: " ++ reset ++ "Unclosed block comment.",
+        bold ++ cyan ++ "  ℹ Hint: " ++ reset ++ cyan ++ "You opened a comment with " ++ codeSym "/*" ++ cyan ++ " but never closed it." ++ reset,
+        cyan ++ "          Look for the matching " ++ codeSym "*/" ++ cyan ++ " or close it before EOF." ++ reset
+      ]
   showErrorComponent ErrUnclosedString =
-    red
-      ++ "✖ Lexical Error: "
-      ++ reset
-      ++ "String literal is missing a closing quote.\n"
-      ++ cyan
-      ++ "  Hint: "
-      ++ reset
-      ++ "Strings must end with "
-      ++ bold
-      ++ "\""
-      ++ reset
-      ++ "."
+    unlines
+      [ "",
+        bold ++ red ++ "✖ Lexical Error: " ++ reset ++ "String literal is missing a closing quote.",
+        bold ++ cyan ++ "  ℹ Hint: " ++ reset ++ cyan ++ "Strings must end with " ++ codeSym "\"" ++ cyan ++ " on the same line." ++ reset
+      ]
   showErrorComponent (ErrInvalidChar c) =
-    red
-      ++ "✖ Lexical Error: "
-      ++ reset
-      ++ "Unexpected character "
-      ++ yellow
-      ++ "'"
-      ++ [c]
-      ++ "'"
-      ++ reset
-      ++ ".\n"
-      ++ cyan
-      ++ "  Hint: "
-      ++ reset
-      ++ "This character is not valid in this language."
+    let hintMsg = case c of
+          '`' -> "Backticks are not valid. Did you mean a single quote " ++ codeSym "'" ++ cyan ++ "?"
+          '\'' -> "It looks like an empty or broken character. characters look like " ++ codeSym "'a'" ++ cyan ++ "."
+          ';' -> "Semicolons are valid, but appeared where an expression was expected."
+          _ -> "This character is not recognized in the language syntax."
+     in unlines
+          [ "",
+            bold ++ red ++ "✖ Lexical Error: " ++ reset ++ "Unexpected character " ++ bold ++ yellow ++ "'" ++ [c] ++ "'" ++ reset ++ ".",
+            bold ++ cyan ++ "  ℹ Hint: " ++ reset ++ cyan ++ hintMsg ++ reset
+          ]
   showErrorComponent (ErrGeneric msg) =
-    red ++ "✖ Error: " ++ reset ++ msg
+    unlines
+      [ "",
+        bold ++ red ++ "✖ Error: " ++ reset ++ msg
+      ]

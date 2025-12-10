@@ -1,45 +1,59 @@
 module Lexer where
 
--- FIX: hiding (Token) prevents the clash with your custom Token type from Tokens.hs
-
 import Control.Monad (void)
 import Error (GLaDOSError (..))
-import Text.Megaparsec hiding (Token)
+import Text.Megaparsec
+  ( MonadParsec (eof, lookAhead),
+    Parsec,
+    anySingle,
+    between,
+    choice,
+    customFailure,
+    getOffset,
+    many,
+    optional,
+    setOffset,
+    (<|>),
+  )
 import Text.Megaparsec.Char
+  ( alphaNumChar,
+    char,
+    letterChar,
+    newline,
+    space1,
+    string,
+  )
 import qualified Text.Megaparsec.Char.Lexer as L
 import Tokens (Token (..))
 
 type Parser = Parsec GLaDOSError String
 
 -- | Space Consumer
--- Handles whitespace, single-line comments, block comments (with error), and preprocessor directives.
+--   Manually handles block comments to catch unclosed errors at the start position.
 sc :: Parser ()
 sc =
   L.space
     space1
-    skipLineComment
+    (L.skipLineComment "//" <|> L.skipLineComment "#")
     skipBlockComment
   where
-    -- Standard C-style single line comment
-    skipLineComment = L.skipLineComment "//" <|> L.skipLineComment "#"
-
-    -- Block comment with custom error on unclosed EOF
     skipBlockComment = do
+      startPos <- getOffset -- 1. Capture position at '/*'
       void (string "/*")
-      -- Consumes input until "*/" or EOF
-      -- If EOF is hit before "*/", we throw the custom error
-      let go = do
-            done <- optional (string "*/")
-            case done of
-              Just _ -> return () -- Comment closed successfully
-              Nothing -> do
-                c <- optional anySingle
-                case c of
-                  Just _ -> go -- Keep consuming comment content
-                  Nothing -> customFailure ErrUnclosedComment -- EOF hit!
-      go
+      go startPos
+      where
+        go startPos = do
+          done <- optional (string "*/")
+          case done of
+            Just _ -> return ()
+            Nothing -> do
+              isEof <- checkEOF
+              if isEof
+                then do
+                  setOffset startPos -- 2. Jump back to '/*'
+                  customFailure ErrUnclosedComment
+                else anySingle >> go startPos
 
--- | Wrapper for lexemes
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 
@@ -58,22 +72,38 @@ reservedNames =
     "false"
   ]
 
--- | 1. Parse Integers
 tokInt :: Parser Token
 tokInt = lexeme $ TokInt <$> L.decimal
 
--- | 2. Parse Strings (with custom error)
 tokString :: Parser Token
 tokString = lexeme $ do
-  _ <- char '"'
-  content <- manyTill L.charLiteral (char '"' <|> (newline >> customFailure ErrUnclosedString))
+  startPos <- getOffset -- 1. Capture position at start quote
+  void (char '"')
+  content <- go startPos
   return $ TokString content
+  where
+    go startPos = do
+      done <- optional (char '"')
+      case done of
+        Just _ -> return ""
+        Nothing -> do
+          isNewline <- optional newline
+          isEof <- checkEOF
+          case (isNewline, isEof) of
+            (Just _, _) -> do
+              setOffset startPos -- 2. Jump back to start quote
+              customFailure ErrUnclosedString
+            (_, True) -> do
+              setOffset startPos -- 2. Jump back to start quote
+              customFailure ErrUnclosedString
+            _ -> do
+              c <- L.charLiteral
+              cs <- go startPos
+              return (c : cs)
 
--- | 3. Parse Symbols
+-- | Parse Symbols
 tokSymbol :: Parser Token
 tokSymbol = lexeme $ do
-  -- We join the list of multi-char strings with the list of single-char strings
-  -- Using (++) to combine the lists resolves the list comprehension syntax error
   sym <-
     choice $
       [ string "==",
@@ -88,7 +118,7 @@ tokSymbol = lexeme $ do
         ++ [string [c] | c <- "(){}[];=+-*/%<>,!&|"]
   return $ TokSymbol sym
 
--- | 4. Parse Identifiers/Keywords
+-- | Parse Identifiers/Keywords
 tokWord :: Parser Token
 tokWord = lexeme $ do
   first <- letterChar <|> char '_'
@@ -98,21 +128,42 @@ tokWord = lexeme $ do
     then return $ TokKeyword word
     else return $ TokIdentifier word
 
--- | 5. Catch-all for Illegal Characters
--- This MUST be the last parser tried. It consumes 1 char and fails.
+-- | Fallback for Illegal Characters
 tokIllegal :: Parser Token
 tokIllegal = do
-  c <- anySingle
+  c <- lookAhead anySingle
   customFailure (ErrInvalidChar c)
 
--- | The master lexer
-parseToken :: Parser Token
-parseToken =
+-- | Choice of valid tokens
+validToken :: Parser Token
+validToken =
   tokInt
-    <|> tokString
     <|> tokWord
     <|> tokSymbol
-    <|> tokIllegal -- <--- The Catch-All
 
+-- | Main Parse Loop
 parseRawTokens :: Parser [Token]
-parseRawTokens = between sc eof (many parseToken)
+parseRawTokens = between sc eof loop
+  where
+    loop = do
+      isEof <- checkEOF
+      if isEof
+        then return []
+        else do
+          c <- lookAhead anySingle
+
+          tok <- case c of
+            '"' -> tokString
+            _ -> do
+              res <- optional validToken
+              maybe tokIllegal return res
+
+          toks <- loop
+          return (tok : toks)
+
+checkEOF :: Parser Bool
+checkEOF = do
+  res <- optional eof
+  case res of
+    Just _ -> return True
+    Nothing -> return False
