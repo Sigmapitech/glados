@@ -9,8 +9,6 @@ body:
       label: Parent Story
       description: Which Story does this Task implement?
       placeholder: "#45"
-    validations:
-      required: true
 
   - type: textarea
     id: task_description
@@ -20,34 +18,6 @@ body:
       placeholder: "Implement the `lambda` special form parser to recognize (lambda (args...) body) syntax"
     validations:
       required: true
-
-  - type: textarea
-    id: technical_details
-    attributes:
-      label: Implementation Details
-      description: Specific functions, modules, or files to modify
-      placeholder: |
-        - Modify `lisp/src/Parser.hs`: Add `parseLambda` function
-        - Update `ast/src/AST.hs`: Add `Lambda` constructor to AST type
-        - Files: `Parser.hs`, `AST.hs`, `Types.hs`
-    validations:
-      required: true
-
-# Commented out because feel useless.
-# Not removed because Epi might like it.
-  # - type: textarea
-  #   id: acceptance_checklist
-  #   attributes:
-  #     label: Acceptance Checklist
-  #     description: When is this task complete?
-  #     value: |
-  #       - [ ] Code implemented and compiles
-  #       - [ ] Unit tests added for new functionality
-  #       - [ ] Code passes linting (pre-commit hooks)
-  #       - [ ] No compiler warnings
-  #       - [ ] Changes documented in code comments
-  #   validations:
-  #     required: true
 
   - type: dropdown
     id: difficulty
@@ -77,28 +47,6 @@ body:
         - "3. type: test"
     validations:
       required: true
-
-  - type: textarea
-    id: test_strategy
-    attributes:
-      label: Test Strategy
-      description: How will you test this?
-      placeholder: |
-        - Unit tests: Test parsing valid lambda expressions
-        - Edge cases: Empty parameter list, single parameter, multiple parameters
-        - Integration: Test lambda within larger expressions
-
-  - type: textarea
-    id: relationships
-    attributes:
-      label: Relationships
-      description: Dependencies and blocking relationships.
-      value: |
-        **Blocked by:**
-        - [ ] #
-
-        **Blocking:**
-        - [ ] #
 
   - type: input
     id: assignee_suggestion
