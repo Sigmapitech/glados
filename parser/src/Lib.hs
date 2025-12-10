@@ -5,12 +5,12 @@ import Lexer (parseRawTokens)
 import Text.Megaparsec (errorBundlePretty, runParser)
 import Tokens (Token)
 
+lexInternal :: String -> String -> Either String [Token]
+lexInternal sourceName input = either (Left . errorBundlePretty) Right $ runParser parseRawTokens sourceName input
+
 -- | Pure function: String -> Either Error [Token]
 lexString :: String -> Either String [Token]
-lexString input =
-  case runParser parseRawTokens "<string>" input of
-    Left bundle -> Left (errorBundlePretty bundle)
-    Right tokens -> Right tokens
+lexString = lexInternal "<string>"
 
 -- | IO function: FilePath -> IO (Either Error [Token])
 -- Handles file reading errors safely.
@@ -21,6 +21,4 @@ lexFile path = do
   case contentOrErr of
     Left ioErr -> return $ Left ("File Error: " ++ show ioErr)
     Right content ->
-      return $ case runParser parseRawTokens path content of
-        Left bundle -> Left (errorBundlePretty bundle)
-        Right tokens -> Right tokens
+      return $ lexInternal path content

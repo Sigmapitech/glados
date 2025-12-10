@@ -10,14 +10,17 @@ data GLaDOSError
   | ErrGeneric String
   deriving (Show, Eq, Ord)
 
+createANSICode :: String -> String
+createANSICode code = "\ESC[" ++ code ++ "m"
+
 -- | ANSI Color Codes
 bold, red, green, yellow, cyan, reset :: String
-bold = "\ESC[1m"
-red = "\ESC[1;31m"
-green = "\ESC[1;32m"
-yellow = "\ESC[1;33m"
-cyan = "\ESC[1;36m"
-reset = "\ESC[0m"
+bold = createANSICode "1"
+red = createANSICode "1;31"
+green = createANSICode "1;32"
+yellow = createANSICode "1;33"
+cyan = createANSICode "1;36"
+reset = createANSICode "0"
 
 instance ShowErrorComponent GLaDOSError where
   showErrorComponent ErrUnclosedComment =
