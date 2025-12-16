@@ -25,6 +25,7 @@ library
   import:          warnings
   exposed-modules:
     AST
+    ImperativeAST
     SexprtoAST
 
   hs-source-dirs:  src
@@ -44,6 +45,7 @@ test-suite ast-test
   hs-source-dirs:     tests
   other-modules:
     SpecAST
+    SpecImperativeAST
     SpecSexprtoAST
 
   build-depends:
