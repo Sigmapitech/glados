@@ -28,7 +28,25 @@ library
     ImperativeAST
     SexprtoAST
 
-  hs-source-dirs:  src
+  hs-source-dirs:     src
+  build-depends:
+    , base
+    , bytestring
+    , containers
+    , hashable
+    , text
+
+library ast-lisp
+  import:             lang
+  import:             warnings
+  visibility:         public
+  default-extensions: GeneralizedNewtypeDeriving
+  exposed-modules:
+    AST.Lisp
+    AST.Lisp.AST
+    AST.Lisp.SexprtoAST
+
+  hs-source-dirs:     src
   build-depends:
     , base
     , mtl

@@ -1,11 +1,11 @@
-module SpecSexprtoAST (spec) where
+module SpecLispSexprtoAST (specSexprtoAST) where
 
-import AST
-import SexprtoAST
+import AST.Lisp.AST
+import AST.Lisp.SexprtoAST
 import Test.Hspec
 
-spec :: Spec
-spec = do
+specSexprtoAST :: Spec
+specSexprtoAST = do
   describe "sexprToAST" $ do
     it "converts integer literal" $ do
       sexprToAST (SInteger 42) `shouldBe` Right (LiteralInt 42)

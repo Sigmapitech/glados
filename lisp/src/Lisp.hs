@@ -1,13 +1,13 @@
 module Lisp (Options (..), options, entrypoint, prologue) where
 
-import AST (Environment, ErrorMsg, SExpr, initialEnv, isVoid, unErrorMsg)
+import AST.Lisp.AST (Environment, ErrorMsg, SExpr, initialEnv, isVoid, unErrorMsg)
+import AST.Lisp.SexprtoAST (sexprToAST)
 import Control.Exception (SomeException, try)
 import Control.Monad (unless)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyFrom, evalManyToValue)
 import Options.Applicative
 import Parser (parseFile, parseString)
-import SexprtoAST (sexprToAST)
 import System.Exit (ExitCode (..), exitWith)
 import System.IO (BufferMode (..), hPutStrLn, hSetBuffering, stderr, stdout)
 

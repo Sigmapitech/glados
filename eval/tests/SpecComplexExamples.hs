@@ -2,7 +2,7 @@
 
 module SpecComplexExamples (specComplexExamples) where
 
-import AST
+import AST.Lisp.AST
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyToValue, evalToValue)
 import Test.Hspec
