@@ -2,7 +2,7 @@
 
 module SpecEvaluator (specEvaluator) where
 
-import AST
+import AST.Lisp.AST
 import Data.Either (isLeft)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (eval, evalFrom, evalMany, evalManyToValue, evalToValue)

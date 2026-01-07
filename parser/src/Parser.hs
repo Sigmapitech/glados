@@ -1,6 +1,6 @@
 module Parser (parseFile, parseString, parseNext) where
 
-import AST (SExpr (..), SymbolName (..))
+import AST.Lisp.AST (SExpr (..), SymbolName (..))
 import Data.Void (Void)
 import System.Exit (ExitCode (..), exitWith)
 import System.IO (hPutStrLn, stderr)

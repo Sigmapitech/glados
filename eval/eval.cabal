@@ -30,7 +30,7 @@ library
 
   hs-source-dirs:     src
   build-depends:
-    , ast
+    , ast:ast-lisp
     , base
     , mtl
 
@@ -49,7 +49,7 @@ test-suite eval-test
   main-is:            Spec.hs
   hs-source-dirs:     tests
   build-depends:
-    , ast
+    , ast:ast-lisp
     , base                >=4.7 && <5
     , directory
     , eval

@@ -3,7 +3,7 @@
 -- | Abstract Syntax Tree definitions for the Lisp interpreter.
 -- This module defines the core data types for representing parsed S-expressions,
 -- AST nodes, runtime values, and environments.
-module AST where
+module AST.Lisp.AST where
 
 import Control.Monad.Except (ExceptT, MonadError (throwError), runExceptT)
 import Control.Monad.State (State, runState)

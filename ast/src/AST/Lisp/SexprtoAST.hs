@@ -1,6 +1,6 @@
-module SexprtoAST where
+module AST.Lisp.SexprtoAST where
 
-import AST (AST (..), ConvertResult, SExpr (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
+import AST.Lisp.AST (AST (..), ConvertResult, SExpr (..), defineSymbol, ifSymbol, lambdaSymbol, mkError, symbolToVar, varToParam)
 
 -- | Convert an SExpr to an AST, with error handling
 sexprToAST :: SExpr -> ConvertResult

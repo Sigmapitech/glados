@@ -1,6 +1,6 @@
 module Main where
 
-import AST (SExpr (..), SymbolName (..))
+import AST.Lisp.AST (SExpr (..), SymbolName (..))
 import Control.Exception (SomeException, try)
 import Parser (parseFile, parseNext, parseString)
 import System.IO (stderr)
