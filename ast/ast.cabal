@@ -21,12 +21,23 @@ common release
   ghc-options: -O2
 
 library
-  import:          lang
-  import:          warnings
+  import:             lang
+  import:             warnings
+  default-extensions:
+    DeriveGeneric
+    DeriveTraversable
+    DerivingStrategies
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+    StrictData
+
   exposed-modules:
-    AST
-    ImperativeAST
-    SexprtoAST
+    AST.Types
+    AST.Types.AST
+    AST.Types.Common
+    AST.Types.Literal
+    AST.Types.Operator
+    AST.Types.Type
 
   hs-source-dirs:     src
   build-depends:
@@ -61,14 +72,31 @@ test-suite ast-test
   type:               exitcode-stdio-1.0
   main-is:            Spec.hs
   hs-source-dirs:     tests
-  other-modules:
-    SpecAST
-    SpecImperativeAST
-    SpecSexprtoAST
-
+  other-modules:      SpecAST
   build-depends:
     , ast
     , base                >=4.7 && <5
     , directory
+    , hspec
+    , hspec-expectations
+    , QuickCheck
+
+test-suite ast-lisp-test
+  import:             lang
+  import:             warnings
+  default-extensions:
+    GeneralizedNewtypeDeriving
+    OverloadedStrings
+
+  type:               exitcode-stdio-1.0
+  main-is:            SpecLisp.hs
+  hs-source-dirs:     tests
+  other-modules:
+    SpecLispAST
+    SpecLispSexprtoAST
+
+  build-depends:
+    , ast:ast-lisp
+    , base                >=4.7 && <5
     , hspec
     , hspec-expectations
