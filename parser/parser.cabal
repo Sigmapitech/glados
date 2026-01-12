@@ -28,11 +28,10 @@ library
     Error
     Lexer
     Lib
-    Parser
     Tokens
 
   build-depends:
-    , ast:ast-lisp
+    , ast
     , base
     , megaparsec
     , text
@@ -62,7 +61,7 @@ test-suite parser-test
     SpecTokens
 
   build-depends:
-    , ast:ast-lisp
+    , ast
     , base
     , hspec
     , megaparsec
