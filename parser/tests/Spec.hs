@@ -3,6 +3,10 @@ module Main where
 import AST.Lisp.AST (SExpr (..), SymbolName (..))
 import Control.Exception (SomeException, try)
 import Parser (parseFile, parseNext, parseString)
+import SpecError (errorSpec)
+import SpecLexer (lexerSpec)
+import SpecLib (libSpec)
+import SpecTokens (tokensSpec)
 import System.IO (stderr)
 import System.IO.Silently (hSilence)
 import Test.Hspec (Spec, describe, hspec, it, shouldBe, shouldSatisfy)
@@ -242,4 +246,9 @@ parserSpec = do
       result `shouldSatisfy` isLeft
 
 main :: IO ()
-main = hspec parserSpec
+main = hspec $ do
+  errorSpec
+  tokensSpec
+  lexerSpec
+  libSpec
+  parserSpec

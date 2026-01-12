@@ -37,12 +37,30 @@ library
     , megaparsec
     , text
 
+executable parser-exe
+  import:         lang
+  import:         warnings
+  import:         release
+  main-is:        Main.hs
+  hs-source-dirs: app
+  build-depends:
+    , base
+    , parser
+
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N
+
 test-suite parser-test
   import:         lang
   import:         warnings
   type:           exitcode-stdio-1.0
   main-is:        Spec.hs
   hs-source-dirs: tests
+  other-modules:
+    SpecError
+    SpecLexer
+    SpecLib
+    SpecTokens
+
   build-depends:
     , ast:ast-lisp
     , base
