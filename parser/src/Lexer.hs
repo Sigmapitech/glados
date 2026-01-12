@@ -1,6 +1,8 @@
 module Lexer where
 
+import AST.Types.Common (FilePath' (..), Located (..), SourcePos (..), SourceSpan (..))
 import Control.Monad (void)
+import qualified Data.Text as T
 import Error (GLaDOSError (..))
 import Text.Megaparsec
   ( MonadParsec (eof, lookAhead),
@@ -15,6 +17,7 @@ import Text.Megaparsec
     setOffset,
     (<|>),
   )
+import qualified Text.Megaparsec as MP
 import Text.Megaparsec.Char
   ( alphaNumChar,
     char,
@@ -24,7 +27,16 @@ import Text.Megaparsec.Char
     string,
   )
 import qualified Text.Megaparsec.Char.Lexer as L
-import Tokens (Token (..))
+import Tokens (Token, TokenConent (..))
+
+toMyPos :: MP.SourcePos -> Int -> SourcePos
+toMyPos sp off =
+  SourcePos
+    { posFile = FilePath' (T.pack (MP.sourceName sp)),
+      posLine = fromIntegral (MP.unPos (MP.sourceLine sp)),
+      posColumn = fromIntegral (MP.unPos (MP.sourceColumn sp)),
+      posOffset = fromIntegral off
+    }
 
 type Parser = Parsec GLaDOSError String
 
@@ -57,6 +69,23 @@ sc =
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 
+withLoc :: Parser TokenConent -> Parser Token
+withLoc p = do
+  startPos <- MP.getSourcePos
+  startOff <- getOffset
+
+  val <- p
+
+  endPos <- MP.getSourcePos
+  endOff <- getOffset
+  sc
+  let spanPos =
+        SourceSpan
+          { spanStart = toMyPos startPos startOff,
+            spanEnd = toMyPos endPos endOff
+          }
+   in return (Located spanPos val)
+
 reservedNames :: [String]
 reservedNames =
   [ "int",
@@ -73,10 +102,10 @@ reservedNames =
   ]
 
 tokInt :: Parser Token
-tokInt = lexeme $ TokInt <$> L.decimal
+tokInt = withLoc $ lexeme $ TokInt <$> L.decimal
 
 tokString :: Parser Token
-tokString = lexeme $ do
+tokString = withLoc $ lexeme $ do
   startPos <- getOffset -- 1. Capture position at start quote
   void (char '"')
   content <- go startPos
@@ -103,7 +132,7 @@ tokString = lexeme $ do
 
 -- | Parse Symbols
 tokSymbol :: Parser Token
-tokSymbol = lexeme $ do
+tokSymbol = withLoc $ lexeme $ do
   sym <-
     choice $
       [ string "==",
@@ -120,7 +149,7 @@ tokSymbol = lexeme $ do
 
 -- | Parse Identifiers/Keywords
 tokWord :: Parser Token
-tokWord = lexeme $ do
+tokWord = withLoc $ lexeme $ do
   first <- letterChar <|> char '_'
   rest <- many (alphaNumChar <|> char '_')
   let word = first : rest
@@ -130,7 +159,7 @@ tokWord = lexeme $ do
 
 -- | Fallback for Illegal Characters
 tokIllegal :: Parser Token
-tokIllegal = do
+tokIllegal = withLoc $ do
   c <- lookAhead anySingle
   customFailure (ErrInvalidChar c)
 

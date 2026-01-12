@@ -1,6 +1,8 @@
 module Tokens where
 
-data Token
+import AST.Types.Common (Located)
+
+data TokenConent
   = TokKeyword String
   | TokIdentifier String
   | TokSymbol String
@@ -10,3 +12,5 @@ data Token
   | TokChar Char
   | TokEOF
   deriving (Show, Eq)
+
+type Token = Located TokenConent
