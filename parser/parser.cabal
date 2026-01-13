@@ -28,11 +28,13 @@ library
     Error
     Lexer
     Lib
+    Parser
     Tokens
 
   build-depends:
     , ast
     , base
+    , containers
     , megaparsec
     , text
 

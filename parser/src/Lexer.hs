@@ -135,15 +135,23 @@ tokSymbol :: Parser Token
 tokSymbol = withLoc $ lexeme $ do
   sym <-
     choice $
-      [ string "==",
-        string "!=",
-        string "<=",
-        string ">=",
-        string "&&",
-        string "||",
-        string "->",
-        string "=>"
+      -- Longest operators first (3 chars)
+      [ string "<<=",
+        string ">>="
       ]
+        ++ [ string "==",
+             string "!=",
+             string "<=",
+             string ">=",
+             string "&&",
+             string "||",
+             string "->",
+             string "<<",
+             string ">>"
+           ]
+        -- Then compound assignments (2 chars)
+        ++ [string [op, '='] | op <- "+-*/%&|^"]
+        -- Then single-char operators
         ++ [string [c] | c <- "(){}[];=+-*/%<>,!&|"]
   return $ TokSymbol sym
 

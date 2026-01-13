@@ -11,6 +11,6 @@ data TokenConent
   | TokString String
   | TokChar Char
   | TokEOF
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 type Token = Located TokenConent

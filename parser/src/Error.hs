@@ -12,6 +12,10 @@ data GLaDOSError
   | ErrGeneric String
   deriving (Show, Eq, Ord)
 
+data ParseError
+  = TypeError String
+  deriving (Show, Eq, Ord)
+
 esc :: String -> String
 esc code = "\ESC[" ++ code ++ "m"
 

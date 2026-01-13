@@ -77,6 +77,7 @@
             (ghcWithPackages (p: [
               Cabal
               Cabal-syntax
+              containers
               aeson
               bytestring
               containers
