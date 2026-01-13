@@ -13,6 +13,7 @@ import qualified Control.Exception
 import Control.Monad (when)
 import Control.Monad.IO.Class (liftIO)
 import Data.List (isPrefixOf)
+import Lib (lexString)
 import System.Console.Haskeline
   ( CompletionFunc,
     InputT,
@@ -99,7 +100,9 @@ handleCommand = \case
       Right msg -> outputStrLn msg
     return True
   Eval input -> do
-    liftIO $ parseString input
+    case lexString input of
+      Left err -> outputStrLn err
+      Right tokens -> outputStrLn $ "Tokens: " ++ show tokens
     return True
 
 -- | Load and parse a file
@@ -108,9 +111,9 @@ loadAndParse path = do
   contentOrErr <- try (readFile path)
   case contentOrErr of
     Left err -> return $ Left $ show err
-    Right content -> do
-      _ <- parseString content
-      return $ Right $ "Loaded and parsed " ++ path ++ " successfully."
+    Right content -> case lexString content of
+      Left err -> return $ Left err
+      Right tokens -> return $ Right $ "Loaded and parsed " ++ path ++ " successfully. Found " ++ show (length tokens) ++ " tokens."
 
 -- | Try an IO action and catch IOError
 try :: IO a -> IO (Either IOError a)

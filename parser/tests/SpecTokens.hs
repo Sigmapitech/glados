@@ -1,7 +1,7 @@
 module SpecTokens (tokensSpec) where
 
 import Test.Hspec (Spec, describe, it, shouldBe)
-import Tokens (Token (..))
+import Tokens (TokenConent (..))
 
 tokensSpec :: Spec
 tokensSpec = do

@@ -88,17 +88,22 @@ withLoc p = do
 
 reservedNames :: [String]
 reservedNames =
-  [ "int",
-    "char",
+  [ "import",
+    "fn",
+    "int",
+    "float",
     "bool",
+    "str",
     "void",
     "return",
     "if",
     "else",
     "while",
     "for",
-    "true",
-    "false"
+    "True",
+    "False",
+    "break",
+    "continue"
   ]
 
 tokInt :: Parser Token
@@ -147,12 +152,14 @@ tokSymbol = withLoc $ lexeme $ do
              string "||",
              string "->",
              string "<<",
-             string ">>"
+             string ">>",
+             string "++",
+             string "--"
            ]
         -- Then compound assignments (2 chars)
         ++ [string [op, '='] | op <- "+-*/%&|^"]
-        -- Then single-char operators
-        ++ [string [c] | c <- "(){}[];=+-*/%<>,!&|"]
+        -- Then single-char operators and delimiters
+        ++ [string [c] | c <- "(){}[];:=+-*/%<>^,!&|."]
   return $ TokSymbol sym
 
 -- | Parse Identifiers/Keywords
