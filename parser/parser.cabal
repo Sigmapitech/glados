@@ -20,9 +20,13 @@ common warnings
 common release
   ghc-options: -O2
 
+common extensions
+  default-extensions: OverloadedStrings
+
 library
   import:          lang
   import:          warnings
+  import:          extensions
   hs-source-dirs:  src
   exposed-modules:
     Error
@@ -41,6 +45,7 @@ library
 executable parser-exe
   import:         lang
   import:         warnings
+  import:         extensions
   import:         release
   main-is:        Main.hs
   hs-source-dirs: app
@@ -53,6 +58,7 @@ executable parser-exe
 test-suite parser-test
   import:         lang
   import:         warnings
+  import:         extensions
   type:           exitcode-stdio-1.0
   main-is:        Spec.hs
   hs-source-dirs: tests
