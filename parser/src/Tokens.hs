@@ -7,7 +7,7 @@ data TokenConent
   = TokKeyword Text
   | TokIdentifier Text
   | TokSymbol Text
-  | TokInt Integer
+  | TokInt Integer Int
   | TokBool Bool
   | TokString Text
   | TokChar Char

@@ -110,7 +110,24 @@ reservedNames =
   ]
 
 tokInt :: Parser Token
-tokInt = withLoc $ lexeme $ TokInt <$> L.decimal
+tokInt = withLoc $ lexeme $ do
+  prefix <- optional (char '0')
+  case prefix of
+    Just _ -> do
+      baseChar <- optional (char 'x' <|> char 'X' <|> char 'o' <|> char 'O' <|> char 'b' <|> char 'B')
+      case baseChar of
+        Just 'x' -> TokInt <$> L.hexadecimal <*> pure 16
+        Just 'X' -> TokInt <$> L.hexadecimal <*> pure 16
+        Just 'o' -> TokInt <$> L.octal <*> pure 8
+        Just 'O' -> TokInt <$> L.octal <*> pure 8
+        Just 'b' -> TokInt <$> L.binary <*> pure 2
+        Just 'B' -> TokInt <$> L.binary <*> pure 2
+        _ -> do
+          rest <- optional L.decimal
+          case rest of
+            Just n -> return $ TokInt n 10
+            Nothing -> return $ TokInt 0 10
+    Nothing -> TokInt <$> L.decimal <*> pure 10
 
 tokString :: Parser Token
 tokString = withLoc $ lexeme $ do

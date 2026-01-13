@@ -41,22 +41,22 @@ lexerSpec = do
     it "lexes a simple integer" $ do
       let result = runLexer "42"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "lexes zero" $ do
       let result = runLexer "0"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 0]
+      getContents (fromRight result) `shouldBe` [TokInt 0 10]
 
     it "lexes multiple integers" $ do
       let result = runLexer "1 2 3"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 1, TokInt 2, TokInt 3]
+      getContents (fromRight result) `shouldBe` [TokInt 1 10, TokInt 2 10, TokInt 3 10]
 
     it "lexes large integers" $ do
       let result = runLexer "999999999"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 999999999]
+      getContents (fromRight result) `shouldBe` [TokInt 999999999 10]
 
   describe "Lexer - Keyword tokens" $ do
     it "lexes 'int' keyword" $ do
@@ -233,22 +233,22 @@ lexerSpec = do
     it "handles line comments with //" $ do
       let result = runLexer "42 // comment"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "handles line comments with #" $ do
       let result = runLexer "42 # comment"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "handles block comments" $ do
       let result = runLexer "42 /* comment */ 99"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42, TokInt 99]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10, TokInt 99 10]
 
     it "handles multi-line block comments" $ do
       let result = runLexer "42 /* line1\nline2 */ 99"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42, TokInt 99]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10, TokInt 99 10]
 
     it "fails on unclosed block comment" $ do
       let result = runLexer "42 /* unclosed"
@@ -261,22 +261,22 @@ lexerSpec = do
     it "handles leading whitespace" $ do
       let result = runLexer "   42"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "handles trailing whitespace" $ do
       let result = runLexer "42   "
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "handles tabs" $ do
       let result = runLexer "\t42\t"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "handles newlines" $ do
       let result = runLexer "42\n99"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42, TokInt 99]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10, TokInt 99 10]
 
   describe "Lexer - Error handling" $ do
     it "fails on invalid character @" $ do
@@ -295,19 +295,19 @@ lexerSpec = do
     it "lexes a simple expression" $ do
       let result = runLexer "x + 1"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokIdentifier "x", TokSymbol "+", TokInt 1]
+      getContents (fromRight result) `shouldBe` [TokIdentifier "x", TokSymbol "+", TokInt 1 10]
 
     it "lexes function call" $ do
       let result = runLexer "foo(1, 2)"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokIdentifier "foo", TokSymbol "(", TokInt 1, TokSymbol ",", TokInt 2, TokSymbol ")"]
+      getContents (fromRight result) `shouldBe` [TokIdentifier "foo", TokSymbol "(", TokInt 1 10, TokSymbol ",", TokInt 2 10, TokSymbol ")"]
 
     it "lexes if statement structure" $ do
       let result = runLexer "if ( x == 5 ) { return 1 ; }"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokKeyword "if", TokSymbol "(", TokIdentifier "x", TokSymbol "==", TokInt 5, TokSymbol ")", TokSymbol "{", TokKeyword "return", TokInt 1, TokSymbol ";", TokSymbol "}"]
+      getContents (fromRight result) `shouldBe` [TokKeyword "if", TokSymbol "(", TokIdentifier "x", TokSymbol "==", TokInt 5 10, TokSymbol ")", TokSymbol "{", TokKeyword "return", TokInt 1 10, TokSymbol ";", TokSymbol "}"]
 
     it "lexes variable declaration" $ do
       let result = runLexer "int x = 42;"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokKeyword "int", TokIdentifier "x", TokSymbol "=", TokInt 42, TokSymbol ";"]
+      getContents (fromRight result) `shouldBe` [TokKeyword "int", TokIdentifier "x", TokSymbol "=", TokInt 42 10, TokSymbol ";"]

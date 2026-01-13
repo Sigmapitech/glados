@@ -33,7 +33,7 @@ libSpec = do
     it "lexes a simple integer" $ do
       let result = lexString "42"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "lexes keywords" $ do
       let result = lexString "int return"
@@ -58,22 +58,22 @@ libSpec = do
     it "handles comments" $ do
       let result = lexString "42 // comment\n99"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42, TokInt 99]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10, TokInt 99 10]
 
     it "handles block comments" $ do
       let result = lexString "42 /* comment */ 99"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42, TokInt 99]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10, TokInt 99 10]
 
     it "handles whitespace" $ do
       let result = lexString "  42  "
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokInt 42]
+      getContents (fromRight result) `shouldBe` [TokInt 42 10]
 
     it "lexes complex expression" $ do
       let result = lexString "int x = 42;"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokKeyword "int", TokIdentifier "x", TokSymbol "=", TokInt 42, TokSymbol ";"]
+      getContents (fromRight result) `shouldBe` [TokKeyword "int", TokIdentifier "x", TokSymbol "=", TokInt 42 10, TokSymbol ";"]
 
     it "returns error for invalid character" $ do
       let result = lexString "@"
@@ -173,12 +173,12 @@ libSpec = do
     it "lexes mixed token types" $ do
       let result = lexString "int foo = 42 + bar;"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokKeyword "int", TokIdentifier "foo", TokSymbol "=", TokInt 42, TokSymbol "+", TokIdentifier "bar", TokSymbol ";"]
+      getContents (fromRight result) `shouldBe` [TokKeyword "int", TokIdentifier "foo", TokSymbol "=", TokInt 42 10, TokSymbol "+", TokIdentifier "bar", TokSymbol ";"]
 
     it "handles minus symbol" $ do
       let result = lexString "-123"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokSymbol "-", TokInt 123]
+      getContents (fromRight result) `shouldBe` [TokSymbol "-", TokInt 123 10]
 
     it "lexes function with parameters" $ do
       let result = lexString "int add(int a, int b) { return a + b; }"
