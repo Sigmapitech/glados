@@ -3,6 +3,7 @@
 module Lexer where
 
 import AST.Types.Common (FilePath' (..), Located (..), SourcePos (..), SourceSpan (..))
+import AST.Types.Literal (IntBase (..))
 import Control.Monad (void)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -116,18 +117,18 @@ tokInt = withLoc $ lexeme $ do
     Just _ -> do
       baseChar <- optional (char 'x' <|> char 'X' <|> char 'o' <|> char 'O' <|> char 'b' <|> char 'B')
       case baseChar of
-        Just 'x' -> TokInt <$> L.hexadecimal <*> pure 16
-        Just 'X' -> TokInt <$> L.hexadecimal <*> pure 16
-        Just 'o' -> TokInt <$> L.octal <*> pure 8
-        Just 'O' -> TokInt <$> L.octal <*> pure 8
-        Just 'b' -> TokInt <$> L.binary <*> pure 2
-        Just 'B' -> TokInt <$> L.binary <*> pure 2
+        Just 'x' -> TokInt <$> L.hexadecimal <*> pure BaseHex
+        Just 'X' -> TokInt <$> L.hexadecimal <*> pure BaseHex
+        Just 'o' -> TokInt <$> L.octal <*> pure BaseOct
+        Just 'O' -> TokInt <$> L.octal <*> pure BaseOct
+        Just 'b' -> TokInt <$> L.binary <*> pure BaseBin
+        Just 'B' -> TokInt <$> L.binary <*> pure BaseBin
         _ -> do
           rest <- optional L.decimal
           case rest of
-            Just n -> return $ TokInt n 10
-            Nothing -> return $ TokInt 0 10
-    Nothing -> TokInt <$> L.decimal <*> pure 10
+            Just n -> return $ TokInt n BaseDec
+            Nothing -> return $ TokInt 0 BaseDec
+    Nothing -> TokInt <$> L.decimal <*> pure BaseDec
 
 tokString :: Parser Token
 tokString = withLoc $ lexeme $ do
