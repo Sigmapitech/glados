@@ -5,7 +5,7 @@ import AST.Types.Literal (IntBase (..))
 import Data.Text (Text)
 import Numeric (showHex, showOct)
 
-data TokenConent
+data TokenContent
   = TokKeyword Text
   | TokIdentifier Text
   | TokSymbol Text
@@ -20,7 +20,7 @@ showCon :: String -> [String] -> String
 showCon name [] = name
 showCon name args = name ++ " " ++ unwords args
 
-instance Show TokenConent where
+instance Show TokenContent where
   show (TokKeyword kw) = showCon "TokKeyword" [show kw]
   show (TokIdentifier ident) = showCon "TokIdentifier" [show ident]
   show (TokSymbol sym) = showCon "TokSymbol" [show sym]
@@ -46,4 +46,4 @@ showBin n
     showBin' 0 = ""
     showBin' x = (if odd x then '1' else '0') : showBin' (x `div` 2)
 
-type Token = Located TokenConent
+type Token = Located TokenContent

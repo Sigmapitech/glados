@@ -31,7 +31,7 @@ import Text.Megaparsec.Char
     string,
   )
 import qualified Text.Megaparsec.Char.Lexer as L
-import Tokens (Token, TokenConent (..))
+import Tokens (Token, TokenContent (..))
 
 toMyPos :: MP.SourcePos -> Int -> SourcePos
 toMyPos sp off =
@@ -73,7 +73,7 @@ sc =
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 
-withLoc :: Parser TokenConent -> Parser Token
+withLoc :: Parser TokenContent -> Parser Token
 withLoc p = do
   startPos <- MP.getSourcePos
   startOff <- getOffset

@@ -18,16 +18,33 @@ import AST.Types.Operator
     symbolToBinaryOp,
     symbolToUnaryOp,
   )
+import AST.Types.Type
+  ( FloatSize (Float32, Float64),
+    FloatType (FloatType),
+    IntSize (IntSize),
+    IntType (IntType),
+    PrimitiveType (..),
+    Signedness (..),
+    defaultFloatType,
+    defaultIntType,
+  )
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Error (ParseError (..))
 import qualified Text.Megaparsec as MP
-import Tokens (Token, TokenConent (..))
+import Tokens (Token, TokenContent (..))
 import Prelude hiding (span)
 
 type TokenParser = MP.Parsec ParseError [Token]
 
--- Helper to match a specific symbol
+matchKeyword :: Text -> TokenParser (Located Text)
+matchKeyword kw = do
+  Located span (TokKeyword k) <- MP.satisfy isMatchingKeyword
+  return $ Located span k
+  where
+    isMatchingKeyword (Located _ (TokKeyword k)) = k == kw
+    isMatchingKeyword _ = False
+
 matchSymbol :: Text -> TokenParser (Located Text)
 matchSymbol sym = do
   Located span (TokSymbol s) <- MP.satisfy isMatchingSymbol
@@ -112,4 +129,69 @@ parseLiteral parseExpr =
       fmap LitBool <$> parseBoolLiteral,
       fmap LitString <$> parseStringLiteral,
       fmap LitArray <$> parseArrayLiteral parseExpr
+    ]
+
+parseSignedness :: TokenParser Signedness
+parseSignedness = do
+  Located _ (TokIdentifier s) <- MP.satisfy isSign
+  case s of
+    "s" -> return Signed
+    "u" -> return Unsigned
+    _ -> MP.failure Nothing Set.empty
+  where
+    isSign (Located _ (TokIdentifier s)) = s == "s" || s == "u"
+    isSign _ = False
+
+parseIntType :: TokenParser (Located IntType)
+parseIntType = do
+  Located span _ <- matchKeyword "int"
+  maybeBracket <- MP.optional (matchSymbol "<")
+  case maybeBracket of
+    Nothing -> return $ Located span defaultIntType
+    Just _ -> do
+      Located _ (TokInt size BaseDec) <- MP.satisfy isInt
+      maybeComma <- MP.optional (matchSymbol ",")
+      sign <- case maybeComma of
+        Nothing -> return Signed
+        Just _ -> parseSignedness
+      Located endSpan _ <- matchSymbol ">"
+      let combinedSpan = span <> endSpan
+      return $ Located combinedSpan (IntType (IntSize (fromInteger size)) sign)
+  where
+    isInt (Located _ (TokInt _ BaseDec)) = True
+    isInt _ = False
+
+parseFloatType :: TokenParser (Located FloatType)
+parseFloatType = do
+  Located span _ <- matchKeyword "float"
+  maybeBracket <- MP.optional (matchSymbol "<")
+  case maybeBracket of
+    Nothing -> return $ Located span defaultFloatType
+    Just _ -> do
+      Located _ (TokInt size BaseDec) <- MP.satisfy isInt
+      Located endSpan _ <- matchSymbol ">"
+      let floatSize = case size of
+            32 -> Float32
+            64 -> Float64
+            _ -> Float64
+          combinedSpan = span <> endSpan
+      return $ Located combinedSpan (FloatType floatSize)
+  where
+    isInt (Located _ (TokInt _ BaseDec)) = True
+    isInt _ = False
+
+parsePrimitiveType :: TokenParser (Located PrimitiveType)
+parsePrimitiveType =
+  MP.choice
+    [ fmap PrimInt <$> parseIntType,
+      fmap PrimFloat <$> parseFloatType,
+      do
+        Located span _ <- matchKeyword "bool"
+        return $ Located span PrimBool,
+      do
+        Located span _ <- matchKeyword "str"
+        return $ Located span PrimString,
+      do
+        Located span _ <- matchKeyword "void"
+        return $ Located span PrimNone
     ]
