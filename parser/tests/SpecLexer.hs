@@ -1,6 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module SpecLexer (lexerSpec) where
 
 import AST.Types.Common (unLocated)
+import Data.Text (Text)
+import qualified Data.Text as T
 import Error (GLaDOSError (..))
 import Lexer (parseRawTokens)
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
@@ -9,8 +13,8 @@ import Tokens (Token, TokenConent (..))
 import Prelude hiding (getContents)
 
 -- Helper to run lexer
-runLexer :: String -> Either (ParseErrorBundle String GLaDOSError) [Token]
-runLexer = runParser parseRawTokens "<test>"
+runLexer :: String -> Either (ParseErrorBundle Text GLaDOSError) [Token]
+runLexer = runParser parseRawTokens "<test>" . T.pack
 
 -- Helper to extract token contents from Located tokens
 getContents :: [Token] -> [TokenConent]

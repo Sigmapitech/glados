@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module SpecTokens (tokensSpec) where
 
 import Test.Hspec (Spec, describe, it, shouldBe)

@@ -1,14 +1,15 @@
 module Tokens where
 
 import AST.Types.Common (Located)
+import Data.Text (Text)
 
 data TokenConent
-  = TokKeyword String
-  | TokIdentifier String
-  | TokSymbol String
+  = TokKeyword Text
+  | TokIdentifier Text
+  | TokSymbol Text
   | TokInt Integer
   | TokBool Bool
-  | TokString String
+  | TokString Text
   | TokChar Char
   | TokEOF
   deriving (Show, Eq, Ord)

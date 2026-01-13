@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module SpecLib (libSpec) where
 
 import AST.Types.Common (unLocated)

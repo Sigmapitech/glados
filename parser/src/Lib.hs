@@ -1,6 +1,9 @@
 module Lib (lexString, lexFile) where
 
 import Control.Exception (IOException, try)
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Lexer (parseRawTokens)
 import Text.Megaparsec (errorBundlePretty, runParser)
 import Tokens (Token)
@@ -41,7 +44,7 @@ styleOutput raw = unlines $ map colorizeLine (lines raw)
 -- | Public API
 lexInternal :: String -> String -> Either String [Token]
 lexInternal sourceName input =
-  case runParser parseRawTokens sourceName input of
+  case runParser parseRawTokens sourceName (T.pack input) of
     Right tokens -> Right tokens
     Left bundle -> Left (styleOutput $ errorBundlePretty bundle)
 
@@ -50,7 +53,9 @@ lexString = lexInternal "<string>"
 
 lexFile :: FilePath -> IO (Either String [Token])
 lexFile path = do
-  contentOrErr <- try (readFile path) :: IO (Either IOException String)
+  contentOrErr <- try (TIO.readFile path) :: IO (Either IOException Text)
   case contentOrErr of
     Left ioErr -> return $ Left ("File Error: " ++ show ioErr)
-    Right content -> return $ lexInternal path content
+    Right content -> return $ case runParser parseRawTokens path content of
+      Right tokens -> Right tokens
+      Left bundle -> Left (styleOutput $ errorBundlePretty bundle)

@@ -1,7 +1,10 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Lexer where
 
 import AST.Types.Common (FilePath' (..), Located (..), SourcePos (..), SourceSpan (..))
 import Control.Monad (void)
+import Data.Text (Text)
 import qualified Data.Text as T
 import Error (GLaDOSError (..))
 import Text.Megaparsec
@@ -38,7 +41,7 @@ toMyPos sp off =
       posOffset = fromIntegral off
     }
 
-type Parser = Parsec GLaDOSError String
+type Parser = Parsec GLaDOSError Text
 
 -- | Space Consumer
 --   Manually handles block comments to catch unclosed errors at the start position.
@@ -86,7 +89,7 @@ withLoc p = do
           }
    in return (Located spanPos val)
 
-reservedNames :: [String]
+reservedNames :: [Text]
 reservedNames =
   [ "import",
     "fn",
@@ -114,7 +117,7 @@ tokString = withLoc $ lexeme $ do
   startPos <- getOffset -- 1. Capture position at start quote
   void (char '"')
   content <- go startPos
-  return $ TokString content
+  return $ TokString (T.pack content)
   where
     go startPos = do
       done <- optional (char '"')
@@ -157,9 +160,9 @@ tokSymbol = withLoc $ lexeme $ do
              string "--"
            ]
         -- Then compound assignments (2 chars)
-        ++ [string [op, '='] | op <- "+-*/%&|^"]
+        ++ [string (T.pack [op, '=']) | op <- "+-*/%&|^"]
         -- Then single-char operators and delimiters
-        ++ [string [c] | c <- "(){}[];:=+-*/%<>^,!&|."]
+        ++ [string (T.singleton c) | c <- "(){}[];:=+-*/%<>^,!&|."]
   return $ TokSymbol sym
 
 -- | Parse Identifiers/Keywords
@@ -167,7 +170,7 @@ tokWord :: Parser Token
 tokWord = withLoc $ lexeme $ do
   first <- letterChar <|> char '_'
   rest <- many (alphaNumChar <|> char '_')
-  let word = first : rest
+  let word = T.pack (first : rest)
   if word `elem` reservedNames
     then return $ TokKeyword word
     else return $ TokIdentifier word
