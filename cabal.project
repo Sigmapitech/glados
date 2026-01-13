@@ -7,5 +7,6 @@ packages:
   poc/
   cli/
   parser/
+  repl/
 
 tests: True
