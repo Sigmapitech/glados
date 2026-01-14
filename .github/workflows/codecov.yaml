@@ -4,11 +4,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  coverage:
+  test:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -31,16 +35,53 @@ jobs:
         run: |
           python3 scripts/coverage_manager.py "$ALL_CHANGED_FILES"
 
-      - name: Prepare Coverage Files List
-        id: cov-files
+      - name: Prepare Coverage Matrix
+        id: set-matrix
         run: |
-          FILES=$(ls coverage/*.json 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "")
-          echo "files=$FILES" >> $GITHUB_OUTPUT
+          # It scans coverage/ dir and creates objects: {"file": "path", "flag": "name"}
+          MATRIX=$(python3 -c '
+          import glob, json, os
+          files = glob.glob("coverage/*.json")
+          data = []
+          for f in files:
+              # Extract "ast-test" from "coverage/codecov-ast-test.json"
+              name = os.path.basename(f).replace("codecov-", "").replace(".json", "")
+              data.append({"file": f, "flag": name})
+          print(json.dumps(data))
+          ')
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        if: steps.cov-files.outputs.files != ''
+          echo "Generated Matrix: $MATRIX"
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+      # Save the coverage folder so the next job can access it
+      - name: Upload Coverage Artifacts
+        if: steps.set-matrix.outputs.matrix != '[]'
+        uses: actions/upload-artifact@v4
         with:
-          files: ${{ steps.cov-files.outputs.files }}
+          name: coverage-files
+          path: coverage/
+          retention-days: 1
+
+  # JOB 2: Upload to Codecov (Matrix Strategy)
+  upload:
+    needs: test
+    runs-on: ubuntu-latest
+    if: needs.test.outputs.matrix != '[]' && needs.test.outputs.matrix != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.test.outputs.matrix) }}
+    steps:
+      - name: Download Coverage Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-files
+          path: coverage
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ${{ matrix.file }}
+          flags: ${{ matrix.flag }}
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
