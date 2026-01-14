@@ -1,6 +1,6 @@
 module Parser where
 
-import AST.Types.Common (Located (..))
+import AST.Types.Common (Located (..), TypeName (..), VarName (..), initialPos, spanSingle)
 import AST.Types.Literal
   ( ArrayLiteral (..),
     BoolLiteral (..),
@@ -19,15 +19,6 @@ import AST.Types.Operator
     symbolToUnaryOp,
   )
 import AST.Types.Type
-  ( FloatSize (Float32, Float64),
-    FloatType (FloatType),
-    IntSize (IntSize),
-    IntType (IntType),
-    PrimitiveType (..),
-    Signedness (..),
-    defaultFloatType,
-    defaultIntType,
-  )
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Error (ParseError (..))
@@ -200,4 +191,63 @@ parsePrimitiveType =
       do
         Located span _ <- matchKeyword "void"
         return $ Located span PrimNone
+    ]
+
+parseArrayType :: TokenParser (Located ArrayType)
+parseArrayType = do
+  Located span _ <- matchSymbol "["
+  Located elemSpan elemType <- parseType
+  Located endSpan _ <- matchSymbol "]"
+  let combinedSpan = span <> elemSpan <> endSpan
+  return $ Located combinedSpan (ArrayType elemType)
+
+parseConstness :: TokenParser (Located Constness)
+parseConstness = do
+  maybeConst <- MP.optional (matchKeyword "const")
+  case maybeConst of
+    Just (Located span _) -> return $ Located span Const
+    Nothing -> return $ Located (spanSingle (initialPos "<stream>")) Mutable
+
+parseQualifiedType :: TokenParser (Located QualifiedType)
+parseQualifiedType = do
+  Located constSpan constness <- parseConstness
+  Located typeSpan typ <- parseType
+  let combinedSpan = constSpan <> typeSpan
+  return $ Located combinedSpan (QualifiedType constness typ)
+
+parseParameter :: TokenParser (Located Parameter)
+parseParameter = do
+  Located nameSpan (TokIdentifier name) <- MP.satisfy isIdentifier
+  Located colonSpan _ <- matchSymbol ":"
+  Located typeSpan qtype <- parseQualifiedType
+  let combinedSpan = nameSpan <> colonSpan <> typeSpan
+  return $ Located combinedSpan (Parameter (VarName name) qtype)
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseFunctionType :: TokenParser (Located FunctionType)
+parseFunctionType = do
+  Located span _ <- matchSymbol "("
+  params <- MP.sepBy parseParameter (matchSymbol ",")
+  Located closeSpan _ <- matchSymbol ")"
+  Located arrowSpan _ <- matchSymbol "->"
+  Located returnTypeSpan retType <- parseType
+  let combinedSpan = span <> closeSpan <> arrowSpan <> returnTypeSpan
+  return $ Located combinedSpan (FunctionType (map (\(Located _ p) -> p) params) retType)
+
+parseTypeNamed :: TokenParser (Located TypeName)
+parseTypeNamed = do
+  Located span (TokIdentifier name) <- MP.satisfy isIdentifier
+  return $ Located span (TypeName name)
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseType :: TokenParser (Located Type)
+parseType =
+  MP.choice
+    [ fmap TypePrimitive <$> parsePrimitiveType,
+      fmap TypeArray <$> parseArrayType,
+      fmap TypeFunction <$> parseFunctionType
     ]
