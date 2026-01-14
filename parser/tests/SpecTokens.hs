@@ -2,8 +2,9 @@
 
 module SpecTokens (tokensSpec) where
 
+import AST.Types.Literal (IntBase (..))
 import Test.Hspec (Spec, describe, it, shouldBe)
-import Tokens (TokenConent (..))
+import Tokens (TokenContent (..))
 
 tokensSpec :: Spec
 tokensSpec = do
@@ -22,8 +23,8 @@ tokensSpec = do
         (TokSymbol "+" == TokSymbol "-") `shouldBe` False
 
       it "compares TokInt tokens" $ do
-        TokInt 42 10 `shouldBe` TokInt 42 10
-        (TokInt 42 10 == TokInt 100 10) `shouldBe` False
+        TokInt 42 BaseDec `shouldBe` TokInt 42 BaseDec
+        (TokInt 42 BaseDec == TokInt 100 BaseDec) `shouldBe` False
 
       it "compares TokBool tokens" $ do
         TokBool True `shouldBe` TokBool True
@@ -42,7 +43,7 @@ tokensSpec = do
         TokEOF `shouldBe` TokEOF
 
       it "different token types are not equal" $ do
-        (TokInt 42 10 == TokString "42") `shouldBe` False
+        (TokInt 42 BaseDec == TokString "42") `shouldBe` False
         (TokBool True == TokKeyword "true") `shouldBe` False
         (TokIdentifier "x" == TokSymbol "x") `shouldBe` False
 
@@ -57,8 +58,8 @@ tokensSpec = do
         show (TokSymbol "+") `shouldBe` "TokSymbol \"+\""
 
       it "shows TokInt" $ do
-        show (TokInt 42 10) `shouldBe` "TokInt 42 10"
-        show (TokInt (-10) 10) `shouldBe` "TokInt (-10) 10"
+        show (TokInt 42 BaseDec) `shouldBe` "TokInt 42"
+        show (TokInt (-10) BaseDec) `shouldBe` "TokInt -10"
 
       it "shows TokBool" $ do
         show (TokBool True) `shouldBe` "TokBool True"
@@ -75,23 +76,25 @@ tokensSpec = do
 
     describe "Token in collections" $ do
       it "can be used in lists" $ do
-        let tokens = [TokInt 1 10, TokSymbol "+", TokInt 2 10]
+        let tokens = [TokInt 1 BaseDec, TokSymbol "+", TokInt 2 BaseDec]
         length tokens `shouldBe` 3
-        head tokens `shouldBe` TokInt 1 10
+        case tokens of
+          (x : _) -> x `shouldBe` TokInt 1 BaseDec
+          _ -> error "Should not be possible"
 
       it "can be filtered" $ do
         let isInt (TokInt _ _) = True
             isInt _ = False
-            tokens = [TokInt 1 10, TokSymbol "+", TokInt 2 10, TokSymbol "*", TokInt 3 10]
+            tokens = [TokInt 1 BaseDec, TokSymbol "+", TokInt 2 BaseDec, TokSymbol "*", TokInt 3 BaseDec]
             ints = filter isInt tokens
-        ints `shouldBe` [TokInt 1 10, TokInt 2 10, TokInt 3 10]
+        ints `shouldBe` [TokInt 1 BaseDec, TokInt 2 BaseDec, TokInt 3 BaseDec]
 
       it "can be mapped" $ do
         let doubleInt (TokInt n b) = TokInt (n * 2) b
             doubleInt t = t
-            tokens = [TokInt 1 10, TokInt 2 10, TokInt 3 10]
+            tokens = [TokInt 1 BaseDec, TokInt 2 BaseDec, TokInt 3 BaseDec]
             doubled = map doubleInt tokens
-        doubled `shouldBe` [TokInt 2 10, TokInt 4 10, TokInt 6 10]
+        doubled `shouldBe` [TokInt 2 BaseDec, TokInt 4 BaseDec, TokInt 6 BaseDec]
 
   describe "Tokens - Token construction" $ do
     it "constructs keyword tokens" $ do
@@ -107,16 +110,16 @@ tokensSpec = do
       token `shouldBe` TokSymbol "=="
 
     it "constructs integer tokens with positive values" $ do
-      let token = TokInt 100 10
-      token `shouldBe` TokInt 100 10
+      let token = TokInt 100 BaseDec
+      token `shouldBe` TokInt 100 BaseDec
 
     it "constructs integer tokens with negative values" $ do
-      let token = TokInt (-50) 10
-      token `shouldBe` TokInt (-50) 10
+      let token = TokInt (-50) BaseDec
+      token `shouldBe` TokInt (-50) BaseDec
 
     it "constructs integer tokens with zero" $ do
-      let token = TokInt 0 10
-      token `shouldBe` TokInt 0 10
+      let token = TokInt 0 BaseDec
+      token `shouldBe` TokInt 0 BaseDec
 
     it "constructs boolean tokens" $ do
       TokBool True `shouldBe` TokBool True
