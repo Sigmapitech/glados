@@ -96,11 +96,17 @@ parseBoolLiteral = do
 
 parseIntLiteral :: TokenParser (Located IntLiteral)
 parseIntLiteral = do
+  maybeSign <- MP.optional (MP.satisfy isSign)
   Located span (TokInt n b) <- MP.satisfy isInt
-  return $ Located span (IntLiteral b n)
+  let signedN = case maybeSign of
+        Just (Located _ (TokSymbol "-")) -> -n
+        _ -> n
+  return $ Located span (IntLiteral b signedN)
   where
     isInt (Located _ (TokInt _ _)) = True
     isInt _ = False
+    isSign (Located _ (TokSymbol s)) = s == "+" || s == "-"
+    isSign _ = False
 
 parseFloatLiteral :: TokenParser (Located FloatLiteral)
 parseFloatLiteral = do
