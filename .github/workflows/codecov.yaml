@@ -1,5 +1,4 @@
 name: Haskell Coverage
-
 on:
   pull_request:
   workflow_dispatch:
@@ -7,7 +6,6 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,21 +15,32 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-25.05
 
-      - name: Setup dev shell
-        run: nix develop --command echo "Nix develop environment loaded"
+      - name: Get Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/*.hs
+            **/*.cabal
+            .github/workflows/codecov.yml
+            scripts/coverage_manager.py
 
-      - name: Run tests with coverage
-        run: nix develop --command cabal test --enable-coverage
-
-      - name: Generate Codecov artifact
+      - name: Run Tests and Generate Coverage
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          mkdir -p coverage
-          nix develop --command \
-            hpc-codecov cabal:lisp-interpreter-test > coverage/codecov.json
+          python3 scripts/coverage_manager.py "$ALL_CHANGED_FILES"
+
+      - name: Prepare Coverage Files List
+        id: cov-files
+        run: |
+          FILES=$(ls coverage/*.json 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "")
+          echo "files=$FILES" >> $GITHUB_OUTPUT
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
+        if: steps.cov-files.outputs.files != ''
         with:
-          files: coverage/codecov.json
+          files: ${{ steps.cov-files.outputs.files }}
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
