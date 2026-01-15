@@ -1,7 +1,7 @@
 module Parser where
 
-import AST.Types.AST (Expr (..))
-import AST.Types.Common (FieldName (..), FuncName (..), Located (..), TypeName (..), VarName (..), initialPos, spanSingle)
+import AST.Types.AST
+import AST.Types.Common (FieldName (..), FuncName (..), Located (..), SourceSpan, TypeName (..), VarName (..), initialPos, spanSingle)
 import AST.Types.Literal
   ( ArrayLiteral (..),
     BoolLiteral (..),
@@ -29,6 +29,9 @@ import Tokens (Token, TokenContent (..))
 import Prelude hiding (span)
 
 type TokenParser = MP.Parsec ParseError [Token]
+
+voidSpann :: SourceSpan
+voidSpann = spanSingle (initialPos "/dev/null")
 
 matchKeyword :: Text -> TokenParser (Located Text)
 matchKeyword kw = do
@@ -378,3 +381,144 @@ parseExprBinary = do
 
 parseExpr :: TokenParser (Located (Expr ann))
 parseExpr = parseExprBinary
+
+parseStmtAssign :: TokenParser (Located (Stmt ann))
+parseStmtAssign = do
+  Located lvalueSpan lvalue <- parseLValue
+  Located opSpan assignOp <- parseAssignOp
+  Located exprSpan expr <- parseExpr
+  let combinedSpan = lvalueSpan <> opSpan <> exprSpan
+  return $ Located combinedSpan (StmtAssign (Located lvalueSpan lvalue) assignOp (Located exprSpan expr))
+
+parseStmtVarDecl :: TokenParser (Located (Stmt ann))
+parseStmtVarDecl = do
+  Located span (TokIdentifier name) <- MP.satisfy isIdentifier
+  Located colonSpan _ <- matchSymbol ":"
+  Located typeSpan qtype <- parseQualifiedType
+  assignment <- MP.optional $ do
+    Located assignSpan _ <- matchSymbol "="
+    Located exprSpan expr <- parseExpr
+    return (Located assignSpan (), Located exprSpan expr)
+  case assignment of
+    Just (Located assignSpan _, Located exprSpan expr) ->
+      let combinedSpan = span <> colonSpan <> typeSpan <> assignSpan <> exprSpan
+       in return $ Located combinedSpan (StmtVarDecl (Located span (VarName name)) (Located typeSpan qtype) (Just (Located exprSpan expr)))
+    Nothing ->
+      let combinedSpan = span <> colonSpan <> typeSpan
+       in return $ Located combinedSpan (StmtVarDecl (Located span (VarName name)) (Located typeSpan qtype) Nothing)
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseStmtExpr :: TokenParser (Located (Stmt ann))
+parseStmtExpr = do
+  Located exprSpan expr <- parseExpr
+  return $ Located exprSpan (StmtExpr (Located exprSpan expr))
+
+parseStmtReturn :: TokenParser (Located (Stmt ann))
+parseStmtReturn = do
+  Located span _ <- matchKeyword "return"
+  maybeExpr <- MP.optional parseExpr
+  case maybeExpr of
+    Just (Located exprSpan expr) ->
+      let combinedSpan = span <> exprSpan
+       in return $ Located combinedSpan (StmtReturn (Just (Located exprSpan expr)))
+    Nothing ->
+      return $ Located span (StmtReturn Nothing)
+
+parseStmtBreak :: TokenParser (Located (Stmt ann))
+parseStmtBreak = do
+  Located span _ <- matchKeyword "break"
+  return $ Located span StmtBreak
+
+parseStmtContinue :: TokenParser (Located (Stmt ann))
+parseStmtContinue = do
+  Located span _ <- matchKeyword "continue"
+  return $ Located span StmtContinue
+
+parseBlock :: TokenParser (Located (Block ann))
+parseBlock = do
+  Located startSpan _ <- matchSymbol "{"
+  stmts <- MP.sepBy parseStmt (matchSymbol ";")
+  Located endSpan _ <- matchSymbol "}"
+  let combinedSpan = startSpan <> endSpan
+  return $ Located combinedSpan (Block combinedSpan stmts)
+
+parseStmtBlock :: TokenParser (Located (Stmt ann))
+parseStmtBlock = do
+  Located span block <- parseBlock
+  return $ Located span (StmtBlock block)
+
+parseStmt :: TokenParser (Located (Stmt ann))
+parseStmt =
+  MP.choice
+    [ MP.try parseStmtVarDecl,
+      MP.try parseStmtAssign,
+      parseStmtExpr,
+      parseStmtReturn,
+      parseStmtBreak,
+      parseStmtContinue,
+      parseStmtBlock
+    ]
+
+parseLVarRef :: TokenParser (Located (LValue ann))
+parseLVarRef = do
+  Located span (TokIdentifier name) <- MP.satisfy isIdentifier
+  return $ Located span (LVarRef (Located span (VarName name)))
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseLArrayIndex :: Located (LValue ann) -> TokenParser (Located (LValue ann))
+parseLArrayIndex base = do
+  _ <- matchSymbol "["
+  index <- parseExpr
+  Located endSpan _ <- matchSymbol "]"
+  let Located baseSpan _ = base
+  return $ Located (baseSpan <> endSpan) (LArrayIndex base index)
+
+parseLValue :: TokenParser (Located (LValue ann))
+parseLValue =
+  MP.choice
+    [ do
+        base <- parseLVarRef
+        parseLValueSuffixes base,
+      parseLVarRef
+    ]
+  where
+    parseLValueSuffixes lvalue = do
+      maybeSuffix <- MP.optional $ parseLArrayIndex lvalue
+      case maybeSuffix of
+        Just newLValue -> parseLValueSuffixes newLValue
+        Nothing -> return lvalue
+
+parseVisibility :: TokenParser (Located Visibility)
+parseVisibility = do
+  maybeStatic <- MP.optional (matchKeyword "static")
+  case maybeStatic of
+    Just (Located span _) -> return $ Located span Static
+    Nothing -> return $ Located (spanSingle (initialPos "<stream>")) Public
+
+parseDeclFunction :: TokenParser (Located (Decl ann))
+parseDeclFunction = do
+  Located visSpan visibility <- parseVisibility
+  Located fnSpan _ <- matchKeyword "fn"
+  Located nameSpan (TokIdentifier name) <- MP.satisfy isIdentifier
+  Located typeSpan funcType <- parseFunctionType
+  Located bodySpan block <- parseBlock
+
+  let combinedSpan = case visibility of
+        Static -> visSpan <> fnSpan <> nameSpan <> typeSpan <> bodySpan
+        Public -> fnSpan <> nameSpan <> typeSpan <> bodySpan
+
+  let functionDecl =
+        FunctionDecl
+          { funcDeclName = Located nameSpan (FuncName name),
+            funcDeclParams = map (Located voidSpann) (funcParams funcType),
+            funcDeclReturnType = Located voidSpann (funcReturnType funcType),
+            funcDeclBody = block
+          }
+  return $ Located combinedSpan (DeclFunction visibility functionDecl)
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
