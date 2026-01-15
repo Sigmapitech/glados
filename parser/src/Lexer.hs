@@ -179,9 +179,9 @@ tokSymbol = withLoc $ lexeme $ do
              string "--"
            ]
         -- Then compound assignments (2 chars)
-        ++ [string (T.pack [op, '=']) | op <- "+-*/%&|^"]
+        ++ [string (T.pack [op, '=']) | op <- "+-*~/%&|^"]
         -- Then single-char operators and delimiters
-        ++ [string (T.singleton c) | c <- "(){}[];:=+-*/%<>^,!&|."]
+        ++ [string (T.singleton c) | c <- "(){}[];~:=+-*/%<>^,!&|."]
   return $ TokSymbol sym
 
 -- | Parse Identifiers/Keywords

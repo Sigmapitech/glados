@@ -1,6 +1,7 @@
 module Parser where
 
-import AST.Types.Common (Located (..), TypeName (..), VarName (..), initialPos, spanSingle)
+import AST.Types.AST (Expr (..))
+import AST.Types.Common (FieldName (..), FuncName (..), Located (..), TypeName (..), VarName (..), initialPos, spanSingle)
 import AST.Types.Literal
   ( ArrayLiteral (..),
     BoolLiteral (..),
@@ -12,13 +13,14 @@ import AST.Types.Literal
   )
 import AST.Types.Operator
   ( AssignOp,
-    BinaryOp,
+    BinaryOp (..),
     UnaryOp,
+    binaryOpPrecedence,
     symbolToAssignOp,
     symbolToBinaryOp,
     symbolToUnaryOp,
   )
-import AST.Types.Type
+import AST.Types.Type hiding (fieldName)
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Error (ParseError (..))
@@ -119,13 +121,13 @@ parseArrayLiteral parseElement = do
   return $ Located (startSpan <> endSpan) (ArrayLiteral elements)
 
 parseLiteral :: TokenParser expr -> TokenParser (Located (Literal expr))
-parseLiteral parseExpr =
+parseLiteral parseExpre =
   MP.choice
-    [ fmap LitFloat <$> parseFloatLiteral,
+    [ MP.try $ fmap LitFloat <$> parseFloatLiteral,
       fmap LitInt <$> parseIntLiteral,
       fmap LitBool <$> parseBoolLiteral,
       fmap LitString <$> parseStringLiteral,
-      fmap LitArray <$> parseArrayLiteral parseExpr
+      fmap LitArray <$> parseArrayLiteral parseExpre
     ]
 
 parseSignedness :: TokenParser Signedness
@@ -251,3 +253,128 @@ parseType =
       fmap TypeArray <$> parseArrayType,
       fmap TypeFunction <$> parseFunctionType
     ]
+
+parseExprVar :: TokenParser (Located (Expr ann))
+parseExprVar = do
+  Located span (TokIdentifier name) <- MP.satisfy isIdentifier
+  return $ Located span (ExprVar (Located span (VarName name)))
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseExprPrimary :: TokenParser (Located (Expr ann))
+parseExprPrimary =
+  MP.choice
+    [ fmap ExprLiteral <$> parseLiteral parseExpr,
+      do
+        Located startSpan _ <- matchSymbol "("
+        expr <- parseExpr
+        Located endSpan _ <- matchSymbol ")"
+        return $ Located (startSpan <> endSpan) (ExprParen expr),
+      MP.try $ do
+        Located typeSpan (TypeName typeName) <- parseTypeNamed
+        _ <- matchSymbol "{"
+        fields <- MP.sepBy parseFieldInit (matchSymbol ",")
+        Located endSpan _ <- matchSymbol "}"
+        return $ Located (typeSpan <> endSpan) (ExprStructInit (Located typeSpan (TypeName typeName)) fields),
+      MP.try parseExprArrayInit,
+      parseExprVar
+    ]
+
+parseFieldInit :: TokenParser (Located FieldName, Located (Expr ann))
+parseFieldInit = do
+  Located fieldSpan (TokIdentifier fieldName) <- MP.satisfy isIdentifier
+  _ <- matchSymbol "="
+  expr <- parseExpr
+  return (Located fieldSpan (FieldName fieldName), expr)
+  where
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseExprArrayInit :: TokenParser (Located (Expr ann))
+parseExprArrayInit = do
+  locatedType <- parseType
+  _ <- matchSymbol "{"
+  exprs <- MP.sepBy parseExpr (matchSymbol ",")
+  Located endSpan _ <- matchSymbol "}"
+  let Located typeSpan _ = locatedType
+  return $ Located (typeSpan <> endSpan) (ExprArrayInit locatedType exprs)
+
+parseExprPostfix :: TokenParser (Located (Expr ann))
+parseExprPostfix = do
+  base <- parseExprPrimary
+  parsePostfixOps base
+  where
+    parsePostfixOps expr = do
+      maybeOp <-
+        MP.optional $
+          MP.choice
+            [ do
+                _ <- matchSymbol "("
+                args <- MP.sepBy parseExpr (matchSymbol ",")
+                Located endSpan _ <- matchSymbol ")"
+                case expr of
+                  Located exprSpan (ExprVar (Located _ (VarName name))) ->
+                    return $ Located (exprSpan <> endSpan) (ExprCall (Located exprSpan (FuncName name)) args)
+                  _ -> MP.failure Nothing Set.empty,
+              do
+                _ <- matchSymbol "["
+                index <- parseExpr
+                Located endSpan _ <- matchSymbol "]"
+                let Located exprSpan _ = expr
+                return $ Located (exprSpan <> endSpan) (ExprIndex expr index),
+              do
+                _ <- matchSymbol "."
+                Located fieldSpan (TokIdentifier fieldName) <- MP.satisfy isIdentifier
+                let Located exprSpan _ = expr
+                return $ Located (exprSpan <> fieldSpan) (ExprField expr (Located fieldSpan (FieldName fieldName))),
+              do
+                Located trySpan _ <- matchSymbol "?"
+                let Located exprSpan _ = expr
+                return $ Located (exprSpan <> trySpan) (ExprTry expr),
+              do
+                Located mustSpan _ <- matchSymbol "!"
+                let Located exprSpan _ = expr
+                return $ Located (exprSpan <> mustSpan) (ExprMust expr)
+            ]
+      case maybeOp of
+        Just newExpr -> parsePostfixOps newExpr
+        Nothing -> return expr
+
+    isIdentifier (Located _ (TokIdentifier _)) = True
+    isIdentifier _ = False
+
+parseExprUnary :: TokenParser (Located (Expr ann))
+parseExprUnary = do
+  maybeOp <- MP.optional parseUnaryOp
+  case maybeOp of
+    Just (Located opSpan op) -> do
+      expr <- parseExprUnary
+      let Located exprSpan _ = expr
+      return $ Located (opSpan <> exprSpan) (ExprUnary op expr)
+    Nothing -> parseExprPostfix
+
+parseExprBinary :: TokenParser (Located (Expr ann))
+parseExprBinary = do
+  left <- parseExprUnary
+  parseExprBinaryRHS 0 left
+  where
+    parseExprBinaryRHS :: Int -> Located (Expr ann) -> TokenParser (Located (Expr ann))
+    parseExprBinaryRHS minPrec left = do
+      maybeOp <- MP.optional parseBinaryOp
+      case maybeOp of
+        Nothing -> return left
+        Just (Located _ op) -> do
+          let prec = binaryOpPrecedence op
+          if prec < minPrec
+            then return left
+            else do
+              right <- parseExprUnary
+              right' <- parseExprBinaryRHS (prec + 1) right
+              let Located leftSpan _ = left
+                  Located rightSpan _ = right'
+                  expr = Located (leftSpan <> rightSpan) (ExprBinary op left right')
+              parseExprBinaryRHS minPrec expr
+
+parseExpr :: TokenParser (Located (Expr ann))
+parseExpr = parseExprBinary
