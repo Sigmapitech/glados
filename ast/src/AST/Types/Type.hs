@@ -38,7 +38,7 @@ module AST.Types.Type
   )
 where
 
-import AST.Types.Common (ErrorName (..), FieldName (..), TypeName (..), VarName (..))
+import AST.Types.Common (ErrorName (..), FieldName (..), Located (..), TypeName (..), VarName (..))
 import Data.Hashable (Hashable)
 import Data.List (intercalate)
 import qualified Data.Text as T
@@ -150,7 +150,7 @@ instance Show PrimitiveType where
   show PrimNone = "none"
 
 newtype ArrayType = ArrayType
-  { arrayTypeElement :: Type
+  { arrayTypeElement :: QualifiedType
   }
   deriving stock (Eq, Ord, Generic)
 
@@ -171,8 +171,8 @@ instance Show Parameter where
   show (Parameter (VarName name) qtype) = T.unpack name ++ ": " ++ show qtype
 
 data FunctionType = FunctionType
-  { funcParams :: [Parameter],
-    funcReturnType :: Type
+  { funcParams :: [Located Parameter],
+    funcReturnType :: Located QualifiedType
   }
   deriving stock (Eq, Ord, Generic)
 
@@ -182,7 +182,7 @@ instance Show FunctionType where
   show (FunctionType params retType) =
     "fn(" ++ intercalate ", " (map showParamType params) ++ ") -> " ++ show retType
     where
-      showParamType (Parameter _ qt) = show (qualType qt)
+      showParamType (Located _ (Parameter _ qt)) = show (qualType qt)
 
 data StructField = StructField
   { fieldName :: FieldName,

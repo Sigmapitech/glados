@@ -47,8 +47,8 @@ parseDeclFunction = do
   let functionDecl =
         FunctionDecl
           { funcDeclName = Located nameSpan (FuncName name),
-            funcDeclParams = map (Located voidSpann) (funcParams funcType),
-            funcDeclReturnType = Located voidSpann (funcReturnType funcType),
+            funcDeclParams = funcParams funcType,
+            funcDeclReturnType = funcReturnType funcType,
             funcDeclBody = block
           }
   return $ Located combinedSpan (DeclFunction visibility functionDecl)

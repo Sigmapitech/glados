@@ -153,7 +153,7 @@ typesSpec = do
       let result = runTypeParser parseArrayType tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
-        ArrayType (TypePrimitive (PrimInt _)) -> True `shouldBe` True
+        ArrayType (QualifiedType _ (TypePrimitive (PrimInt _))) -> True `shouldBe` True
         _ -> fail "Expected ArrayType of int"
 
     it "parses [bool]" $ do
@@ -161,7 +161,7 @@ typesSpec = do
       let result = runTypeParser parseArrayType tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
-        ArrayType (TypePrimitive PrimBool) -> True `shouldBe` True
+        ArrayType (QualifiedType _ (TypePrimitive PrimBool)) -> True `shouldBe` True
         _ -> fail "Expected ArrayType of bool"
 
     it "parses nested arrays [[int]]" $ do
@@ -169,7 +169,7 @@ typesSpec = do
       let result = runTypeParser parseArrayType tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
-        ArrayType (TypeArray _) -> True `shouldBe` True
+        ArrayType (QualifiedType _ (TypeArray _)) -> True `shouldBe` True
         _ -> fail "Expected nested ArrayType"
 
   describe "Parser.Type - parseTypeNamed" $ do

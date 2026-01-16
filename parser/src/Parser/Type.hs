@@ -1,6 +1,6 @@
 module Parser.Type where
 
-import AST.Types.Common (Located (..), TypeName (..), VarName (..))
+import AST.Types.Common (Located (..), TypeName (..), VarName (..), getSpan)
 import AST.Types.Literal (IntBase (BaseDec))
 import AST.Types.Type
   ( ArrayType (ArrayType),
@@ -93,7 +93,7 @@ parsePrimitiveType =
 parseArrayType :: TokenParser (Located ArrayType)
 parseArrayType = do
   Located span _ <- matchSymbol "["
-  Located elemSpan elemType <- parseType
+  Located elemSpan elemType <- parseQualifiedType
   Located endSpan _ <- matchSymbol "]"
   let combinedSpan = span <> elemSpan <> endSpan
   return $ Located combinedSpan (ArrayType elemType)
@@ -126,9 +126,9 @@ parseFunctionType = do
   params <- MP.sepBy parseParameter (matchSymbol ",")
   Located closeSpan _ <- matchSymbol ")"
   Located arrowSpan _ <- matchSymbol "->"
-  Located returnTypeSpan retType <- parseType
-  let combinedSpan = span <> closeSpan <> arrowSpan <> returnTypeSpan
-  return $ Located combinedSpan (FunctionType (map (\(Located _ p) -> p) params) retType)
+  ret <- parseQualifiedType
+  let combinedSpan = span <> closeSpan <> arrowSpan <> getSpan ret
+  return $ Located combinedSpan (FunctionType params ret)
 
 parseTypeNamed :: TokenParser (Located TypeName)
 parseTypeNamed = do
