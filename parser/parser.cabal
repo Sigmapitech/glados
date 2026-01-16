@@ -72,6 +72,14 @@ test-suite parser-test
   main-is:        Spec.hs
   hs-source-dirs: tests
   other-modules:
+    Parser.SpecDecl
+    Parser.SpecExpr
+    Parser.SpecLitterals
+    Parser.SpecLValue
+    Parser.SpecOperator
+    Parser.SpecStmt
+    Parser.SpecTypes
+    Parser.SpecUtils
     SpecError
     SpecLexer
     SpecLib
