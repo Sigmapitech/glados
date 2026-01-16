@@ -104,8 +104,6 @@ reservedNames =
     "else",
     "while",
     "for",
-    "True",
-    "False",
     "break",
     "continue",
     "const"
@@ -194,6 +192,11 @@ tokWord = withLoc $ lexeme $ do
     then return $ TokKeyword word
     else return $ TokIdentifier word
 
+tokBool :: Parser Token
+tokBool = withLoc $ lexeme $ do
+  b <- (string "True" >> return True) <|> (string "False" >> return False)
+  return $ TokBool b
+
 -- | Fallback for Illegal Characters
 tokIllegal :: Parser Token
 tokIllegal = withLoc $ do
@@ -204,6 +207,7 @@ tokIllegal = withLoc $ do
 validToken :: Parser Token
 validToken =
   tokInt
+    <|> tokBool
     <|> tokWord
     <|> tokSymbol
 
