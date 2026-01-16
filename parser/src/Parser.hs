@@ -211,7 +211,7 @@ parseConstness = do
   maybeConst <- MP.optional (matchKeyword "const")
   case maybeConst of
     Just (Located span _) -> return $ Located span Const
-    Nothing -> return $ Located (spanSingle (initialPos "<stream>")) Mutable
+    Nothing -> return $ Located voidSpann Mutable
 
 parseQualifiedType :: TokenParser (Located QualifiedType)
 parseQualifiedType = do
@@ -497,7 +497,7 @@ parseVisibility = do
   maybeStatic <- MP.optional (matchKeyword "static")
   case maybeStatic of
     Just (Located span _) -> return $ Located span Static
-    Nothing -> return $ Located (spanSingle (initialPos "<stream>")) Public
+    Nothing -> return $ Located voidSpann Public
 
 parseDeclFunction :: TokenParser (Located (Decl ann))
 parseDeclFunction = do
