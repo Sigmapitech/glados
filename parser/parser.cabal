@@ -35,6 +35,7 @@ library
     Parser
     Parser.Decl
     Parser.Expr
+    Parser.Import
     Parser.Literal
     Parser.LValue
     Parser.Operator
@@ -74,6 +75,7 @@ test-suite parser-test
   other-modules:
     Parser.SpecDecl
     Parser.SpecExpr
+    Parser.SpecImport
     Parser.SpecLitterals
     Parser.SpecLValue
     Parser.SpecOperator

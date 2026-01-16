@@ -33,13 +33,18 @@ instance Show TokenContent where
 showIntWithBase :: Integer -> IntBase -> String
 showIntWithBase val base = case base of
   BaseDec -> show val
-  BaseHex -> "0x" ++ showHex val ""
-  BaseOct -> "0o" ++ showOct val ""
-  BaseBin -> "0b" ++ showBin val
+  BaseHex
+    | val < 0 -> "-0x" ++ showHex (negate val) ""
+    | otherwise -> "0x" ++ showHex val ""
+  BaseOct
+    | val < 0 -> "-0o" ++ showOct (negate val) ""
+    | otherwise -> "0o" ++ showOct val ""
+  BaseBin
+    | val < 0 -> "-0b" ++ showBin (negate val)
+    | otherwise -> "0b" ++ showBin val
 
 showBin :: Integer -> String
 showBin n
-  | n < 0 = '-' : showBin (negate n)
   | n == 0 = "0"
   | otherwise = reverse $ showBin' n
   where

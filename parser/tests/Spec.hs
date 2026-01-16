@@ -2,6 +2,7 @@ module Main where
 
 import Parser.SpecDecl (declSpec)
 import Parser.SpecExpr (exprSpec)
+import Parser.SpecImport (importSpec)
 import Parser.SpecLValue (lvalueSpec)
 import Parser.SpecLitterals (litteralsSpec)
 import Parser.SpecOperator (operatorSpec)
@@ -29,3 +30,4 @@ main = hspec $ do
   lvalueSpec
   stmtSpec
   declSpec
+  importSpec

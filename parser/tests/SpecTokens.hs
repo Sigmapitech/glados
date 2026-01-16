@@ -135,3 +135,87 @@ tokensSpec = do
 
     it "constructs EOF token" $ do
       TokEOF `shouldBe` TokEOF
+
+  describe "Tokens - showIntWithBase" $ do
+    describe "Base decimal (BaseDec)" $ do
+      it "shows positive decimal integers" $ do
+        show (TokInt 42 BaseDec) `shouldBe` "TokInt 42"
+        show (TokInt 100 BaseDec) `shouldBe` "TokInt 100"
+        show (TokInt 999 BaseDec) `shouldBe` "TokInt 999"
+
+      it "shows zero in decimal" $ do
+        show (TokInt 0 BaseDec) `shouldBe` "TokInt 0"
+
+      it "shows negative decimal integers" $ do
+        show (TokInt (-42) BaseDec) `shouldBe` "TokInt -42"
+        show (TokInt (-100) BaseDec) `shouldBe` "TokInt -100"
+
+    describe "Base hexadecimal (BaseHex)" $ do
+      it "shows positive hexadecimal integers" $ do
+        show (TokInt 255 BaseHex) `shouldBe` "TokInt 0xff"
+        show (TokInt 16 BaseHex) `shouldBe` "TokInt 0x10"
+        show (TokInt 4095 BaseHex) `shouldBe` "TokInt 0xfff"
+
+      it "shows zero in hexadecimal" $ do
+        show (TokInt 0 BaseHex) `shouldBe` "TokInt 0x0"
+
+      it "shows positive hexadecimal integers (otherwise branch)" $ do
+        show (TokInt 1 BaseHex) `shouldBe` "TokInt 0x1"
+        show (TokInt 42 BaseHex) `shouldBe` "TokInt 0x2a"
+
+      it "shows negative hexadecimal integers" $ do
+        show (TokInt (-255) BaseHex) `shouldBe` "TokInt -0xff"
+        show (TokInt (-16) BaseHex) `shouldBe` "TokInt -0x10"
+
+      it "shows small hexadecimal values" $ do
+        show (TokInt 10 BaseHex) `shouldBe` "TokInt 0xa"
+        show (TokInt 15 BaseHex) `shouldBe` "TokInt 0xf"
+
+    describe "Base octal (BaseOct)" $ do
+      it "shows positive octal integers" $ do
+        show (TokInt 8 BaseOct) `shouldBe` "TokInt 0o10"
+        show (TokInt 64 BaseOct) `shouldBe` "TokInt 0o100"
+        show (TokInt 511 BaseOct) `shouldBe` "TokInt 0o777"
+
+      it "shows zero in octal" $ do
+        show (TokInt 0 BaseOct) `shouldBe` "TokInt 0o0"
+
+      it "shows positive octal integers (otherwise branch)" $ do
+        show (TokInt 1 BaseOct) `shouldBe` "TokInt 0o1"
+        show (TokInt 42 BaseOct) `shouldBe` "TokInt 0o52"
+
+      it "shows negative octal integers" $ do
+        show (TokInt (-8) BaseOct) `shouldBe` "TokInt -0o10"
+        show (TokInt (-64) BaseOct) `shouldBe` "TokInt -0o100"
+
+      it "shows small octal values" $ do
+        show (TokInt 7 BaseOct) `shouldBe` "TokInt 0o7"
+        show (TokInt 1 BaseOct) `shouldBe` "TokInt 0o1"
+
+    describe "Base binary (BaseBin)" $ do
+      it "shows positive binary integers" $ do
+        show (TokInt 5 BaseBin) `shouldBe` "TokInt 0b101"
+        show (TokInt 8 BaseBin) `shouldBe` "TokInt 0b1000"
+        show (TokInt 15 BaseBin) `shouldBe` "TokInt 0b1111"
+
+      it "shows zero in binary" $ do
+        show (TokInt 0 BaseBin) `shouldBe` "TokInt 0b0"
+
+      it "shows positive binary integers (otherwise branch)" $ do
+        show (TokInt 1 BaseBin) `shouldBe` "TokInt 0b1"
+        show (TokInt 3 BaseBin) `shouldBe` "TokInt 0b11"
+
+      it "shows negative binary integers" $ do
+        show (TokInt (-5) BaseBin) `shouldBe` "TokInt -0b101"
+        show (TokInt (-8) BaseBin) `shouldBe` "TokInt -0b1000"
+
+      it "shows powers of two in binary" $ do
+        show (TokInt 1 BaseBin) `shouldBe` "TokInt 0b1"
+        show (TokInt 2 BaseBin) `shouldBe` "TokInt 0b10"
+        show (TokInt 4 BaseBin) `shouldBe` "TokInt 0b100"
+        show (TokInt 16 BaseBin) `shouldBe` "TokInt 0b10000"
+
+      it "shows mixed bit patterns in binary" $ do
+        show (TokInt 7 BaseBin) `shouldBe` "TokInt 0b111"
+        show (TokInt 10 BaseBin) `shouldBe` "TokInt 0b1010"
+        show (TokInt 255 BaseBin) `shouldBe` "TokInt 0b11111111"
