@@ -1,5 +1,7 @@
 {-# LANGUAGE InstanceSigs #-}
 
+{- HLINT ignore "Use newtype instead of data" -}
+
 module Error where
 
 import Text.Megaparsec (ShowErrorComponent (..))

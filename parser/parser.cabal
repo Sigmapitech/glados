@@ -33,6 +33,14 @@ library
     Lexer
     Lib
     Parser
+    Parser.Decl
+    Parser.Expr
+    Parser.Literal
+    Parser.LValue
+    Parser.Operator
+    Parser.Stmt
+    Parser.Type
+    Parser.Utils
     Tokens
 
   build-depends:
