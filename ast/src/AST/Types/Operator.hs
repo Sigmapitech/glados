@@ -148,6 +148,7 @@ binaryOpAssoc op = case op of
 
 data UnaryOp
   = OpNeg
+  | OpPos
   | OpNot
   | OpBitNot
   deriving stock (Eq, Ord, Generic, Enum, Bounded)
@@ -160,6 +161,7 @@ instance Show UnaryOp where
 unaryOpSymbol :: UnaryOp -> Text
 unaryOpSymbol op = case op of
   OpNeg -> "-"
+  OpPos -> "+"
   OpNot -> "!"
   OpBitNot -> "~"
 
