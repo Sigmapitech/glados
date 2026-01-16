@@ -4,7 +4,7 @@ import Lib (lexFile)
 import Parser.Decl (parseDecl)
 import System.Environment (getArgs)
 import System.Exit (ExitCode (..), exitSuccess, exitWith)
-import Text.Megaparsec (many, runParser)
+import Text.Megaparsec (errorBundlePretty, many, runParser)
 
 main :: IO ()
 main = do
@@ -20,7 +20,7 @@ main = do
           print tokens
           case runParser (many parseDecl) filePath tokens of
             Left parseErr -> do
-              print parseErr
+              putStrLn $ errorBundlePretty parseErr
               exitWith (ExitFailure 84)
             Right ast -> do
               print ast

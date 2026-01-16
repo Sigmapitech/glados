@@ -1,9 +1,28 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE RecordWildCards #-}
+
 module Tokens where
 
-import AST.Types.Common (Located)
+import AST.Types.Common
+  ( Column (..),
+    FilePath' (..),
+    Line (..),
+    Located (..),
+    SourceSpan (..),
+  )
+import qualified AST.Types.Common as AST
 import AST.Types.Literal (IntBase (..))
+import Data.List.NonEmpty (NonEmpty)
+import qualified Data.List.NonEmpty as NE
+import Data.Proxy (Proxy (..))
 import Data.Text (Text)
+import qualified Data.Text as T
 import Numeric (showHex, showOct)
+import Text.Megaparsec (PosState (..), SourcePos (..))
+import Text.Megaparsec.Pos (mkPos)
+import Text.Megaparsec.Stream (TraversableStream (..), VisualStream (..), showTokens)
+import Prelude hiding (span)
 
 data TokenContent
   = TokKeyword Text
@@ -52,3 +71,52 @@ showBin n
     showBin' x = (if odd x then '1' else '0') : showBin' (x `div` 2)
 
 type Token = Located TokenContent
+
+-- ANSI color codes for error messages
+tokenRed, tokenGreen, tokenYellow, tokenBlue, tokenMagenta, tokenCyan :: String
+tokenReset, tokenBold :: String
+tokenRed = "\ESC[31m"
+tokenGreen = "\ESC[32m"
+tokenYellow = "\ESC[33m"
+tokenBlue = "\ESC[34m"
+tokenMagenta = "\ESC[35m"
+tokenCyan = "\ESC[36m"
+
+tokenReset = "\ESC[0m"
+
+tokenBold = "\ESC[1m"
+
+instance VisualStream [Token] where
+  showTokens :: Proxy [Token] -> NonEmpty Token -> String
+  showTokens _ tokens =
+    let tokenStrs = NE.toList $ fmap formatToken tokens
+     in tokenBold ++ tokenMagenta ++ unwords tokenStrs ++ tokenReset
+    where
+      formatToken :: Token -> String
+      formatToken (Located _ content) = case content of
+        TokKeyword kw -> tokenCyan ++ "keyword " ++ show kw ++ tokenMagenta
+        TokIdentifier ident -> tokenGreen ++ "identifier " ++ show ident ++ tokenMagenta
+        TokSymbol sym -> tokenYellow ++ "symbol " ++ show sym ++ tokenMagenta
+        TokInt val _ -> tokenBlue ++ "number " ++ show val ++ tokenMagenta
+        TokBool b -> tokenBlue ++ "boolean " ++ show b ++ tokenMagenta
+        TokString str -> tokenGreen ++ "string " ++ show str ++ tokenMagenta
+        TokChar c -> tokenGreen ++ "char " ++ show c ++ tokenMagenta
+        TokEOF -> tokenRed ++ "end-of-file" ++ tokenMagenta
+
+instance TraversableStream [Token] where
+  reachOffset :: Int -> PosState [Token] -> (Maybe String, PosState [Token])
+  reachOffset o pst@PosState {..} =
+    case drop (o - pstateOffset) pstateInput of
+      [] -> (Nothing, pst {pstateOffset = o})
+      (Located span _ : _) ->
+        let sourcePos = case span of
+              SourceSpan start _ ->
+                let AST.SourcePos (FilePath' path) (Line line) (Column col) _ = start
+                 in SourcePos (T.unpack path) (mkPos $ fromIntegral line) (mkPos $ fromIntegral col)
+         in ( Nothing,
+              pst
+                { pstateInput = drop (o - pstateOffset) pstateInput,
+                  pstateOffset = o,
+                  pstateSourcePos = sourcePos
+                }
+            )

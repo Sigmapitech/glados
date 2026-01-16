@@ -18,6 +18,15 @@ data ParseError
   = TypeError String
   deriving (Show, Eq, Ord)
 
+instance ShowErrorComponent ParseError where
+  showErrorComponent :: ParseError -> String
+  showErrorComponent (TypeError msg) =
+    unlines
+      [ "",
+        bold ++ red ++ "Parse Error: " ++ reset ++ msg,
+        ""
+      ]
+
 esc :: String -> String
 esc code = "\ESC[" ++ code ++ "m"
 
