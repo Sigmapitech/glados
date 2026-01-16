@@ -1,8 +1,10 @@
 module Main where
 
 import Lib (lexFile)
+import Parser.Decl (parseDecl)
 import System.Environment (getArgs)
 import System.Exit (ExitCode (..), exitSuccess, exitWith)
+import Text.Megaparsec (many, runParser)
 
 main :: IO ()
 main = do
@@ -15,9 +17,14 @@ main = do
           putStrLn err
           exitWith (ExitFailure 84)
         Right tokens -> do
-          -- For now, just print the token stream to prove the lexer works
           print tokens
-          exitSuccess
+          case runParser (many parseDecl) filePath tokens of
+            Left parseErr -> do
+              print parseErr
+              exitWith (ExitFailure 84)
+            Right ast -> do
+              print ast
+              exitSuccess
     _ -> do
       putStrLn "Usage: ./glados <file>"
       exitWith (ExitFailure 84)

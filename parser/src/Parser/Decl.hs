@@ -1,7 +1,7 @@
 module Parser.Decl where
 
 import AST.Types.AST
-  ( Decl (DeclFunction),
+  ( Decl (DeclFunction, DeclImport),
     FunctionDecl
       ( FunctionDecl,
         funcDeclBody,
@@ -13,6 +13,7 @@ import AST.Types.AST
   )
 import AST.Types.Common (FuncName (..), Located (..))
 import AST.Types.Type (FunctionType (funcParams, funcReturnType))
+import Parser.Import (parseImportDecl)
 import Parser.Stmt (parseBlock)
 import Parser.Type (parseFunctionType)
 import Parser.Utils
@@ -52,3 +53,12 @@ parseDeclFunction = do
             funcDeclBody = block
           }
   return $ Located combinedSpan (DeclFunction visibility functionDecl)
+
+parseDecl :: TokenParser (Located (Decl ann))
+parseDecl =
+  MP.choice
+    [ parseDeclFunction,
+      do
+        Located span importDecl <- parseImportDecl
+        return $ Located span (DeclImport importDecl)
+    ]

@@ -60,6 +60,7 @@ executable parser-exe
   hs-source-dirs: app
   build-depends:
     , base
+    , megaparsec
     , parser
     , text
 
