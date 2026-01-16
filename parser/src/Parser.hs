@@ -1,17 +1,22 @@
 module Parser
-  ( parseExpr,
-    parseStmt,
-    parseBlock,
-    parseDeclFunction,
-    parseType,
-    parseLiteral,
-    TokenParser,
+  ( module Parser.Decl,
+    module Parser.Expr,
+    module Parser.Import,
+    module Parser.Literal,
+    module Parser.LValue,
+    module Parser.Operator,
+    module Parser.Stmt,
+    module Parser.Type,
+    module Parser.Utils,
   )
 where
 
-import Parser.Decl (parseDeclFunction)
-import Parser.Expr (parseExpr)
-import Parser.Literal (parseLiteral)
-import Parser.Stmt (parseBlock, parseStmt)
-import Parser.Type (parseType)
-import Parser.Utils (TokenParser)
+import Parser.Decl
+import Parser.Expr
+import Parser.Import
+import Parser.LValue
+import Parser.Literal
+import Parser.Operator
+import Parser.Stmt
+import Parser.Type
+import Parser.Utils
