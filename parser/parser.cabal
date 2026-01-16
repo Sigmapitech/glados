@@ -26,7 +26,7 @@ library
   exposed-modules: Parser
   hs-source-dirs:  src
   build-depends:
-    , ast
+    , ast:ast-lisp
     , base
     , megaparsec
 
@@ -37,7 +37,7 @@ test-suite parser-test
   main-is:        Spec.hs
   hs-source-dirs: tests
   build-depends:
-    , ast
+    , ast:ast-lisp
     , base
     , hspec
     , parser

@@ -5,7 +5,7 @@
 -- handling VariableRef lookups, function calls, conditionals, and built-in operations.
 module Evaluator (eval, evalFrom, evalMany, evalManyFrom, evalToValue, evalManyToValue) where
 
-import AST
+import AST.Lisp.AST
 import Control.Monad.Except (runExceptT)
 import Control.Monad.State (get, modify, put, runState)
 import Data.Bits (Bits (..))

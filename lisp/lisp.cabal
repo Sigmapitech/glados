@@ -31,7 +31,7 @@ library
   import:          extensions
   exposed-modules: Lisp
   build-depends:
-    , ast
+    , ast:ast-lisp
     , base
     , eval
     , optparse-applicative
@@ -60,7 +60,7 @@ test-suite lisp-interpreter-test
   other-modules:  SpecIntegration
   hs-source-dirs: tests
   build-depends:
-    , ast
+    , ast:ast-lisp
     , base                >=4.7 && <5
     , directory
     , eval

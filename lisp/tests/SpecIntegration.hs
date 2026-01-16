@@ -3,13 +3,13 @@
 
 module SpecIntegration (specIntegration) where
 
-import AST (RuntimeValue (..), unErrorMsg)
+import AST.Lisp.AST (RuntimeValue (..), unErrorMsg)
+import AST.Lisp.SexprtoAST (sexprToAST)
 import Control.Exception (SomeException, catch)
 import Data.List (isInfixOf)
 import qualified Data.List.NonEmpty as NE
 import Evaluator (evalManyToValue)
 import Parser (parseFile)
-import SexprtoAST (sexprToAST)
 import System.Directory (doesFileExist)
 import Test.Hspec
 
