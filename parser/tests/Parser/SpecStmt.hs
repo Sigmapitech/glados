@@ -128,7 +128,7 @@ stmtSpec = do
         Block _ stmts -> length stmts `shouldBe` 0
 
     it "parses block with one statement" $ do
-      let tokens = [loc (TokSymbol "{"), loc (TokKeyword "break"), loc (TokSymbol "}")]
+      let tokens = [loc (TokSymbol "{"), loc (TokKeyword "break"), loc (TokSymbol ";"), loc (TokSymbol "}")]
       let result = runStmtParser parseBlock tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
@@ -140,6 +140,7 @@ stmtSpec = do
               loc (TokKeyword "break"),
               loc (TokSymbol ";"),
               loc (TokKeyword "continue"),
+              loc (TokSymbol ";"),
               loc (TokSymbol "}")
             ]
       let result = runStmtParser parseBlock tokens

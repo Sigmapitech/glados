@@ -103,12 +103,12 @@ lexerSpec = do
     it "lexes 'True' keyword" $ do
       let result = runLexer "True"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokKeyword "True"]
+      getContents (fromRight result) `shouldBe` [TokBool True]
 
     it "lexes 'False' keyword" $ do
       let result = runLexer "False"
       result `shouldSatisfy` isRight
-      getContents (fromRight result) `shouldBe` [TokKeyword "False"]
+      getContents (fromRight result) `shouldBe` [TokBool False]
 
     it "lexes multiple keywords" $ do
       let result = runLexer "if else return"

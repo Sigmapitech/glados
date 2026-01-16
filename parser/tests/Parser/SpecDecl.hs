@@ -63,7 +63,7 @@ declSpec = do
         _ -> fail "Expected static DeclFunction"
 
     it "parses function with parameters" $ do
-      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "add"), loc (TokSymbol "("), loc (TokIdentifier "a"), loc (TokSymbol ":"), loc (TokKeyword "int"), loc (TokSymbol ","), loc (TokIdentifier "b"), loc (TokSymbol ":"), loc (TokKeyword "int"), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokKeyword "int"), loc (TokSymbol "{"), loc (TokKeyword "return"), loc (TokIdentifier "a"), loc (TokSymbol "+"), loc (TokIdentifier "b"), loc (TokSymbol "}")]
+      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "add"), loc (TokSymbol "("), loc (TokIdentifier "a"), loc (TokSymbol ":"), loc (TokKeyword "int"), loc (TokSymbol ","), loc (TokIdentifier "b"), loc (TokSymbol ":"), loc (TokKeyword "int"), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokKeyword "int"), loc (TokSymbol "{"), loc (TokKeyword "return"), loc (TokIdentifier "a"), loc (TokSymbol "+"), loc (TokIdentifier "b"), loc (TokSymbol ";"), loc (TokSymbol "}")]
       let result = runDeclParser parseDeclFunction tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
@@ -71,7 +71,7 @@ declSpec = do
         _ -> fail "Expected DeclFunction with 2 parameters"
 
     it "parses function returning int" $ do
-      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "getNum"), loc (TokSymbol "("), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokKeyword "int"), loc (TokSymbol "{"), loc (TokKeyword "return"), loc (TokInt 42 BaseDec), loc (TokSymbol "}")]
+      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "getNum"), loc (TokSymbol "("), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokKeyword "int"), loc (TokSymbol "{"), loc (TokKeyword "return"), loc (TokInt 42 BaseDec), loc (TokSymbol ";"), loc (TokSymbol "}")]
       let result = runDeclParser parseDeclFunction tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
