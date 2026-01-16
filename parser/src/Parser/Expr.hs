@@ -5,10 +5,11 @@ import AST.Types.AST
   )
 import AST.Types.Common (FieldName (..), FuncName (..), Located (..), TypeName (..), VarName (..))
 import AST.Types.Operator (binaryOpPrecedence)
+import AST.Types.Type (Type (..))
 import qualified Data.Set as Set
 import Parser.Literal (parseLiteral)
 import Parser.Operator (parseBinaryOp, parseUnaryOp)
-import Parser.Type (parseType, parseTypeNamed)
+import Parser.Type (parsePrimitiveType, parseType, parseTypeNamed)
 import Parser.Utils
   ( TokenParser,
     isIdentifier,
@@ -22,6 +23,14 @@ parseExprVar :: TokenParser (Located (Expr ann))
 parseExprVar = do
   Located span (TokIdentifier name) <- MP.satisfy isIdentifier
   return $ Located span (ExprVar (Located span (VarName name)))
+
+parseExprCast :: TokenParser (Located (Expr ann))
+parseExprCast = do
+  Located startSpan primitiv <- parsePrimitiveType
+  _ <- matchSymbol "("
+  expr <- parseExpr
+  Located endSpan _ <- matchSymbol ")"
+  return $ Located (startSpan <> endSpan) (ExprCast expr (Located startSpan (TypePrimitive primitiv)))
 
 parseFieldInit :: TokenParser (Located FieldName, Located (Expr ann))
 parseFieldInit = do
@@ -75,6 +84,7 @@ parseExprPostfix = do
                   Located exprSpan (ExprVar (Located _ (VarName name))) ->
                     return $ Located (exprSpan <> endSpan) (ExprCall (Located exprSpan (FuncName name)) args)
                   _ -> MP.failure Nothing Set.empty,
+              parseExprCast,
               do
                 _ <- matchSymbol "["
                 index <- parseExpr
@@ -132,4 +142,8 @@ parseExprBinary = do
               parseExprBinaryRHS minPrec expr
 
 parseExpr :: TokenParser (Located (Expr ann))
-parseExpr = parseExprBinary
+parseExpr =
+  MP.choice
+    [ parseExprBinary,
+      parseExprCast
+    ]
