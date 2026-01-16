@@ -2,6 +2,7 @@ module Parser.Stmt where
 
 import AST.Types.AST
   ( Block (Block),
+    ForInit (..),
     Stmt (..),
   )
 import AST.Types.Common (Located (..), VarName (..))
@@ -22,7 +23,7 @@ import Prelude hiding (span)
 parseBlock :: TokenParser (Located (Block ann))
 parseBlock = do
   Located startSpan _ <- matchSymbol "{"
-  stmts <- MP.sepBy parseStmt (matchSymbol ";")
+  stmts <- MP.endBy parseStmt (matchSymbol ";")
   Located endSpan _ <- matchSymbol "}"
   let combinedSpan = startSpan <> endSpan
   return $ Located combinedSpan (Block combinedSpan stmts)
@@ -83,6 +84,63 @@ parseStmtBlock = do
   Located span block <- parseBlock
   return $ Located span (StmtBlock block)
 
+parseStmtWhile :: TokenParser (Located (Stmt ann))
+parseStmtWhile = do
+  Located whileSpan _ <- matchKeyword "while"
+  Located lpan _ <- matchSymbol "("
+  Located condSpan condExpr <- parseExpr
+  Located rpan _ <- matchSymbol ")"
+  Located bodySpan bodyBlock <- parseBlock
+  let combinedSpan = whileSpan <> lpan <> condSpan <> rpan <> bodySpan
+  return $ Located combinedSpan (StmtWhile (Located condSpan condExpr) bodyBlock)
+
+parseForInit :: TokenParser (ForInit ann)
+parseForInit = do
+  MP.choice
+    [ do
+        Located _ var <- parseStmtVarDecl
+        case var of
+          StmtVarDecl name qtype (Just initExpr) ->
+            return $ ForInitDecl name qtype initExpr
+          _ -> fail "Expected variable declaration with initializer in for loop",
+      do
+        Located exprSpan expr <- parseExpr
+        return $ ForInitExpr (Located exprSpan expr)
+    ]
+
+parseStmtFor :: TokenParser (Located (Stmt ann))
+parseStmtFor = do
+  Located forSpan _ <- matchKeyword "for"
+  Located lpanSpan _ <- matchSymbol "("
+  maybeInit <- MP.optional parseForInit
+  Located semi1Span _ <- matchSymbol ";"
+  maybeCond <- MP.optional parseExpr
+  Located semi2Span _ <- matchSymbol ";"
+  maybePost <- MP.optional parseStmtExpr
+  Located rpanSpan _ <- matchSymbol ")"
+  Located bodySpan bodyBlock <- parseBlock
+  let combinedSpan = forSpan <> lpanSpan <> semi1Span <> semi2Span <> rpanSpan <> bodySpan
+  return $ Located combinedSpan (StmtFor maybeInit maybeCond maybePost bodyBlock)
+
+parseStmtIf :: TokenParser (Located (Stmt ann))
+parseStmtIf = do
+  Located ifSpan _ <- matchKeyword "if"
+  Located lpanSpan _ <- matchSymbol "("
+  Located condSpan condExpr <- parseExpr
+  Located rpanSpan _ <- matchSymbol ")"
+  Located thenSpan thenBlock <- parseBlock
+  maybeElse <- MP.optional $ do
+    Located elseSpan _ <- matchKeyword "else"
+    Located elseBlockSpan elseBlock <- parseBlock
+    return (Located elseSpan (), Located elseBlockSpan elseBlock)
+  case maybeElse of
+    Just (Located elseSpan _, Located elseBlockSpan elseBlock) ->
+      let combinedSpan = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan <> elseSpan <> elseBlockSpan
+       in return $ Located combinedSpan (StmtIf (Located condSpan condExpr) thenBlock (Just elseBlock))
+    Nothing ->
+      let combinedSpan = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan
+       in return $ Located combinedSpan (StmtIf (Located condSpan condExpr) thenBlock Nothing)
+
 parseStmt :: TokenParser (Located (Stmt ann))
 parseStmt =
   MP.choice
@@ -92,5 +150,8 @@ parseStmt =
       parseStmtReturn,
       parseStmtBreak,
       parseStmtContinue,
-      parseStmtBlock
+      parseStmtBlock,
+      parseStmtWhile,
+      parseStmtFor,
+      parseStmtIf
     ]
