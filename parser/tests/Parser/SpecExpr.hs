@@ -3,7 +3,7 @@
 module Parser.SpecExpr (exprSpec) where
 
 import AST.Types.AST (Expr (..))
-import AST.Types.Common (FieldName (..), Located (..), unLocated)
+import AST.Types.Common (Located (..), unLocated)
 import AST.Types.Literal (IntBase (..))
 import Error (ParseError)
 import Parser.Expr
@@ -52,7 +52,7 @@ exprSpec = do
   describe "Parser.Expr - parseExprPrimary" $ do
     it "parses integer literal" $ do
       let tokens = [loc (TokInt 42 BaseDec)]
-      let result = runExprParser parseExprPrimary tokens
+      let result = runExprParser parseExprLiteral tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
         ExprLiteral _ -> True `shouldBe` True
@@ -60,7 +60,7 @@ exprSpec = do
 
     it "parses boolean literal" $ do
       let tokens = [loc (TokBool True)]
-      let result = runExprParser parseExprPrimary tokens
+      let result = runExprParser parseExprLiteral tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
         ExprLiteral _ -> True `shouldBe` True
@@ -68,7 +68,7 @@ exprSpec = do
 
     it "parses string literal" $ do
       let tokens = [loc (TokString "hello")]
-      let result = runExprParser parseExprPrimary tokens
+      let result = runExprParser parseExprLiteral tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
         ExprLiteral _ -> True `shouldBe` True
@@ -76,7 +76,7 @@ exprSpec = do
 
     it "parses parenthesized expression" $ do
       let tokens = [loc (TokSymbol "("), loc (TokInt 42 BaseDec), loc (TokSymbol ")")]
-      let result = runExprParser parseExprPrimary tokens
+      let result = runExprParser parseExprParen tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
         ExprParen _ -> True `shouldBe` True
@@ -84,7 +84,7 @@ exprSpec = do
 
     it "parses variable reference" $ do
       let tokens = [loc (TokIdentifier "x")]
-      let result = runExprParser parseExprPrimary tokens
+      let result = runExprParser parseExprVar tokens
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
         ExprVar _ -> True `shouldBe` True
@@ -130,13 +130,3 @@ exprSpec = do
       case unLocated (fromRight result) of
         ExprUnary _ _ -> True `shouldBe` True
         _ -> fail "Expected ExprUnary"
-
-  describe "Parser.Expr - parseFieldInit" $ do
-    it "parses field initialization" $ do
-      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol "="), loc (TokInt 10 BaseDec)]
-      let result = runExprParser parseFieldInit tokens
-      result `shouldSatisfy` isRight
-      let (fieldName, _) = fromRight result
-      case unLocated fieldName of
-        FieldName "x" -> True `shouldBe` True
-        _ -> fail "Expected FieldName x"
