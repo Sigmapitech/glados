@@ -187,7 +187,16 @@ tokWord :: Parser Token
 tokWord = withLoc $ lexeme $ do
   first <- letterChar <|> char '_'
   rest <- many (alphaNumChar <|> char '_')
-  let word = T.pack (first : rest)
+  let firstPart = first : rest
+
+  moreParts <- many $ MP.try $ do
+    _ <- char '.'
+    f <- letterChar <|> char '_'
+    r <- many (alphaNumChar <|> char '_')
+    return ('.' : f : r)
+
+  let word = T.pack (firstPart ++ concat moreParts)
+
   if word `elem` reservedNames
     then return $ TokKeyword word
     else return $ TokIdentifier word
