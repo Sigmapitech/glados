@@ -77,3 +77,26 @@ declSpec = do
       case unLocated (fromRight result) of
         DeclFunction _ _ -> True `shouldBe` True
         _ -> fail "Expected DeclFunction"
+    it "parses function returning void" $ do
+      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "doSomething"), loc (TokSymbol "("), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokKeyword "void"), loc (TokSymbol "{"), loc (TokSymbol "}")]
+      let result = runDeclParser parseDeclFunction tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        DeclFunction _ _ -> True `shouldBe` True
+        _ -> fail "Expected DeclFunction"
+
+    it "parses function with one parameter" $ do
+      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "square"), loc (TokSymbol "("), loc (TokIdentifier "x"), loc (TokSymbol ":"), loc (TokKeyword "int"), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokKeyword "int"), loc (TokSymbol "{"), loc (TokKeyword "return"), loc (TokIdentifier "x"), loc (TokSymbol "*"), loc (TokIdentifier "x"), loc (TokSymbol ";"), loc (TokSymbol "}")]
+      let result = runDeclParser parseDeclFunction tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        DeclFunction _ funcDecl -> length (funcDeclParams funcDecl) `shouldBe` 1
+        _ -> fail "Expected DeclFunction with 1 parameter"
+
+    it "parses function with complex return type" $ do
+      let tokens = [loc (TokKeyword "fn"), loc (TokIdentifier "getData"), loc (TokSymbol "("), loc (TokSymbol ")"), loc (TokSymbol "->"), loc (TokSymbol "["), loc (TokKeyword "int"), loc (TokSymbol "]"), loc (TokSymbol "{"), loc (TokSymbol "}")]
+      let result = runDeclParser parseDeclFunction tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        DeclFunction _ _ -> True `shouldBe` True
+        _ -> fail "Expected DeclFunction"

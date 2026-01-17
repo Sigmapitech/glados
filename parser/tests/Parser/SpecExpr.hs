@@ -7,6 +7,13 @@ import AST.Types.Common (Located (..), unLocated)
 import AST.Types.Literal (IntBase (..))
 import Error (ParseError)
 import Parser.Expr
+  ( parseExpr,
+    parseExprCall,
+    parseExprCast,
+    parseExprLiteral,
+    parseExprParen,
+    parseExprVar,
+  )
 import Parser.Utils (TokenParser, voidSpann)
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 import Text.Megaparsec (ParseErrorBundle, runParser)
@@ -130,3 +137,241 @@ exprSpec = do
       case unLocated (fromRight result) of
         ExprUnary _ _ -> True `shouldBe` True
         _ -> fail "Expected ExprUnary"
+
+  describe "Parser.Expr - parseExprCall" $ do
+    it "parses function call with no arguments" $ do
+      let tokens = [loc (TokIdentifier "foo"), loc (TokSymbol "("), loc (TokSymbol ")")]
+      let result = runExprParser parseExprCall tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprCall _ args -> length args `shouldBe` 0
+        _ -> fail "Expected ExprCall"
+
+    it "parses function call with one argument" $ do
+      let tokens = [loc (TokIdentifier "foo"), loc (TokSymbol "("), loc (TokInt 42 BaseDec), loc (TokSymbol ")")]
+      let result = runExprParser parseExprCall tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprCall _ args -> length args `shouldBe` 1
+        _ -> fail "Expected ExprCall"
+
+    it "parses function call with multiple arguments" $ do
+      let tokens = [loc (TokIdentifier "add"), loc (TokSymbol "("), loc (TokInt 1 BaseDec), loc (TokSymbol ","), loc (TokInt 2 BaseDec), loc (TokSymbol ","), loc (TokInt 3 BaseDec), loc (TokSymbol ")")]
+      let result = runExprParser parseExprCall tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprCall _ args -> length args `shouldBe` 3
+        _ -> fail "Expected ExprCall"
+
+  describe "Parser.Expr - Field Access" $ do
+    it "parses simple field access" $ do
+      let tokens = [loc (TokIdentifier "obj.field")]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprVar _ -> True `shouldBe` True
+        _ -> fail "Expected ExprVar"
+
+    it "parses chained field access" $ do
+      let tokens = [loc (TokIdentifier "obj.field1.field2")]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprVar _ -> True `shouldBe` True
+        _ -> fail "Expected ExprVar"
+
+  -- describe "Parser.Expr - Array Index" $ do
+  --   it "parses simple array index" $ do
+  --     let tokens = [loc (TokIdentifier "arr"), loc (TokSymbol "["), loc (TokInt 0 BaseDec), loc (TokSymbol "]")]
+  --     let result = runExprParser parseExpr tokens
+  --     result `shouldSatisfy` isRight
+  --     case unLocated (fromRight result) of
+  --       ExprIndex _ _ -> True `shouldBe` True
+  --       _ -> fail "Expected ExprIndex"
+
+  -- it "parses chained array index" $ do
+  --   let tokens = [loc (TokIdentifier "matrix"), loc (TokSymbol "["), loc (TokInt 0 BaseDec), loc (TokSymbol "]"), loc (TokSymbol "["), loc (TokInt 1 BaseDec), loc (TokSymbol "]")]
+  --   let result = runExprParser parseExpr tokens
+  --   result `shouldSatisfy` isRight
+  --   case unLocated (fromRight result) of
+  --     ExprIndex (Located _ (ExprIndex _ _)) _ -> True `shouldBe` True
+  --     _ -> fail "Expected chained ExprIndex"
+
+  -- it "parses array index with expression" $ do
+  --   let tokens = [loc (TokIdentifier "arr"), loc (TokSymbol "["), loc (TokIdentifier "i"), loc (TokSymbol "+"), loc (TokInt 1 BaseDec), loc (TokSymbol "]")]
+  --   let result = runExprParser parseExpr tokens
+  --   result `shouldSatisfy` isRight
+  --   case unLocated (fromRight result) of
+  --     ExprIndex _ (Located _ (ExprBinary {})) -> True `shouldBe` True
+  --     _ -> fail "Expected ExprIndex with binary expression"
+
+  describe "Parser.Expr - Type Cast" $ do
+    it "parses int cast" $ do
+      let tokens = [loc (TokKeyword "int"), loc (TokSymbol "("), loc (TokIdentifier "x"), loc (TokSymbol ")")]
+      let result = runExprParser parseExprCast tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprCast _ _ -> True `shouldBe` True
+        _ -> fail "Expected ExprCast"
+
+  describe "Parser.Expr - Complex Expressions" $ do
+    it "parses expression with parentheses and operators" $ do
+      let tokens = [loc (TokSymbol "("), loc (TokInt 2 BaseDec), loc (TokSymbol "+"), loc (TokInt 3 BaseDec), loc (TokSymbol ")"), loc (TokSymbol "*"), loc (TokInt 4 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary _ (Located _ (ExprParen _)) _ -> True `shouldBe` True
+        _ -> fail "Expected correct structure with parentheses"
+
+    it "parses comparison operators" $ do
+      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol "=="), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses logical AND" $ do
+      let tokens = [loc (TokBool True), loc (TokSymbol "&&"), loc (TokBool False)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses logical OR" $ do
+      let tokens = [loc (TokBool True), loc (TokSymbol "||"), loc (TokBool False)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+  describe "Parser.Expr - More Complex Expressions" $ do
+    it "parses bitwise AND" $ do
+      let tokens = [loc (TokInt 5 BaseDec), loc (TokSymbol "&"), loc (TokInt 3 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses bitwise OR" $ do
+      let tokens = [loc (TokInt 5 BaseDec), loc (TokSymbol "|"), loc (TokInt 3 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses bitwise XOR" $ do
+      let tokens = [loc (TokInt 5 BaseDec), loc (TokSymbol "^"), loc (TokInt 3 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses left shift" $ do
+      let tokens = [loc (TokInt 1 BaseDec), loc (TokSymbol "<<"), loc (TokInt 3 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses right shift" $ do
+      let tokens = [loc (TokInt 8 BaseDec), loc (TokSymbol ">>"), loc (TokInt 2 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses modulo" $ do
+      let tokens = [loc (TokInt 10 BaseDec), loc (TokSymbol "%"), loc (TokInt 3 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses subtraction" $ do
+      let tokens = [loc (TokInt 10 BaseDec), loc (TokSymbol "-"), loc (TokInt 3 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses division" $ do
+      let tokens = [loc (TokInt 10 BaseDec), loc (TokSymbol "/"), loc (TokInt 2 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses not equals" $ do
+      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol "!="), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses less than" $ do
+      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol "<"), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses less than or equal" $ do
+      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol "<="), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses greater than" $ do
+      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol ">"), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses greater than or equal" $ do
+      let tokens = [loc (TokIdentifier "x"), loc (TokSymbol ">="), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprBinary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprBinary"
+
+    it "parses bitwise NOT" $ do
+      let tokens = [loc (TokSymbol "~"), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprUnary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprUnary"
+
+    it "parses unary plus" $ do
+      let tokens = [loc (TokSymbol "+"), loc (TokInt 5 BaseDec)]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprUnary {} -> True `shouldBe` True
+        _ -> fail "Expected ExprUnary"
+
+    it "parses nested parentheses" $ do
+      let tokens = [loc (TokSymbol "("), loc (TokSymbol "("), loc (TokInt 5 BaseDec), loc (TokSymbol ")"), loc (TokSymbol ")")]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprParen (Located _ (ExprParen _)) -> True `shouldBe` True
+        _ -> fail "Expected nested ExprParen"

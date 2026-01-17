@@ -161,3 +161,120 @@ stmtSpec = do
       case unLocated (fromRight result) of
         StmtVarDecl {} -> True `shouldBe` True
         _ -> fail "Expected StmtVarDecl"
+  describe "Parser.Stmt - parseStmtWhile" $ do
+    it "parses while statement" $ do
+      let tokens =
+            [ loc (TokKeyword "while"),
+              loc (TokSymbol "("),
+              loc (TokBool True),
+              loc (TokSymbol ")"),
+              loc (TokSymbol "{"),
+              loc (TokKeyword "break"),
+              loc (TokSymbol ";"),
+              loc (TokSymbol "}")
+            ]
+      let result = runStmtParser parseStmt tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        StmtWhile _ _ -> True `shouldBe` True
+        _ -> fail "Expected StmtWhile"
+
+  describe "Parser.Stmt - parseStmtFor" $ do
+    it "parses for statement with all parts" $ do
+      let tokens =
+            [ loc (TokKeyword "for"),
+              loc (TokSymbol "("),
+              loc (TokIdentifier "i"),
+              loc (TokSymbol ":"),
+              loc (TokKeyword "int"),
+              loc (TokSymbol "="),
+              loc (TokInt 0 BaseDec),
+              loc (TokSymbol ";"),
+              loc (TokIdentifier "i"),
+              loc (TokSymbol "<"),
+              loc (TokInt 10 BaseDec),
+              loc (TokSymbol ";"),
+              loc (TokIdentifier "i"),
+              loc (TokSymbol ")"),
+              loc (TokSymbol "{"),
+              loc (TokKeyword "break"),
+              loc (TokSymbol ";"),
+              loc (TokSymbol "}")
+            ]
+      let result = runStmtParser parseStmt tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        StmtFor (Just _) (Just _) (Just _) _ -> True `shouldBe` True
+        _ -> fail "Expected StmtFor with all parts"
+
+    it "parses for statement with minimal parts" $ do
+      let tokens =
+            [ loc (TokKeyword "for"),
+              loc (TokSymbol "("),
+              loc (TokSymbol ";"),
+              loc (TokSymbol ";"),
+              loc (TokSymbol ")"),
+              loc (TokSymbol "{"),
+              loc (TokSymbol "}")
+            ]
+      let result = runStmtParser parseStmt tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        StmtFor Nothing Nothing Nothing _ -> True `shouldBe` True
+        _ -> fail "Expected StmtFor with no parts"
+
+  describe "Parser.Stmt - parseStmtIf" $ do
+    it "parses if statement without else" $ do
+      let tokens =
+            [ loc (TokKeyword "if"),
+              loc (TokSymbol "("),
+              loc (TokBool True),
+              loc (TokSymbol ")"),
+              loc (TokSymbol "{"),
+              loc (TokKeyword "return"),
+              loc (TokSymbol ";"),
+              loc (TokSymbol "}")
+            ]
+      let result = runStmtParser parseStmt tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        StmtIf _ _ Nothing -> True `shouldBe` True
+        _ -> fail "Expected StmtIf without else"
+
+    it "parses if statement with else" $ do
+      let tokens =
+            [ loc (TokKeyword "if"),
+              loc (TokSymbol "("),
+              loc (TokBool True),
+              loc (TokSymbol ")"),
+              loc (TokSymbol "{"),
+              loc (TokKeyword "return"),
+              loc (TokInt 1 BaseDec),
+              loc (TokSymbol ";"),
+              loc (TokSymbol "}"),
+              loc (TokKeyword "else"),
+              loc (TokSymbol "{"),
+              loc (TokKeyword "return"),
+              loc (TokInt 0 BaseDec),
+              loc (TokSymbol ";"),
+              loc (TokSymbol "}")
+            ]
+      let result = runStmtParser parseStmt tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        StmtIf _ _ (Just _) -> True `shouldBe` True
+        _ -> fail "Expected StmtIf with else"
+
+  describe "Parser.Stmt - parseStmtBlock" $ do
+    it "parses block statement" $ do
+      let tokens =
+            [ loc (TokSymbol "{"),
+              loc (TokKeyword "break"),
+              loc (TokSymbol ";"),
+              loc (TokSymbol "}")
+            ]
+      let result = runStmtParser parseStmt tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        StmtBlock _ -> True `shouldBe` True
+        _ -> fail "Expected StmtBlock"

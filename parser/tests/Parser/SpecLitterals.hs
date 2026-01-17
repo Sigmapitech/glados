@@ -200,9 +200,38 @@ litteralsSpec = do
         LitInt _ -> True `shouldBe` True
         _ -> fail "Expected LitInt"
 
+    it "parses string literals" $ do
+      let tokens = [loc (TokString "test")]
+      let result = runLiteralParser (parseLiteral mockExprParser) tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        LitString _ -> True `shouldBe` True
+        _ -> fail "Expected LitString"
+
+    it "parses boolean literals" $ do
+      let tokens = [loc (TokBool True)]
+      let result = runLiteralParser (parseLiteral mockExprParser) tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        LitBool _ -> True `shouldBe` True
+        _ -> fail "Expected LitBool"
+
     it "parses float literals" $ do
       let tokens = [loc (TokInt 3 BaseDec), loc (TokSymbol "."), loc (TokInt 14 BaseDec)]
       let result = runLiteralParser (parseLiteral mockExprParser) tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        LitFloat _ -> True `shouldBe` True
+        _ -> fail "Expected LitFloat"
+
+      -- it "parses array literals" $ do
+      --   let tokens = [loc (TokSymbol "["), loc (TokInt 1 BaseDec), loc (TokSymbol ","), loc (TokInt 2 BaseDec), loc (TokSymbol "]")]
+      --   let result = runLiteralParser (parseLiteral mockExprParser) tokens
+      --   result `shouldSatisfy` isRight
+      --   case unLocated (fromRight result) of
+      --     LitArray _ -> True `shouldBe` True
+      --     _ -> fail "Expected LitArray"
+
       result `shouldSatisfy` isRight
       case unLocated (fromRight result) of
         LitFloat _ -> True `shouldBe` True

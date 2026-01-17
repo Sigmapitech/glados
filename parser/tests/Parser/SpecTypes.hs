@@ -224,3 +224,32 @@ typesSpec = do
       case unLocated (fromRight result) of
         QualifiedType Const (TypeArray _) -> True `shouldBe` True
         _ -> fail "Expected const array"
+
+    -- describe "Parser.Type - arrayTypeElement" $ do
+    --   it "parses array of integers" $ do
+    --     let tokens = [loc (TokSymbol "["), loc (TokKeyword "int"), loc (TokSymbol "]")]
+    --     let result = runTypeParser parseArrayType tokens
+    --     result `shouldSatisfy` isRight
+    --     let arrayType = unLocated (fromRight result)
+    --         innerType = arrayTypeElement arrayType
+    --         isCorrectType (QualifiedType _ (TypePrimitive (PrimInt _))) = True
+    --         isCorrectType _ = False
+    --     case innerType of
+    --       Located _ qt -> isCorrectType qt `shouldBe` True
+
+    it "parses nested arrays" $ do
+      let tokens = [loc (TokSymbol "["), loc (TokSymbol "["), loc (TokKeyword "int"), loc (TokSymbol "]"), loc (TokSymbol "]")]
+      let result = runTypeParser parseArrayType tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ArrayType (QualifiedType _ (TypeArray (ArrayType _))) -> True `shouldBe` True
+        _ -> fail "Expected nested TypeArray"
+
+  describe "Parser.Type - parseTypeNamed" $ do
+    it "parses named type" $ do
+      let tokens = [loc (TokIdentifier "MyType")]
+      let result = runTypeParser parseTypeNamed tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        TypeName _ -> True `shouldBe` True
+        _ -> fail "Expected TypeName"

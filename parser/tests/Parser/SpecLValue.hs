@@ -81,3 +81,33 @@ lvalueSpec = do
       case unLocated (fromRight result) of
         LArrayIndex (Located _ (LArrayIndex _ _)) _ -> True `shouldBe` True
         _ -> fail "Expected nested LArrayIndex"
+    it "parses field access" $ do
+      let tokens = [loc (TokIdentifier "obj.field")]
+      let result = runLValueParser parseLValue tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        LVarRef _ -> True `shouldBe` True
+        _ -> fail "Expected LVarRef with field access"
+
+    it "parses array index with variable index" $ do
+      let tokens = [loc (TokIdentifier "arr"), loc (TokSymbol "["), loc (TokIdentifier "i"), loc (TokSymbol "]")]
+      let result = runLValueParser parseLValue tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        LArrayIndex _ _ -> True `shouldBe` True
+        _ -> fail "Expected LArrayIndex with variable index"
+
+    it "parses complex array expression index" $ do
+      let tokens =
+            [ loc (TokIdentifier "arr"),
+              loc (TokSymbol "["),
+              loc (TokIdentifier "i"),
+              loc (TokSymbol "+"),
+              loc (TokInt 1 BaseDec),
+              loc (TokSymbol "]")
+            ]
+      let result = runLValueParser parseLValue tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        LArrayIndex _ _ -> True `shouldBe` True
+        _ -> fail "Expected LArrayIndex with expression"
