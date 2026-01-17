@@ -3,13 +3,12 @@ module Parser.Expr where
 import AST.Types.AST
   ( Expr (..),
   )
-import AST.Types.Common (FieldName (..), FuncName (..), Located (..), TypeName (..), VarName (..), getSpan, unLocated)
+import AST.Types.Common (FuncName (..), Located (..), VarName (..), getSpan, unLocated)
 import AST.Types.Operator (binaryOpPrecedence)
 import AST.Types.Type (Type (..))
-import qualified Data.Set as Set
 import Parser.Literal (parseLiteral)
 import Parser.Operator (parseBinaryOp, parseUnaryOp)
-import Parser.Type (parsePrimitiveType, parseType, parseTypeNamed)
+import Parser.Type (parsePrimitiveType)
 import Parser.Utils
   ( TokenParser,
     isIdentifier,
@@ -79,19 +78,19 @@ parseBinary minPrec = do
   parseBinaryRHS minPrec left
   where
     parseBinaryRHS :: Int -> Located (Expr ann) -> TokenParser (Located (Expr ann))
-    parseBinaryRHS minPrec left = do
+    parseBinaryRHS minPrec' left = do
       maybeOp <- MP.optional (MP.try parseBinaryOp)
       case maybeOp of
         Nothing -> return left
         Just op -> do
           let prec = binaryOpPrecedence (unLocated op)
-          if prec < minPrec
+          if prec < minPrec'
             then return left
             else do
               right <- parseBinary (prec + 1) -- Left-associative
               let combinedSpan = getSpan left <> getSpan op <> getSpan right
               let newExpr = Located combinedSpan (ExprBinary (unLocated op) left right)
-              parseBinaryRHS minPrec newExpr
+              parseBinaryRHS minPrec' newExpr
 
 parseExpr :: TokenParser (Located (Expr ann))
 parseExpr = parseBinary 0

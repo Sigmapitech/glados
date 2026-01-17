@@ -2,10 +2,13 @@ module Parser.Stmt where
 
 import AST.Types.AST
   ( Block (Block),
+    Expr (..),
     ForInit (..),
     Stmt (..),
   )
-import AST.Types.Common (Located (..), VarName (..))
+import AST.Types.Common (Located (..), VarName (..), getSpan)
+import AST.Types.Literal (IntBase (..), IntLiteral (..), Literal (..))
+import AST.Types.Operator (AssignOp (AssignAdd, AssignSub))
 import Parser.Expr (parseExpr)
 import Parser.LValue (parseLValue)
 import Parser.Operator (parseAssignOp)
@@ -116,7 +119,7 @@ parseStmtFor = do
   Located semi1Span _ <- matchSymbol ";"
   maybeCond <- MP.optional parseExpr
   Located semi2Span _ <- matchSymbol ";"
-  maybePost <- MP.optional parseStmtExpr
+  maybePost <- MP.optional parseStmt
   Located rpanSpan _ <- matchSymbol ")"
   Located bodySpan bodyBlock <- parseBlock
   let combinedSpan = forSpan <> lpanSpan <> semi1Span <> semi2Span <> rpanSpan <> bodySpan
@@ -146,6 +149,30 @@ parseStmt =
   MP.choice
     [ MP.try parseStmtVarDecl,
       MP.try parseStmtAssign,
+      MP.try $ do
+        expr <- parseLValue
+        Located span _ <- matchSymbol "++"
+        let combinedSpan = getSpan expr <> span
+            litOne = Located span (ExprLiteral (LitInt (IntLiteral BaseDec 1)))
+        return $ Located combinedSpan (StmtAssign expr AssignAdd litOne),
+      MP.try $ do
+        expr <- parseLValue
+        Located span _ <- matchSymbol "--"
+        let combinedSpan = getSpan expr <> span
+            litOne = Located span (ExprLiteral (LitInt (IntLiteral BaseDec 1)))
+        return $ Located combinedSpan (StmtAssign expr AssignSub litOne),
+      do
+        Located span _ <- matchSymbol "++"
+        expr <- parseLValue
+        let combinedSpan = span <> getSpan expr
+            litOne = Located span (ExprLiteral (LitInt (IntLiteral BaseDec 1)))
+        return $ Located combinedSpan (StmtAssign expr AssignAdd litOne),
+      do
+        Located span _ <- matchSymbol "--"
+        expr <- parseLValue
+        let combinedSpan = span <> getSpan expr
+            litOne = Located span (ExprLiteral (LitInt (IntLiteral BaseDec 1)))
+        return $ Located combinedSpan (StmtAssign expr AssignSub litOne),
       parseStmtExpr,
       parseStmtReturn,
       parseStmtBreak,
