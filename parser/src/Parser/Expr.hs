@@ -36,6 +36,15 @@ parseExprCall = do
   Located endSpan _ <- matchSymbol ")"
   return $ Located (nameSpan <> endSpan) (ExprCall (Located nameSpan (FuncName name)) args)
 
+parseExprIndex :: TokenParser (Located (Expr ann))
+parseExprIndex = do
+  expr <- parseExprVar MP.<|> parseExprParen
+  _ <- matchSymbol "["
+  index <- parseExpr
+  Located endSpan _ <- matchSymbol "]"
+  let combinedSpan = getSpan expr <> endSpan
+  return $ Located combinedSpan (ExprIndex expr index)
+
 parseExprCast :: TokenParser (Located (Expr ann))
 parseExprCast = do
   Located startSpan primitiv <- parsePrimitiveType
@@ -58,6 +67,7 @@ parsePrimary =
       MP.try parseExprCall,
       parseExprCast,
       parseExprParen,
+      MP.try parseExprIndex,
       parseExprVar
     ]
 
