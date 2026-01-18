@@ -10,6 +10,7 @@ description: Learn about conditionals, loops, and control statements in Quant
 Execute code conditionally based on a boolean expression.
 
 **Syntax:**
+
 ```quant
 if (condition) {
     // code executed if condition is true
@@ -17,14 +18,15 @@ if (condition) {
 ```
 
 **Example:**
+
 ```quant
 fn main() -> int {
     x: int = 10;
-    
+
     if (x > 5) {
         print("x is greater than 5\n");
     }
-    
+
     return 0;
 }
 ```
@@ -34,6 +36,7 @@ fn main() -> int {
 Execute one block if condition is true, another if false.
 
 **Syntax:**
+
 ```quant
 if (condition) {
     // code executed if condition is true
@@ -43,16 +46,17 @@ if (condition) {
 ```
 
 **Example:**
+
 ```quant
 fn main() -> int {
     x: int = 3;
-    
+
     if (x > 5) {
         print("x is greater than 5\n");
     } else {
         print("x is not greater than 5\n");
     }
-    
+
     return 0;
 }
 ```
@@ -62,6 +66,7 @@ fn main() -> int {
 Chain multiple conditions together.
 
 **Syntax:**
+
 ```quant
 if (condition1) {
     // executed if condition1 is true
@@ -73,10 +78,11 @@ if (condition1) {
 ```
 
 **Example:**
+
 ```quant
 fn main() -> int {
     score: int = 85;
-    
+
     if (score >= 90) {
         print("Grade: A\n");
     } else if (score >= 80) {
@@ -86,7 +92,7 @@ fn main() -> int {
     } else {
         print("Grade: F\n");
     }
-    
+
     return 0;
 }
 ```
@@ -99,13 +105,13 @@ If statements can be nested inside each other.
 fn main() -> int {
     x: int = 10;
     y: int = 20;
-    
+
     if (x > 5) {
         if (y > 15) {
             print("Both conditions are true\n");
         }
     }
-    
+
     return 0;
 }
 ```
@@ -117,6 +123,7 @@ fn main() -> int {
 Repeat code while a condition is true.
 
 **Syntax:**
+
 ```quant
 while (condition) {
     // code to repeat
@@ -124,21 +131,23 @@ while (condition) {
 ```
 
 **Example:**
+
 ```quant
 fn main() -> int {
     count: int = 0;
-    
+
     while (count < 5) {
         print("Count: %d\n", count);
         count += 1;
     }
-    
+
     return 0;
 }
 ```
 
 **Output:**
-```
+
+```quant
 Count: 0
 Count: 1
 Count: 2
@@ -151,6 +160,7 @@ Count: 4
 Loop with initialization, condition, and update in one statement.
 
 **Syntax:**
+
 ```quant
 for (initialization; condition; update) {
     // code to repeat
@@ -158,18 +168,20 @@ for (initialization; condition; update) {
 ```
 
 **Example:**
+
 ```quant
 fn main() -> int {
     for (i: int = 0; i < 5; i += 1) {
         print("i = %d\n", i);
     }
-    
+
     return 0;
 }
 ```
 
 **Output:**
-```
+
+```quant
 i = 0
 i = 1
 i = 2
@@ -202,13 +214,13 @@ fn main() -> int {
         print("%d ", i);
     }
     print("\n");
-    
+
     // Using -= (counting down)
     for (i: int = 5; i > 0; i -= 1) {
         print("%d ", i);
     }
     print("\n");
-    
+
     return 0;
 }
 ```
@@ -225,16 +237,17 @@ fn main() -> int {
         }
         print("\n");
     }
-    
+
     return 0;
 }
 ```
 
 **Output:**
-```
-(0, 0) (0, 1) (0, 2) 
-(1, 0) (1, 1) (1, 2) 
-(2, 0) (2, 1) (2, 2) 
+
+```quant
+(0, 0) (0, 1) (0, 2)
+(1, 0) (1, 1) (1, 2)
+(2, 0) (2, 1) (2, 2)
 ```
 
 ## Loop Control Statements
@@ -252,26 +265,27 @@ fn main() -> int {
         print("%d ", i);
     }
     print("\n");  // Output: 0 1 2 3 4
-    
+
     return 0;
 }
 ```
 
 **With while loop:**
+
 ```quant
 fn main() -> int {
     count: int = 0;
-    
+
     while (count < 100) {
         print("%d ", count);
         count += 1;
-        
+
         if (count >= 5) {
             break;  // Exit loop early
         }
     }
     print("\n");  // Output: 0 1 2 3 4
-    
+
     return 0;
 }
 ```
@@ -289,27 +303,28 @@ fn main() -> int {
         print("%d ", i);
     }
     print("\n");  // Output: 1 3 5 7 9
-    
+
     return 0;
 }
 ```
 
 **With while loop:**
+
 ```quant
 fn main() -> int {
     count: int = 0;
-    
+
     while (count < 10) {
         count += 1;
-        
+
         if (count % 2 == 0) {
             continue;  // Skip even numbers
         }
-        
+
         print("%d ", count);
     }
     print("\n");  // Output: 1 3 5 7 9
-    
+
     return 0;
 }
 ```
@@ -319,12 +334,14 @@ fn main() -> int {
 Exit a function and optionally return a value.
 
 **Syntax:**
+
 ```quant
 return;           // Return from void function
 return value;     // Return a value
 ```
 
 **Example:**
+
 ```quant
 fn find_first_negative(arr: [int], size: int) -> int {
     for (i: int = 0; i < size; i++) {
@@ -341,10 +358,10 @@ fn main() -> int {
     numbers[1] = 20;
     numbers[2] = -5;
     numbers[3] = 30;
-    
+
     index: int = find_first_negative(numbers, 4);
     print("First negative at index: %d\n", index);  // Output: 2
-    
+
     return 0;
 }
 ```
@@ -356,14 +373,14 @@ Curly braces `{}` create a new scope.
 ```quant
 fn main() -> int {
     x: int = 10;
-    
+
     {
         y: int = 20;  // y only exists in this block
         print("x = %d, y = %d\n", x, y);
     }
-    
+
     // print("%d", y);  // Error: y not in scope
-    
+
     return 0;
 }
 ```
@@ -380,11 +397,11 @@ fn main() -> int {
     numbers[2] = 30;
     numbers[3] = 40;
     numbers[4] = 50;
-    
+
     for (i: int = 0; i < 5; i++) {
         print("numbers[%d] = %d\n", i, numbers[i]);
     }
-    
+
     return 0;
 }
 ```
@@ -399,17 +416,17 @@ fn main() -> int {
     numbers[2] = 30;
     numbers[3] = 90;
     numbers[4] = 20;
-    
+
     max: int = numbers[0];
-    
+
     for (i: int = 1; i < 5; i++) {
         if (numbers[i] > max) {
             max = numbers[i];
         }
     }
-    
+
     print("Maximum: %d\n", max);  // Output: Maximum: 90
-    
+
     return 0;
 }
 ```
@@ -424,18 +441,18 @@ fn main() -> int {
     numbers[2] = 30;
     numbers[3] = 20;
     numbers[4] = 20;
-    
+
     target: int = 20;
     count: int = 0;
-    
+
     for (i: int = 0; i < 5; i++) {
         if (numbers[i] == target) {
             count += 1;
         }
     }
-    
+
     print("Count of %d: %d\n", target, count);  // Output: Count of 20: 3
-    
+
     return 0;
 }
 ```
@@ -449,21 +466,21 @@ fn is_prime(n: int) -> bool {
     if (n < 2) {
         return False;
     }
-    
+
     if (n == 2) {
         return True;
     }
-    
+
     if (n % 2 == 0) {
         return False;
     }
-    
+
     for (i: int = 3; i < int(math.sqrt(n)) + 1; i += 2) {
         if (n % i == 0) {
             return False;
         }
     }
-    
+
     return True;
 }
 
@@ -474,7 +491,7 @@ fn main() -> int {
         }
     }
     print("\n");  // Output: 2 3 5 7 11 13 17 19
-    
+
     return 0;
 }
 ```
@@ -484,14 +501,14 @@ fn main() -> int {
 ```quant
 fn main() -> int {
     matrix: [[int]];
-    
+
     // Initialize
     for (i: int = 0; i < 3; i++) {
         for (j: int = 0; j < 3; j++) {
             matrix[i][j] = i * 3 + j + 1;
         }
     }
-    
+
     // Print
     for (i: int = 0; i < 3; i++) {
         for (j: int = 0; j < 3; j++) {
@@ -499,14 +516,15 @@ fn main() -> int {
         }
         print("\n");
     }
-    
+
     return 0;
 }
 ```
 
 **Output:**
-```
-1 2 3 
-4 5 6 
-7 8 9 
+
+```quant
+1 2 3
+4 5 6
+7 8 9
 ```

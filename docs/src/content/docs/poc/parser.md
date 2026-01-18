@@ -3,7 +3,7 @@ title: Parsing Library Research & PoCs
 description: Comparison of Haskell parsing libraries (Parsec, Megaparsec, Attoparsec) and proof of concepts
 ---
 
-# Parsing Lib Research & PoCs
+## Parsing Lib Research & PoCs
 
 ## 1. Options Comparison
 
@@ -67,10 +67,11 @@ data GladosError
 2. Run the parser using `runParser`.
 
 3. Match the result:
-  - `Right ast` -> Continue to evaluation/compilation.
-  - `Left errorBundle` ->
-    - Use `errorBundlePretty` to print the nice human-readable error to `stderr`.
-    - Call `exitWith (ExitFailure 84)`.
+
+- `Right ast` -> Continue to evaluation/compilation.
+- `Left errorBundle` ->
+  - Use `errorBundlePretty` to print the nice human-readable error to `stderr`.
+  - Call `exitWith (ExitFailure 84)`.
 
 This keeps the parser pure (no IO inside the logic).
 

@@ -3,8 +3,6 @@ title: Types
 description: Complete reference for Quant's type system
 ---
 
-## Overview
-
 Quant features a rich, statically-typed system that provides both safety and flexibility. All variables must have explicit type annotations.
 
 ## Primitive Types
@@ -36,6 +34,7 @@ signed: int<32, s>;     // 32-bit signed integer (explicit)
 ```
 
 **Signedness options:**
+
 - `s` - Signed (can represent negative numbers)
 - `u` - Unsigned (only non-negative numbers)
 
@@ -61,6 +60,7 @@ f3: float<64>;    // 64-bit float (explicit)
 ```
 
 **Float literal:**
+
 ```quant
 pi: float = 3.14159;
 e: float<32> = 2.71828;
@@ -76,6 +76,7 @@ is_valid: bool = False;
 ```
 
 **Boolean values:**
+
 - `True`
 - `False`
 
@@ -89,6 +90,7 @@ name: str = "Quant";
 ```
 
 **String literals** use double quotes (`"`) and support escape sequences:
+
 - `\n` - Newline
 - `\t` - Tab
 - `\"` - Quote
@@ -164,6 +166,7 @@ fn process() -> float {
 ```
 
 **Function signature syntax:**
+
 ```quant
 fn name(param1: type1, param2: type2, ...) -> return_type {
     // body

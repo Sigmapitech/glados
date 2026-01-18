@@ -3,8 +3,6 @@ title: Arrays
 description: Working with arrays in Quant - from basics to multi-dimensional arrays
 ---
 
-## Overview
-
 Arrays in Quant are dynamic collections of elements of the same type. They support indexing, multi-dimensional structures, and can contain const elements.
 
 ## Array Declaration
@@ -102,7 +100,7 @@ fn main() -> int {
 
 **Output:**
 
-```
+```quant
 numbers[0] = 10
 numbers[1] = 20
 numbers[2] = 30
@@ -202,7 +200,7 @@ fn main() -> int {
 
 **Output:**
 
-```
+```quant
 1 2 3 
 4 5 6 
 7 8 9 
@@ -297,7 +295,7 @@ fn main() -> int {
 
 **Output:**
 
-```
+```quant
 Maximum value: 90 at index 3
 ```
 
@@ -545,7 +543,7 @@ fn main() -> int {
 
 **Output:**
 
-```
+```quant
 === Quant Array Showcase ===
 
 1. Basic Array:

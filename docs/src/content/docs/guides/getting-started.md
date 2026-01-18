@@ -51,6 +51,7 @@ fn main() -> int {
 Quant supports two import styles:
 
 ### Module Import
+
 ```quant
 import math
 
@@ -61,6 +62,7 @@ fn main() -> int {
 ```
 
 ### Selective Import
+
 ```quant
 from std import print
 
