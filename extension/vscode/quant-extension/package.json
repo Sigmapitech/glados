@@ -1,0 +1,56 @@
+{
+  "name": "quant",
+  "displayName": "Quant Language",
+  "description": "Syntax highlighting for Quant",
+  "version": "1.0.0",
+  "publisher": "quant-team",
+  "author": {
+    "name": "Quant team"
+  },
+  "license": "BSD 2-Clause",
+  "icon": "assets/quant-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sigmapitech/glados"
+  },
+  "bugs": {
+    "url": "https://github.com/Sigmapitech/glados/issues"
+  },
+  "keywords": [
+    "quant",
+    "syntax",
+    "highlighting",
+    "language"
+  ],
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "quant",
+        "aliases": ["Quant", "quant"],
+        "extensions": [".quant", ".qa"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./assets/quant-icon.png",
+          "dark": "./assets/quant-icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "quant",
+        "scopeName": "source.quant",
+        "path": "./syntaxes/quant.tmLanguage.json"
+      }
+    ]
+  }
+}
