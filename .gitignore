@@ -15,3 +15,4 @@ result*
 .build
 *.pre-commit-config.yaml
 glados
+*.vsix

@@ -33,8 +33,8 @@
       ]
     },
     {
-      "comment": "Function Definition (func/fn name)",
-      "match": "\\b(func|fn)\\s+([a-zA-Z_]\\w*)",
+      "comment": "Function Definition (fn name)",
+      "match": "\\b(fn)\\s+([a-zA-Z_]\\w*)",
       "captures": {
         "1": { "name": "keyword.control" },
         "2": { "name": "entity.name.function" }
@@ -42,17 +42,17 @@
     },
     {
       "comment": "Keywords",
-      "match": "\\b(func|fn|return|if|for|continue|break|import|from|try|must|while|const)\\b",
+      "match": "\\b(fn|return|if|else|for|while|continue|break|import|from|const)\\b",
       "name": "keyword.control"
     },
     {
       "comment": "Built-in Types",
-      "match": "\\b(Int|String|Float|Bool|int|string|float|bool)\\b",
+      "match": "\\b(int|float|bool|str|void)\\b",
       "name": "storage.type"
     },
     {
       "comment": "Booleans",
-      "match": "\\b(True|False|true|false)\\b",
+      "match": "\\b(True|False)\\b",
       "name": "constant.language.boolean"
     },
     {
@@ -66,13 +66,28 @@
       "name": "variable.other.readwrite"
     },
     {
-      "comment": "Numbers",
+      "comment": "Numbers - Hexadecimal",
+      "match": "\\b0[xX][0-9a-fA-F]+\\b",
+      "name": "constant.numeric.hex"
+    },
+    {
+      "comment": "Numbers - Octal",
+      "match": "\\b0[oO][0-7]+\\b",
+      "name": "constant.numeric.octal"
+    },
+    {
+      "comment": "Numbers - Binary",
+      "match": "\\b0[bB][01]+\\b",
+      "name": "constant.numeric.binary"
+    },
+    {
+      "comment": "Numbers - Decimal and Float",
       "match": "\\b\\d+(\\.\\d+)?\\b",
       "name": "constant.numeric"
     },
     {
       "comment": "Operators",
-      "match": "(\\+\\+|--|->|==|!=|<=|>=|[-+*/%^&!|<>=])",
+      "match": "(<<|>>|<=|>=|==|!=|&&|\\|\\||\\+=|-=|\\*=|/=|%=|&=|\\|=|\\^=|<<=|>>=|[-+*/%<>=!&|^~])",
       "name": "keyword.operator"
     }
   ]

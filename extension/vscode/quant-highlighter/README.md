@@ -25,7 +25,7 @@ Syntax highlighting for the Quant programming language.
    Navigate to the extension directory:
 
    ```bash
-   cd extension/vscode/quant-extension
+   cd extension/vscode/quant-highlighter
    ```
 
    Package the extension into a `.vsix` file:
