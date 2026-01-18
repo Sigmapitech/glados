@@ -14,7 +14,7 @@ Execute code conditionally based on a boolean expression.
 ```quant
 if (condition) {
     // code executed if condition is true
-}
+}:
 ```
 
 **Example:**
