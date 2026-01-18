@@ -38,12 +38,18 @@ parseExprCall = do
 
 parseExprIndex :: TokenParser (Located (Expr ann))
 parseExprIndex = do
-  expr <- parseExprVar MP.<|> parseExprParen
-  _ <- matchSymbol "["
-  index <- parseExpr
-  Located endSpan _ <- matchSymbol "]"
-  let combinedSpan = getSpan expr <> endSpan
-  return $ Located combinedSpan (ExprIndex expr index)
+  expr <- (parseExprVar MP.<|> parseExprParen) :: TokenParser (Located (Expr ann))
+  indexExpr <- MP.many $ do
+    Located startSpan _ <- matchSymbol "["
+    i <- parseExpr
+    Located endSpan _ <- matchSymbol "]"
+    return (Located startSpan (), i, Located endSpan ())
+  return $ foldl addIndex expr indexExpr
+  where
+    addIndex :: Located (Expr ann) -> (Located (), Located (Expr ann), Located ()) -> Located (Expr ann)
+    addIndex expr (Located startSpan (), i, Located endSpan ()) =
+      let combinedSpan = getSpan expr <> startSpan <> getSpan i <> endSpan
+       in Located combinedSpan (ExprIndex expr i)
 
 parseExprCast :: TokenParser (Located (Expr ann))
 parseExprCast = do
