@@ -11,6 +11,10 @@
           "name": "comment.line.double-slash"
         },
         {
+          "match": "#.*$",
+          "name": "comment.line.number-sign"
+        },
+        {
           "begin": "/\\*",
           "end": "\\*/",
           "name": "comment.block"
