@@ -1,6 +1,6 @@
 cabal-version: 3.8
 name:          repl
-version:       0.1.0
+version:       1.0.0
 build-type:    Simple
 description:   Interactive REPL for GLaDOS interpreter
 homepage:      https://github.com/Sigmapitech/glados
