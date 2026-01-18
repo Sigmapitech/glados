@@ -1,0 +1,35 @@
+const MAX_SIZE: int = 100;
+
+fn main() -> int {
+    // Line comment
+    x: int = 42;
+    y: float = 3.14;
+    flag: bool = True;
+    name: str = "Quant";
+    
+    # Python-style comment
+    array: [int] = [1, 2, 3, 4, 5];
+    
+    /* Multi-line
+       comment block */
+    
+    if x > 0 && flag {
+        print("Positive\n");
+    } elif x < 0 {
+        print("Negative\n");
+    } else {
+        print("Zero\n");
+    }
+    
+    // Operators
+    result: int = (x + 10) * 2 - 5 / 2;
+    bitwise: int = x & 0xFF | 0x10;
+    shifted: int = x << 2;
+    
+    // Assignment operators
+    x += 10;
+    x -= 5;
+    x *= 2;
+    
+    return 0;
+}

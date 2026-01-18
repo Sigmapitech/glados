@@ -1,0 +1,50 @@
+{
+  "name": "tree-sitter-quant",
+  "version": "1.0.0",
+  "description": "Tree-sitter grammar for Quant programming language",
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "keywords": [
+    "parser",
+    "lexer",
+    "tree-sitter",
+    "quant",
+    "incremental"
+  ],
+  "author": "Quant Team",
+  "license": "BSD-2-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sigmapitech/glados"
+  },
+  "dependencies": {
+    "node-addon-api": "^8.0.0",
+    "node-gyp-build": "^4.8.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.23.0"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "tree_sitter": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "install": "node-gyp-build",
+    "prestart": "tree-sitter build --wasm",
+    "start": "tree-sitter playground",
+    "test": "tree-sitter test && tree-sitter parse examples/*.qa --quiet --stat"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.quant",
+      "file-types": ["qa", "quant"],
+      "injection-regex": "quant",
+      "highlights": "queries/highlights.scm",
+      "locals": "queries/locals.scm"
+    }
+  ]
+}
