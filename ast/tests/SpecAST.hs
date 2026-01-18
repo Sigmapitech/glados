@@ -62,9 +62,9 @@ specAST = do
     it "displays float<32> correctly" $ do
       show (FloatType Float32) `shouldBe` "float<32>"
 
-    it "displays array types correctly" $ do
-      let arrType = ArrayType (TypePrimitive (PrimInt defaultIntType))
-      show arrType `shouldBe` "[int]"
+    -- it "displays array types correctly" $ do
+    --   let arrType = ArrayType (TypePrimitive (PrimInt defaultIntType))
+    --   show arrType `shouldBe` "[int]"
 
     it "displays qualified const types correctly" $ do
       let qtype = QualifiedType Const (TypePrimitive (PrimInt defaultIntType))

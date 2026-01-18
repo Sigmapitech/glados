@@ -83,7 +83,7 @@ data Decl ann
 data FunctionDecl ann = FunctionDecl
   { funcDeclName :: Located FuncName,
     funcDeclParams :: [Located Parameter],
-    funcDeclReturnType :: Located Type,
+    funcDeclReturnType :: Located QualifiedType,
     funcDeclBody :: Block ann
   }
   deriving stock (Show, Eq, Generic)

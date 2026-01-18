@@ -1,11 +1,9 @@
 packages:
   cabal-extract/
-  lisp/
   ast/
   compiler/
   eval/
-  poc/
-  cli/
   parser/
+  repl/
 
 tests: True

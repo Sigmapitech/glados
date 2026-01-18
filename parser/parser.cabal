@@ -20,25 +20,79 @@ common warnings
 common release
   ghc-options: -O2
 
+common extensions
+  default-extensions: OverloadedStrings
+
 library
   import:          lang
   import:          warnings
-  exposed-modules: Parser
+  import:          extensions
   hs-source-dirs:  src
+  exposed-modules:
+    Error
+    Lexer
+    Lib
+    Parser
+    Parser.Decl
+    Parser.Expr
+    Parser.Import
+    Parser.Literal
+    Parser.LValue
+    Parser.Operator
+    Parser.Stmt
+    Parser.Type
+    Parser.Utils
+    Tokens
+
   build-depends:
-    , ast:ast-lisp
+    , ast
+    , base
+    , containers
+    , megaparsec
+    , text
+
+executable parser-exe
+  import:         lang
+  import:         warnings
+  import:         extensions
+  import:         release
+  main-is:        Main.hs
+  hs-source-dirs: app
+  build-depends:
     , base
     , megaparsec
+    , parser
+    , text
+
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N
 
 test-suite parser-test
   import:         lang
   import:         warnings
+  import:         extensions
   type:           exitcode-stdio-1.0
   main-is:        Spec.hs
   hs-source-dirs: tests
+  other-modules:
+    Parser.SpecDecl
+    Parser.SpecExpr
+    Parser.SpecImport
+    Parser.SpecLitterals
+    Parser.SpecLValue
+    Parser.SpecOperator
+    Parser.SpecStmt
+    Parser.SpecTypes
+    Parser.SpecUtils
+    SpecError
+    SpecLexer
+    SpecLib
+    SpecTokens
+
   build-depends:
-    , ast:ast-lisp
+    , ast
     , base
     , hspec
+    , megaparsec
     , parser
     , silently
+    , text

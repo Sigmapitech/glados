@@ -1,109 +1,22 @@
-module Parser (parseFile, parseString, parseNext) where
-
-import AST.Lisp.AST (SExpr (..), SymbolName (..))
-import Data.Void (Void)
-import System.Exit (ExitCode (..), exitWith)
-import System.IO (hPutStrLn, stderr)
-import Text.Megaparsec
-  ( MonadParsec (eof, try),
-    Parsec,
-    between,
-    errorBundlePretty,
-    getInput,
-    many,
-    oneOf,
-    optional,
-    runParser,
-    (<|>),
+module Parser
+  ( module Parser.Decl,
+    module Parser.Expr,
+    module Parser.Import,
+    module Parser.Literal,
+    module Parser.LValue,
+    module Parser.Operator,
+    module Parser.Stmt,
+    module Parser.Type,
+    module Parser.Utils,
   )
-import Text.Megaparsec.Char
-  ( alphaNumChar,
-    char,
-    letterChar,
-    space1,
-    string,
-  )
-import qualified Text.Megaparsec.Char.Lexer as L
+where
 
-type Parser = Parsec Void String
-
--- Lexer
-sc :: Parser ()
-sc = L.space space1 (L.skipLineComment ";") (L.skipBlockCommentNested "#|" "|#")
-
-lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
-
-symbol :: String -> Parser String
-symbol = L.symbol sc
-
-parens :: Parser a -> Parser a
-parens p = boxed "(" ")" p <|> boxed "[" "]" p
-  where
-    boxed open close = between (symbol open) (symbol close)
-
--- Parsers
-integer :: Parser Integer
-integer = lexeme $ do
-  sign <- optional (char '+' <|> char '-')
-  digits <- L.decimal
-  return $ case sign of
-    Just '-' -> negate digits
-    _ -> digits
-
-identifier :: Parser SymbolName
-identifier = lexeme $ do
-  first <- letterChar <|> oneOf ("!$%&|*+-/:<=>?@^_~" :: String)
-  rest <- many (alphaNumChar <|> oneOf ("!$%&|*+-/:<=>?@^_~" :: String))
-  return $ SymbolName (first : rest)
-
-bool :: Parser Bool
-bool =
-  lexeme $
-    (string "#t" >> return True)
-      <|> (string "#f" >> return False)
-
-parseAtom :: Parser SExpr
-parseAtom =
-  try (SBool <$> bool)
-    <|> try (SInteger <$> integer)
-    <|> (SSymbol <$> identifier)
-
-parseList :: Parser SExpr
-parseList = SList <$> parens (many parseSExpr)
-
-parseSExpr :: Parser SExpr
-parseSExpr = parseAtom <|> parseList
-
-parseProgram :: Parser [SExpr]
-parseProgram = sc *> many parseSExpr <* eof
-
--- Public API
-parseString :: String -> IO [SExpr]
-parseString input = case runParser parseProgram "<input>" input of
-  Left bundle -> do
-    hPutStrLn stderr (errorBundlePretty bundle)
-    exitWith (ExitFailure 84)
-  Right ast -> return ast
-
-parseFile :: FilePath -> IO [SExpr]
-parseFile path = do
-  input <- readFile path
-  case runParser parseProgram path input of
-    Left bundle -> do
-      hPutStrLn stderr (errorBundlePretty bundle)
-      exitWith (ExitFailure 84)
-    Right ast -> return ast
-
-parseNext :: String -> IO (SExpr, String)
-parseNext input = case runParser parser "<input>" input of
-  Left bundle -> do
-    hPutStrLn stderr (errorBundlePretty bundle)
-    exitWith (ExitFailure 84)
-  Right res -> return res
-  where
-    parser = do
-      sc
-      ast <- parseSExpr
-      rest <- getInput
-      return (ast, rest)
+import Parser.Decl
+import Parser.Expr
+import Parser.Import
+import Parser.LValue
+import Parser.Literal
+import Parser.Operator
+import Parser.Stmt
+import Parser.Type
+import Parser.Utils
