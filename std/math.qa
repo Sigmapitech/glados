@@ -2,7 +2,7 @@
 # Provides mathematical functions and constants
 
 # Absolute value for integers
-fn abs_int(x: int) -> int {
+fn abs(x: int) -> int {
     if (x < 0) {
         return -x;
     };
@@ -10,7 +10,7 @@ fn abs_int(x: int) -> int {
 }
 
 # Absolute value for floats
-fn abs_float(x: float) -> float {
+fn fabs(x: float) -> float {
     if (x < 0.0) {
         return -x;
     };
@@ -18,7 +18,7 @@ fn abs_float(x: float) -> float {
 }
 
 # Minimum of two integers
-fn min_int(a: int, b: int) -> int {
+fn min(a: int, b: int) -> int {
     if (a < b) {
         return a;
     };
@@ -26,7 +26,7 @@ fn min_int(a: int, b: int) -> int {
 }
 
 # Maximum of two integers
-fn max_int(a: int, b: int) -> int {
+fn max(a: int, b: int) -> int {
     if (a > b) {
         return a;
     };
@@ -34,7 +34,7 @@ fn max_int(a: int, b: int) -> int {
 }
 
 # Minimum of two floats
-fn min_float(a: float, b: float) -> float {
+fn fmin(a: float, b: float) -> float {
     if (a < b) {
         return a;
     };
@@ -42,7 +42,7 @@ fn min_float(a: float, b: float) -> float {
 }
 
 # Maximum of two floats
-fn max_float(a: float, b: float) -> float {
+fn fmax(a: float, b: float) -> float {
     if (a > b) {
         return a;
     };
@@ -139,7 +139,7 @@ fn round(x: float) -> int {
 }
 
 # Clamp value between min and max
-fn clamp_int(value: int, min_val: int, max_val: int) -> int {
+fn clamp(value: int, min_val: int, max_val: int) -> int {
     if (value < min_val) {
         return min_val;
     };
@@ -150,7 +150,7 @@ fn clamp_int(value: int, min_val: int, max_val: int) -> int {
 }
 
 # Clamp float value between min and max
-fn clamp_float(value: float, min_val: float, max_val: float) -> float {
+fn fclamp(value: float, min_val: float, max_val: float) -> float {
     if (value < min_val) {
         return min_val;
     };
@@ -158,17 +158,6 @@ fn clamp_float(value: float, min_val: float, max_val: float) -> float {
         return max_val;
     };
     return value;
-}
-
-# Sign function - returns -1, 0, or 1
-fn sign_int(x: int) -> int {
-    if (x < 0) {
-        return -1;
-    };
-    if (x > 0) {
-        return 1;
-    };
-    return 0;
 }
 
 # Calculate factorial (recursive)
@@ -198,4 +187,54 @@ fn lcm(a: int, b: int) -> int {
         return 0;
     };
     return abs_int(a * b) / gcd(a, b);
+}
+
+// Trigonometric functions
+fn wrap_angle(x: float) -> float {
+    TAU: const float = 6.28318530717958647692;  # 2 * PI
+    # Reduce x to [-PI, PI]
+    t: float = x - (int(x / TAU) * TAU);
+    if (t > PI) {
+        t -= TAU;
+    };
+    if (t < -PI) {
+        t = t + TAU;
+    };
+    return t;
+}
+
+fn sin(x: float) -> float {
+    x = wrap_angle(x);
+
+    term: float = x;       # first term x^1 / 1!
+    sum: float = x;
+    x2: float = x * x;
+    sign: float = -1.0;
+
+    i: int = 1;
+    while (i <= 5) {       # 5 more terms
+        term = (term * x2) / ((2*i) * (2*i+1));
+        sum = sum + (sign * term);
+        sign = -sign;
+        i ++;
+    };
+    return sum;
+}
+
+fn cos(x: float) -> float {
+    x = wrap_angle(x);
+
+    term: float = 1.0;     # first term x^0 / 0! = 1
+    sum: float = 1.0;
+    x2: float = x * x;
+    sign: float = -1.0;
+
+    i: int = 1;
+    while (i <= 5) {       # 5 more terms
+        term = (term * x2) / ((2*i-1) * (2*i));
+        sum = sum + (sign * term);
+        sign = -sign;
+        i ++;
+    };
+    return sum;
 }
