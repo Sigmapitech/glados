@@ -1,0 +1,227 @@
+{
+  "Function": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:params}) -> ${3:int} {",
+      "\t${0:// TODO}",
+      "}"
+    ],
+    "description": "Create a function"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": [
+      "fn main() -> int {",
+      "\t${0:// TODO}",
+      "\treturn 0;",
+      "}"
+    ],
+    "description": "Create main function"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ife",
+    "body": [
+      "if ${1:condition} {",
+      "\t${2}",
+      "} else {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "If-else statement"
+  },
+  "If-Elif-Else Statement": {
+    "prefix": "ifel",
+    "body": [
+      "if ${1:condition} {",
+      "\t${2}",
+      "} elif ${3:condition} {",
+      "\t${4}",
+      "} else {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "If-elif-else statement"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:i}: int = ${2:0}; ${1:i} < ${3:10}; ${1:i} = ${1:i} + 1 {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "For loop"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "while ${1:condition} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "Variable Declaration (int)": {
+    "prefix": "vari",
+    "body": [
+      "${1:name}: int = ${0:0};"
+    ],
+    "description": "Declare int variable"
+  },
+  "Variable Declaration (float)": {
+    "prefix": "varf",
+    "body": [
+      "${1:name}: float = ${0:0.0};"
+    ],
+    "description": "Declare float variable"
+  },
+  "Variable Declaration (bool)": {
+    "prefix": "varb",
+    "body": [
+      "${1:name}: bool = ${0:True};"
+    ],
+    "description": "Declare bool variable"
+  },
+  "Variable Declaration (string)": {
+    "prefix": "vars",
+    "body": [
+      "${1:name}: str = ${0:\"\"};"
+    ],
+    "description": "Declare string variable"
+  },
+  "Variable Declaration (array)": {
+    "prefix": "vara",
+    "body": [
+      "${1:name}: [${2:int}] = [${0}];"
+    ],
+    "description": "Declare array variable"
+  },
+  "Constant Declaration": {
+    "prefix": "const",
+    "body": [
+      "const ${1:NAME}: ${2:int} = ${0:0};"
+    ],
+    "description": "Declare constant"
+  },
+  "Import Statement": {
+    "prefix": "import",
+    "body": [
+      "import ${0:module};"
+    ],
+    "description": "Import module"
+  },
+  "Import From Statement": {
+    "prefix": "from",
+    "body": [
+      "from ${1:module} import ${0:function};"
+    ],
+    "description": "Import from module"
+  },
+  "Print Statement": {
+    "prefix": "print",
+    "body": [
+      "print(${0:\"\"});"
+    ],
+    "description": "Print to stdout"
+  },
+  "Return Statement": {
+    "prefix": "ret",
+    "body": [
+      "return ${0:0};"
+    ],
+    "description": "Return statement"
+  },
+  "Comment Block": {
+    "prefix": "/*",
+    "body": [
+      "/*",
+      " * ${0}",
+      " */"
+    ],
+    "description": "Multi-line comment"
+  },
+  "Function with Parameters": {
+    "prefix": "fnp",
+    "body": [
+      "fn ${1:name}(${2:param1}: ${3:int}, ${4:param2}: ${5:int}) -> ${6:int} {",
+      "\t${0:// TODO}",
+      "\treturn ${7:0};",
+      "}"
+    ],
+    "description": "Function with parameters"
+  },
+  "Void Function": {
+    "prefix": "fnv",
+    "body": [
+      "fn ${1:name}(${2:params}) -> void {",
+      "\t${0:// TODO}",
+      "}"
+    ],
+    "description": "Void function"
+  },
+  "Array Iteration": {
+    "prefix": "forarr",
+    "body": [
+      "for ${1:i}: int = 0; ${1:i} < len(${2:array}); ${1:i} = ${1:i} + 1 {",
+      "\t${3:elem}: ${4:int} = ${2:array}[${1:i}];",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Iterate over array"
+  },
+  "Function Call": {
+    "prefix": "call",
+    "body": [
+      "${1:function}(${0:args});"
+    ],
+    "description": "Call a function"
+  },
+  "Ternary-style If": {
+    "prefix": "ifr",
+    "body": [
+      "${1:result}: ${2:int} = ${3:0};",
+      "if ${4:condition} {",
+      "\t${1:result} = ${5:value1};",
+      "} else {",
+      "\t${1:result} = ${6:value2};",
+      "}"
+    ],
+    "description": "Conditional assignment"
+  },
+  "Standard Library Import": {
+    "prefix": "stdio",
+    "body": [
+      "from std.io import ${0:print};"
+    ],
+    "description": "Import from std.io"
+  },
+  "Math Library Import": {
+    "prefix": "stdmath",
+    "body": [
+      "from std.math import ${0:abs};"
+    ],
+    "description": "Import from std.math"
+  },
+  "String Library Import": {
+    "prefix": "stdstr",
+    "body": [
+      "from std.string import ${0:strlen};"
+    ],
+    "description": "Import from std.string"
+  },
+  "Array Library Import": {
+    "prefix": "stdarr",
+    "body": [
+      "from std.array import ${0:length};"
+    ],
+    "description": "Import from std.array"
+  }
+}

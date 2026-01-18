@@ -6,6 +6,31 @@ Syntax highlighting for the Quant programming language.
 
 - Syntax highlighting for `.quant` and `.qa` files
 - Custom file icon for Quant files
+- **Code snippets** for common Quant patterns
+
+## Snippets
+
+The extension includes 25+ code snippets to speed up development:
+
+### Quick Reference
+
+| Prefix | Description |
+|--------|-------------|
+| `fn` | Function definition |
+| `main` | Main function |
+| `if` | If statement |
+| `ife` | If-else statement |
+| `ifel` | If-elif-else statement |
+| `for` | For loop |
+| `while` | While loop |
+| `vari`, `varf`, `varb`, `vars`, `vara` | Variable declarations (int, float, bool, str, array) |
+| `const` | Constant declaration |
+| `import` | Import statement |
+| `from` | Import from statement |
+| `print` | Print statement |
+| `ret` | Return statement |
+
+**And more!** Type a prefix and press `Tab` or `Ctrl+Space` to see all available snippets.
 
 ## Installation
 

@@ -2,7 +2,7 @@
   "name": "quant",
   "displayName": "Quant Language",
   "description": "Syntax highlighting for Quant",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "quant-team",
   "author": {
     "name": "Quant team"
@@ -50,6 +50,12 @@
         "language": "quant",
         "scopeName": "source.quant",
         "path": "./syntaxes/quant.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "quant",
+        "path": "./snippets/quant.json"
       }
     ]
   }
