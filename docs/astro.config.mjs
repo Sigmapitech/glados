@@ -36,6 +36,13 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Tools',
+					items: [
+						{ label: 'Editor Support', slug: 'tools/editor-support' },
+						{ label: 'Code Formatter', slug: 'tools/formatter' },
+					],
+				},
+				{
 					label: 'Reference',
 					items: [
 						{ label: 'Types', slug: 'reference/types' },

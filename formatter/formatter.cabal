@@ -1,0 +1,75 @@
+cabal-version: 3.8
+name:          formatter
+version:       0.1.0
+build-type:    Simple
+description:   Code formatter for Quant language
+homepage:      https://github.com/Sigmapitech/glados
+bug-reports:   https://github.com/Sigmapitech/glados/issues
+author:        Sigmapitech
+maintainer:    Sigmapitech
+copyright:     Sigmapitech
+license:       BSD-2-Clause
+license-file:  LICENSE
+
+common lang
+  default-language: Haskell2010
+
+common warnings
+  ghc-options: -Wall -Wextra -Wredundant-constraints -Wname-shadowing
+
+common extensions
+  default-extensions: OverloadedStrings
+
+library
+  import:          lang
+  import:          warnings
+  import:          extensions
+  hs-source-dirs:  src
+  exposed-modules: Formatter
+  build-depends:
+    , ast
+    , base
+    , parser
+    , text
+    , tomland  ^>=1.3
+
+test-suite formatter-test
+  import:         lang
+  import:         warnings
+  import:         extensions
+  type:           exitcode-stdio-1.0
+  main-is:        Spec.hs
+  hs-source-dirs: tests
+  other-modules:
+    SpecConfig
+    SpecFormatter
+
+  build-depends:
+    , ast
+    , base
+    , directory
+    , filepath
+    , formatter
+    , hspec
+    , parser
+    , text
+    , tomland    ^>=1.3
+
+executable quantfmt
+  import:         lang
+  import:         warnings
+  import:         extensions
+  main-is:        Main.hs
+  hs-source-dirs: app
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    , ast
+    , base
+    , directory
+    , filepath
+    , formatter
+    , megaparsec
+    , optparse-applicative
+    , parser
+    , text
+    , tomland               ^>=1.3

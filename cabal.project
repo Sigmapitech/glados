@@ -3,6 +3,7 @@ packages:
   ast/
   compiler/
   eval/
+  formatter/
   parser/
   repl/
 

@@ -1,0 +1,20 @@
+# Quant Formatter Configuration
+# Similar to rustfmt.toml
+
+# Maximum width of each line
+max_width = 100
+
+# Number of spaces per indentation level
+indent_size = 4
+
+# Use hard tabs instead of spaces
+hard_tabs = false
+
+# Maximum width of an array literal before wrapping elements
+array_width = 80
+
+# Reorder imports alphabetically
+reorder_imports = true
+
+# Normalize comments
+normalize_comments = true

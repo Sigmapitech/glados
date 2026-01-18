@@ -1,0 +1,19 @@
+# Example quantfmt.toml - Custom configuration
+
+# Use 2-space indentation
+indent_size = 2
+
+# Shorter lines
+max_width = 80
+
+# Don't reorder imports (preserve original order)
+reorder_imports = false
+
+# Keep original array width
+array_width = 60
+
+# Use hard tabs (set to true if you prefer tabs)
+hard_tabs = false
+
+# Normalize comments
+normalize_comments = true
