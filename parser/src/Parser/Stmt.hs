@@ -6,7 +6,7 @@ import AST.Types.AST
     ForInit (..),
     Stmt (..),
   )
-import AST.Types.Common (Located (..), VarName (..), getSpan)
+import AST.Types.Common (Located (..), VarName (..), getSpan, SourceSpan(..))
 import AST.Types.Literal (IntBase (..), IntLiteral (..), Literal (..))
 import AST.Types.Operator (AssignOp (AssignAdd, AssignSub))
 import Parser.Expr (parseExpr)
@@ -132,17 +132,43 @@ parseStmtIf = do
   Located condSpan condExpr <- parseExpr
   Located rpanSpan _ <- matchSymbol ")"
   Located thenSpan thenBlock <- parseBlock
-  maybeElse <- MP.optional $ do
-    Located elseSpan _ <- matchKeyword "else"
-    Located elseBlockSpan elseBlock <- parseBlock
-    return (Located elseSpan (), Located elseBlockSpan elseBlock)
+
+  maybeElse <- MP.optional parseElseChain
+
   case maybeElse of
-    Just (Located elseSpan _, Located elseBlockSpan elseBlock) ->
-      let combinedSpan = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan <> elseSpan <> elseBlockSpan
-       in return $ Located combinedSpan (StmtIf (Located condSpan condExpr) thenBlock (Just elseBlock))
+    Just (elseSpan, elseStmt) ->
+      let combinedSpan = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan <> elseSpan
+       in return $ Located combinedSpan (StmtIf (Located condSpan condExpr) thenBlock (Just elseStmt))
     Nothing ->
       let combinedSpan = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan
        in return $ Located combinedSpan (StmtIf (Located condSpan condExpr) thenBlock Nothing)
+
+-- Parse the else chain (either "else if" or "else")
+parseElseChain :: TokenParser (SourceSpan, Block ann)
+parseElseChain = do
+  Located elseSpan _ <- matchKeyword "else"
+  maybeIf <- MP.optional (matchKeyword "if")
+  case maybeIf of
+    Just (Located ifSpan _) -> do
+      Located lpanSpan _ <- matchSymbol "("
+      Located condSpan condExpr <- parseExpr
+      Located rpanSpan _ <- matchSymbol ")"
+      Located thenSpan thenBlock <- parseBlock
+
+      maybeNextElse <- MP.optional parseElseChain
+
+      let (totalSpan, stmt) = case maybeNextElse of
+            Just (nextElseSpan, nextElseStmt) ->
+              let span = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan <> nextElseSpan
+               in (elseSpan <> span, StmtIf (Located condSpan condExpr) thenBlock (Just nextElseStmt))
+            Nothing ->
+              let span = ifSpan <> lpanSpan <> condSpan <> rpanSpan <> thenSpan
+               in (elseSpan <> span, StmtIf (Located condSpan condExpr) thenBlock Nothing)
+      return (totalSpan, Block totalSpan [Located totalSpan stmt])
+
+    Nothing -> do
+      Located elseBlockSpan elseBlock <- parseBlock
+      return (elseSpan <> elseBlockSpan, elseBlock)
 
 parseStmt :: TokenParser (Located (Stmt ann))
 parseStmt =
