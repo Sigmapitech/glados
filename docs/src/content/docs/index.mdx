@@ -1,40 +1,53 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: Welcome to Quant
+description: A modern, statically-typed programming language with powerful features.
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
+  tagline: A modern programming language with C-like syntax, strong typing, and powerful features for systems programming.
   image:
     file: ../../assets/houston.webp
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Get Started
+      link: /guides/getting-started/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+    - text: Language Basics
+      link: /guides/language-basics/
+      icon: document
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Why Quant?
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+	<Card title="Strong Static Typing" icon="approve-check">
+		Catch errors at compile time with a robust type system including integers with custom bit sizes, floats, booleans, strings, and arrays.
 	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
+	<Card title="C-like Syntax" icon="document">
+		Familiar syntax for developers coming from C, C++, or similar languages, making it easy to learn and adopt.
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="Modern Features" icon="rocket">
+		Support for imports/modules, multi-dimensional arrays, type inference, and powerful control flow constructs.
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="Safe & Expressive" icon="star">
+		Const qualifiers for immutability, comprehensive operator support, and clear function signatures with return types.
 	</Card>
 </CardGrid>
+
+## Quick Example
+
+```quant
+from std import print
+
+fn main() -> int {
+    numbers: [int];
+    numbers[0] = 10;
+    numbers[1] = 20;
+    
+    for (i: int = 0; i < 2; i++) {
+        print("numbers[%d] = %d\n", i, numbers[i]);
+    };
+    
+    return 0;
+}
+```
