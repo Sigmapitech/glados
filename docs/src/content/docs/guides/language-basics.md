@@ -174,11 +174,12 @@ b: int = 5 | 3;       // Bitwise OR
 c: int = 5 ^ 3;       // Bitwise XOR
 d: int = 5 << 1;      // Left shift
 e: int = 5 >> 1;      // Right shift
+f: int = ~5;          // Bitwise NOT
 ```
 
 ## Assignment Operators
 
-Basic assignment and compound assignments:
+Any bitwise, arithmetic, or logical expression can be assigned to a variable using the assignment operator (`=`). Additionally, compound assignment operators are supported:
 
 ```quant
 x: int = 10;

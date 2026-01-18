@@ -25,7 +25,7 @@ fn main() -> int {
 
     if (x > 5) {
         print("x is greater than 5\n");
-    }
+    };
 
     return 0;
 }
@@ -42,7 +42,7 @@ if (condition) {
     // code executed if condition is true
 } else {
     // code executed if condition is false
-}
+};
 ```
 
 **Example:**
@@ -55,7 +55,7 @@ fn main() -> int {
         print("x is greater than 5\n");
     } else {
         print("x is not greater than 5\n");
-    }
+    };
 
     return 0;
 }
@@ -74,7 +74,7 @@ if (condition1) {
     // executed if condition1 is false and condition2 is true
 } else {
     // executed if all conditions are false
-}
+};
 ```
 
 **Example:**
@@ -91,7 +91,7 @@ fn main() -> int {
         print("Grade: C\n");
     } else {
         print("Grade: F\n");
-    }
+    };
 
     return 0;
 }
@@ -109,8 +109,8 @@ fn main() -> int {
     if (x > 5) {
         if (y > 15) {
             print("Both conditions are true\n");
-        }
-    }
+        };
+    };
 
     return 0;
 }
@@ -127,7 +127,7 @@ Repeat code while a condition is true.
 ```quant
 while (condition) {
     // code to repeat
-}
+};
 ```
 
 **Example:**
@@ -139,7 +139,7 @@ fn main() -> int {
     while (count < 5) {
         print("Count: %d\n", count);
         count += 1;
-    }
+    };
 
     return 0;
 }
@@ -173,9 +173,8 @@ for (initialization; condition; update) {
 fn main() -> int {
     for (i: int = 0; i < 5; i += 1) {
         print("i = %d\n", i);
-    }
-
-    return 0;
+    };
+     return 0;
 }
 ```
 
@@ -212,13 +211,13 @@ fn main() -> int {
     // Using +=
     for (i: int = 0; i < 5; i += 1) {
         print("%d ", i);
-    }
+    };
     print("\n");
 
     // Using -= (counting down)
     for (i: int = 5; i > 0; i -= 1) {
         print("%d ", i);
-    }
+    };
     print("\n");
 
     return 0;
@@ -234,11 +233,10 @@ fn main() -> int {
     for (i: int = 0; i < 3; i++) {
         for (j: int = 0; j < 3; j++) {
             print("(%d, %d) ", i, j);
-        }
+        };
         print("\n");
-    }
-
-    return 0;
+    };
+     return 0;
 }
 ```
 
@@ -261,9 +259,9 @@ fn main() -> int {
     for (i: int = 0; i < 10; i++) {
         if (i == 5) {
             break;  // Exit loop when i equals 5
-        }
+        };
         print("%d ", i);
-    }
+    };
     print("\n");  // Output: 0 1 2 3 4
 
     return 0;
@@ -282,8 +280,8 @@ fn main() -> int {
 
         if (count >= 5) {
             break;  // Exit loop early
-        }
-    }
+        };
+    };
     print("\n");  // Output: 0 1 2 3 4
 
     return 0;
@@ -299,9 +297,9 @@ fn main() -> int {
     for (i: int = 0; i < 10; i++) {
         if (i % 2 == 0) {
             continue;  // Skip even numbers
-        }
+        };
         print("%d ", i);
-    }
+    };
     print("\n");  // Output: 1 3 5 7 9
 
     return 0;
@@ -319,10 +317,9 @@ fn main() -> int {
 
         if (count % 2 == 0) {
             continue;  // Skip even numbers
-        }
-
-        print("%d ", count);
-    }
+        };
+         print("%d ", count);
+    };
     print("\n");  // Output: 1 3 5 7 9
 
     return 0;
@@ -347,8 +344,8 @@ fn find_first_negative(arr: [int], size: int) -> int {
     for (i: int = 0; i < size; i++) {
         if (arr[i] < 0) {
             return i;  // Return index immediately
-        }
-    }
+        };
+    };
     return -1;  // Not found
 }
 
@@ -377,9 +374,8 @@ fn main() -> int {
     {
         y: int = 20;  // y only exists in this block
         print("x = %d, y = %d\n", x, y);
-    }
-
-    // print("%d", y);  // Error: y not in scope
+    };
+     // print("%d", y);  // Error: y not in scope
 
     return 0;
 }
@@ -400,9 +396,8 @@ fn main() -> int {
 
     for (i: int = 0; i < 5; i++) {
         print("numbers[%d] = %d\n", i, numbers[i]);
-    }
-
-    return 0;
+    };
+     return 0;
 }
 ```
 
@@ -422,10 +417,9 @@ fn main() -> int {
     for (i: int = 1; i < 5; i++) {
         if (numbers[i] > max) {
             max = numbers[i];
-        }
-    }
-
-    print("Maximum: %d\n", max);  // Output: Maximum: 90
+        };
+    };
+     print("Maximum: %d\n", max);  // Output: Maximum: 90
 
     return 0;
 }
@@ -448,10 +442,9 @@ fn main() -> int {
     for (i: int = 0; i < 5; i++) {
         if (numbers[i] == target) {
             count += 1;
-        }
-    }
-
-    print("Count of %d: %d\n", target, count);  // Output: Count of 20: 3
+        };
+    };
+     print("Count of %d: %d\n", target, count);  // Output: Count of 20: 3
 
     return 0;
 }
@@ -465,31 +458,27 @@ import math
 fn is_prime(n: int) -> bool {
     if (n < 2) {
         return False;
-    }
-
-    if (n == 2) {
+    };
+     if (n == 2) {
         return True;
-    }
-
-    if (n % 2 == 0) {
+    };
+     if (n % 2 == 0) {
         return False;
-    }
-
-    for (i: int = 3; i < int(math.sqrt(n)) + 1; i += 2) {
+    };
+     for (i: int = 3; i < int(math.sqrt(n)) + 1; i += 2) {
         if (n % i == 0) {
             return False;
-        }
-    }
-
-    return True;
+        };
+    };
+     return True;
 }
 
 fn main() -> int {
     for (i: int = 1; i <= 20; i++) {
         if (is_prime(i)) {
             print("%d ", i);
-        }
-    }
+        };
+    };
     print("\n");  // Output: 2 3 5 7 11 13 17 19
 
     return 0;
@@ -506,18 +495,16 @@ fn main() -> int {
     for (i: int = 0; i < 3; i++) {
         for (j: int = 0; j < 3; j++) {
             matrix[i][j] = i * 3 + j + 1;
-        }
-    }
-
-    // Print
+        };
+    };
+     // Print
     for (i: int = 0; i < 3; i++) {
         for (j: int = 0; j < 3; j++) {
             print("%d ", matrix[i][j]);
-        }
+        };
         print("\n");
-    }
-
-    return 0;
+    };
+     return 0;
 }
 ```
 

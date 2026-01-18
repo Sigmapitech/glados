@@ -24,7 +24,7 @@ fn main() -> int {
 
 - **`from std import print`**: Imports the `print` function from the standard library
 - **`fn main() -> int`**: Declares the main function that returns an integer
-- **`print("Hello, World!\n");`**: Prints a message with a newline character
+- **`print("Hello, World!\n");`**: Prints a message
 - **`return 0;`**: Returns 0 to indicate successful execution
 
 ## Basic Program Structure
@@ -33,7 +33,7 @@ Every Quant program consists of:
 
 1. **Imports** (optional): Import functions or modules you need
 2. **Function Definitions**: Define functions with the `fn` keyword
-3. **Main Function**: The entry point of your program
+3. **Main Function**: The entry point of your program (unless it's a library)
 
 ```quant
 import math
