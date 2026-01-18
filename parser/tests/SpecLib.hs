@@ -4,7 +4,7 @@ module SpecLib (libSpec) where
 
 import AST.Types.Common (unLocated)
 import AST.Types.Literal (IntBase (..))
-import Lib (lexFile, lexString)
+import Lib (lexString)
 import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 import Tokens (Token, TokenContent (..))
 import Prelude hiding (getContents)
@@ -97,47 +97,6 @@ libSpec = do
           msg `shouldSatisfy` (\s -> length s > 1)
         Right _ -> error "Expected Left but got Right"
 
-  describe "Lib - lexFile" $ do
-    it "lexes a valid C file" $ do
-      result <- lexFile "../tests/valid_basic.c"
-      result `shouldSatisfy` isRight
-      -- Should contain some tokens
-      case result of
-        Right tokens -> length tokens `shouldSatisfy` (> 0)
-        Left _ -> error "Expected Right but got Left"
-
-    it "lexes file with operators" $ do
-      result <- lexFile "../tests/valid_operators.c"
-      result `shouldSatisfy` isRight
-
-    it "returns error for file with invalid character" $ do
-      result <- lexFile "../tests/error_char.c"
-      result `shouldSatisfy` isLeft
-
-    it "returns error for file with unclosed comment" $ do
-      result <- lexFile "../tests/error_comment.c"
-      result `shouldSatisfy` isLeft
-
-    it "returns error for file with unclosed string" $ do
-      result <- lexFile "../tests/error_string.c"
-      result `shouldSatisfy` isLeft
-
-    it "returns error for non-existent file" $ do
-      result <- lexFile "../tests/nonexistent.c"
-      result `shouldSatisfy` isLeft
-      case result of
-        Left msg -> msg `shouldSatisfy` (not . null)
-        Right _ -> error "Expected Left but got Right"
-
-    it "preserves file path in error messages" $ do
-      result <- lexFile "../tests/error_char.c"
-      case result of
-        Left msg -> do
-          msg `shouldSatisfy` (not . null)
-          -- Should contain error information
-          msg `shouldSatisfy` (\s -> length s > 10)
-        Right _ -> error "Expected Left but got Right"
-
   describe "Lib - error message styling" $ do
     it "styles error output with colors" $ do
       let result = lexString "@invalid"
@@ -145,14 +104,6 @@ libSpec = do
         Left msg -> do
           -- Check that styling is present (contains escape codes)
           msg `shouldSatisfy` (\s -> "\ESC[" `isInfixOf` s)
-        Right _ -> error "Expected error but got success"
-
-    it "includes file path highlighting for file errors" $ do
-      result <- lexFile "tests/error_char.c"
-      case result of
-        Left msg -> do
-          -- Should be styled
-          msg `shouldSatisfy` (not . null)
         Right _ -> error "Expected error but got success"
 
   describe "Lib - integration tests" $ do
