@@ -1,0 +1,144 @@
+# Quant Standard Library - Math Module
+# Provides mathematical functions and constants
+
+# Mathematical constants
+PI: const float = 3.14159265358979323846;
+E: const float = 2.71828182845904523536;
+TAU: const float = 6.28318530717958647692;  # 2 * PI
+
+# Absolute value for integers
+fn abs_int(x: int) -> int {
+    if (x < 0) {
+        return -x;
+    };
+    return x;
+}
+
+# Absolute value for floats
+fn abs_float(x: float) -> float {
+    if (x < 0.0) {
+        return -x;
+    };
+    return x;
+}
+
+# Minimum of two integers
+fn min_int(a: int, b: int) -> int {
+    if (a < b) {
+        return a;
+    };
+    return b;
+}
+
+# Maximum of two integers
+fn max_int(a: int, b: int) -> int {
+    if (a > b) {
+        return a;
+    };
+    return b;
+}
+
+# Minimum of two floats
+fn min_float(a: float, b: float) -> float {
+    if (a < b) {
+        return a;
+    };
+    return b;
+}
+
+# Maximum of two floats
+fn max_float(a: float, b: float) -> float {
+    if (a > b) {
+        return a;
+    };
+    return b;
+}
+
+# Power function - raise base to exponent
+fn pow(base: float, exp: float) -> float {
+    # Built-in implementation
+    # Will use native power operation
+}
+
+# Square root
+fn sqrt(x: float) -> float {
+    # Built-in implementation
+    # Returns NaN for negative numbers
+}
+
+# Floor - round down to nearest integer
+fn floor(x: float) -> int {
+    # Built-in implementation
+}
+
+# Ceiling - round up to nearest integer
+fn ceil(x: float) -> int {
+    # Built-in implementation
+}
+
+# Round to nearest integer
+fn round(x: float) -> int {
+    # Built-in implementation
+}
+
+# Clamp value between min and max
+fn clamp_int(value: int, min_val: int, max_val: int) -> int {
+    if (value < min_val) {
+        return min_val;
+    };
+    if (value > max_val) {
+        return max_val;
+    };
+    return value;
+}
+
+# Clamp float value between min and max
+fn clamp_float(value: float, min_val: float, max_val: float) -> float {
+    if (value < min_val) {
+        return min_val;
+    };
+    if (value > max_val) {
+        return max_val;
+    };
+    return value;
+}
+
+# Sign function - returns -1, 0, or 1
+fn sign_int(x: int) -> int {
+    if (x < 0) {
+        return -1;
+    };
+    if (x > 0) {
+        return 1;
+    };
+    return 0;
+}
+
+# Calculate factorial (recursive)
+fn factorial(n: int) -> int {
+    if (n <= 1) {
+        return 1;
+    };
+    return n * factorial(n - 1);
+}
+
+# Calculate greatest common divisor (GCD)
+fn gcd(a: int, b: int) -> int {
+    a = abs_int(a);
+    b = abs_int(b);
+
+    while (b != 0) {
+        temp: int = b;
+        b = a % b;
+        a = temp;
+    };
+    return a;
+}
+
+# Calculate least common multiple (LCM)
+fn lcm(a: int, b: int) -> int {
+    if (a == 0 || b == 0) {
+        return 0;
+    };
+    return abs_int(a * b) / gcd(a, b);
+}

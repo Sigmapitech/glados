@@ -1,0 +1,141 @@
+# Quant Standard Library - String Module
+# Provides string manipulation utilities
+
+# Get string length
+fn len(s: str) -> int {
+    # Built-in implementation
+}
+
+# Concatenate two strings
+fn concat(a: str, b: str) -> str {
+    # Built-in implementation
+    # Could also use + operator: a + b
+}
+
+# Extract substring from start (inclusive) to end (exclusive)
+fn substring(s: str, start: int, end: int) -> str {
+    # Built-in implementation
+}
+
+# Get character at index (returns single-character string)
+fn char_at(s: str, index: int) -> str {
+    # Built-in implementation
+}
+
+# Split string by delimiter
+fn split(s: str, delim: str) -> [str] {
+    # Built-in implementation
+    # Returns array of substrings
+}
+
+# Join array of strings with delimiter
+fn join(arr: [str], delim: str) -> str {
+    # Built-in implementation
+}
+
+# Trim whitespace from both ends
+fn trim(s: str) -> str {
+    # Built-in implementation
+}
+
+# Trim whitespace from left
+fn trim_left(s: str) -> str {
+    # Built-in implementation
+}
+
+# Trim whitespace from right
+fn trim_right(s: str) -> str {
+    # Built-in implementation
+}
+
+# Convert to uppercase
+fn to_upper(s: str) -> str {
+    # Built-in implementation
+}
+
+# Convert to lowercase
+fn to_lower(s: str) -> str {
+    # Built-in implementation
+}
+
+# Check if string contains substring
+fn contains(s: str, substr: str) -> bool {
+    # Built-in implementation
+}
+
+# Check if string starts with prefix
+fn starts_with(s: str, prefix: str) -> bool {
+    # Built-in implementation
+}
+
+# Check if string ends with suffix
+fn ends_with(s: str, suffix: str) -> bool {
+    # Built-in implementation
+}
+
+# Find first occurrence of substring (returns -1 if not found)
+fn index_of(s: str, substr: str) -> int {
+    # Built-in implementation
+}
+
+# Find last occurrence of substring (returns -1 if not found)
+fn last_index_of(s: str, substr: str) -> int {
+    # Built-in implementation
+}
+
+# Replace all occurrences of old with new
+fn replace(s: str, old: str, new: str) -> str {
+    # Built-in implementation
+}
+
+# Replace first occurrence of old with new
+fn replace_first(s: str, old: str, new: str) -> str {
+    # Built-in implementation
+}
+
+# Repeat string n times
+fn repeat(s: str, n: int) -> str {
+    if (n <= 0) {
+        return "";
+    };
+    
+    result: str = "";
+    i: int = 0;
+    while (i < n) {
+        result = concat(result, s);
+        i = i + 1;
+    };
+    return result;
+}
+
+# Reverse a string
+fn reverse(s: str) -> str {
+    # Built-in implementation
+}
+
+# Check if string is empty
+fn is_empty(s: str) -> bool {
+    return len(s) == 0;
+}
+
+# Pad string on left to reach target length
+fn pad_left(s: str, length: int, pad_char: str) -> str {
+    current_len: int = len(s);
+    if (current_len >= length) {
+        return s;
+    };
+    
+    padding: str = repeat(pad_char, length - current_len);
+    return concat(padding, s);
+}
+
+# Pad string on right to reach target length
+fn pad_right(s: str, length: int, pad_char: str) -> str {
+    current_len: int = len(s);
+    if (current_len >= length) {
+        return s;
+    };
+    
+    padding: str = repeat(pad_char, length - current_len);
+    return concat(s, padding);
+}

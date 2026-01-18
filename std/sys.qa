@@ -1,0 +1,76 @@
+# Quant Standard Library - System Module
+# Provides system-level operations
+
+# Exit program with status code
+fn exit(code: int) -> void {
+    # Built-in implementation
+    # Terminates program with given exit code
+}
+
+# Get command-line arguments
+fn args() -> [str] {
+    # Built-in implementation
+    # Returns array of command-line arguments
+}
+
+# Get number of command-line arguments
+fn argc() -> int {
+    # Built-in implementation
+    # Returns count of command-line arguments
+}
+
+# Get environment variable
+# Returns empty string if variable doesn't exist
+fn env(name: str) -> str {
+    # Built-in implementation
+}
+
+# Set environment variable
+# Returns True on success, False on error
+fn set_env(name: str, value: str) -> bool {
+    # Built-in implementation
+}
+
+# Get current Unix timestamp (seconds since epoch)
+fn time() -> int {
+    # Built-in implementation
+}
+
+# Get current time in milliseconds
+fn time_millis() -> int {
+    # Built-in implementation
+}
+
+# Sleep for specified milliseconds
+fn sleep(ms: int) -> void {
+    # Built-in implementation
+}
+
+# Get current working directory
+fn getcwd() -> str {
+    # Built-in implementation
+}
+
+# Change current working directory
+# Returns True on success, False on error
+fn chdir(path: str) -> bool {
+    # Built-in implementation
+}
+
+# Get platform/operating system name
+# Returns "linux", "windows", "macos", etc.
+fn platform() -> str {
+    # Built-in implementation
+}
+
+# Execute shell command
+# Returns exit code of command
+fn system(command: str) -> int {
+    # Built-in implementation
+    # Executes command in system shell
+}
+
+# Get hostname
+fn hostname() -> str {
+    # Built-in implementation
+}

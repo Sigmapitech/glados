@@ -1,0 +1,49 @@
+# Quant Standard Library - I/O Module
+# Provides input/output operations for console and file operations
+
+# Print a string to stdout without newline
+fn print(msg: str) -> void {
+    # Built-in implementation
+    # This will be implemented in the VM/runtime
+}
+
+# Print a string to stdout with newline
+fn println(msg: str) -> void {
+    print(msg);
+    print("\n");
+}
+
+# Read a line from stdin
+fn read() -> str {
+    # Built-in implementation
+    # Returns empty string on EOF
+}
+
+# Read entire file contents
+fn read_file(path: str) -> str {
+    # Built-in implementation
+    # Returns empty string on error
+}
+
+# Write content to file
+# Returns True on success, False on error
+fn write_file(path: str, content: str) -> bool {
+    # Built-in implementation
+}
+
+# Append content to file
+# Returns True on success, False on error
+fn append_file(path: str, content: str) -> bool {
+    # Built-in implementation
+}
+
+# Check if file exists
+fn file_exists(path: str) -> bool {
+    # Built-in implementation
+}
+
+# Delete a file
+# Returns True on success, False on error
+fn delete_file(path: str) -> bool {
+    # Built-in implementation
+}

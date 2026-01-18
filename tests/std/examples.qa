@@ -1,0 +1,86 @@
+# Test examples for Quant standard library modules
+# These examples can be used for testing and documentation
+
+from std.io import println;
+from std.math import PI, abs_int, factorial, gcd;
+from std.string import len, concat, reverse, repeat;
+from std.array import sum, min, max;
+
+fn test_io() -> void {
+    println("=== Testing I/O Module ===");
+    println("Hello, Quant!");
+}
+
+fn test_math() -> void {
+    println("=== Testing Math Module ===");
+
+    # Test absolute value
+    x: int = -42;
+    println("abs(-42) = " + abs_int(x));
+
+    # Test factorial
+    println("factorial(5) = " + factorial(5));
+
+    # Test GCD
+    println("gcd(48, 18) = " + gcd(48, 18));
+
+    # Use PI constant
+    println("PI = " + PI);
+}
+
+fn test_string() -> void {
+    println("=== Testing String Module ===");
+
+    # Test string operations
+    hello: str = "hello";
+    world: str = "world";
+
+    greeting: str = concat(hello, " ");
+    greeting = concat(greeting, world);
+    println(greeting);
+
+    println("Length: " + len(hello));
+
+    # Test reverse
+    reversed: str = reverse(hello);
+    println("Reversed: " + reversed);
+
+    # Test repeat
+    stars: str = repeat("*", 5);
+    println(stars);
+}
+
+fn test_array() -> void {
+    println("=== Testing Array Module ===");
+
+    # Create array
+    numbers: [int];
+    numbers[0] = 5;
+    numbers[1] = 2;
+    numbers[2] = 8;
+    numbers[3] = 1;
+    numbers[4] = 9;
+
+    # Test sum
+    total: int = sum(numbers);
+    println("Sum: " + total);
+
+    # Test min/max
+    min_val: int = min(numbers);
+    max_val: int = max(numbers);
+    println("Min: " + min_val);
+    println("Max: " + max_val);
+}
+
+fn main() -> int {
+    println("Quant Standard Library Test Examples");
+    println("=====================================");
+
+    test_io();
+    test_math();
+    test_string();
+    test_array();
+
+    println("\nAll tests completed successfully!");
+    return 0;
+}
