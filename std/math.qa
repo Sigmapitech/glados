@@ -1,11 +1,6 @@
 # Quant Standard Library - Math Module
 # Provides mathematical functions and constants
 
-# Mathematical constants
-PI: const float = 3.14159265358979323846;
-E: const float = 2.71828182845904523536;
-TAU: const float = 6.28318530717958647692;  # 2 * PI
-
 # Absolute value for integers
 fn abs_int(x: int) -> int {
     if (x < 0) {
@@ -55,30 +50,92 @@ fn max_float(a: float, b: float) -> float {
 }
 
 # Power function - raise base to exponent
+fn exp(x: float) -> float {
+    term: float = 1.0;
+    sum: float = 1.0;
+    n: int = 1;
+
+    while (n < 30) {
+        term = term * x / n;
+        sum = sum + term;
+        n = n + 1;
+    };
+    return sum;
+}
+
+
+fn log(x: float) -> float {
+    if (x <= 0.0) {
+        sys.exit(136);
+    };
+
+    y: float = 0.0;
+    i: int = 0;
+
+    while (i < 25) {
+        ey: float = exp(y);
+        y = y - (ey - x) / ey;
+        i = i + 1;
+    };
+    return y;
+}
+
+
 fn pow(base: float, exp: float) -> float {
-    # Built-in implementation
-    # Will use native power operation
+    if (base <= 0.0) {
+        sys.exit(136);
+    };
+    return exp(exp * log(base));
 }
 
 # Square root
 fn sqrt(x: float) -> float {
-    # Built-in implementation
-    # Returns NaN for negative numbers
+    if (x < 0.0) {
+        sys.exit(136);
+    };
+    if (x == 0.0) {
+        return 0.0;
+    };
+
+    guess: float = x;
+    i: int = 0;
+
+    while (i < 20) {
+        guess = 0.5 * (guess + x / guess);
+        i = i + 1;
+    };
+    return guess;
 }
 
 # Floor - round down to nearest integer
 fn floor(x: float) -> int {
-    # Built-in implementation
+    int_part: int = int(x);
+    if (float(int_part) > x) {
+        return int_part - 1;
+    };
+    return int_part;
 }
 
 # Ceiling - round up to nearest integer
 fn ceil(x: float) -> int {
-    # Built-in implementation
+    int_part: int = int(x);
+    if (float(int_part) < x) {
+        return int_part + 1;
+    };
+    return int_part;
 }
 
 # Round to nearest integer
 fn round(x: float) -> int {
-    # Built-in implementation
+    int_part: int = int(x);
+    frac_part: float = x - float(int_part);
+    if (frac_part >= 0.5) {
+        return int_part + 1;
+    };
+    if (frac_part <= -0.5) {
+        return int_part - 1;
+    };
+    return int_part;
 }
 
 # Clamp value between min and max
