@@ -4,6 +4,7 @@
 *.pdf binary
 *.png binary
 *.svg binary
+*.webp binary
 
 *.ghci linguist-language=Haskell
 lisp/tests/fixtures/assignment-samples/*.scm linguist-vendored

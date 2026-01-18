@@ -6,8 +6,12 @@ import { fileURLToPath } from 'url';
 
 // Load Quant grammar from the extension directory
 const quantGrammar = JSON.parse(
-	readFileSync(fileURLToPath(new URL('../extension/vscode/quant-extension/syntaxes/quant.tmLanguage.json', import.meta.url)), 'utf-8')
+	readFileSync(fileURLToPath(new URL('../extension/vscode/quant-highlighter/syntaxes/quant.tmLanguage.json', import.meta.url)), 'utf-8')
 );
+
+// Add required properties for Shiki
+quantGrammar.name = 'quant';
+quantGrammar.aliases = ['qa'];
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,14 +21,9 @@ export default defineConfig({
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/Sigmapitech/glados' }],
 			expressiveCode: {
 				themes: ['github-dark', 'github-light'],
-				customLanguages: [
-					{
-						...quantGrammar,
-						id: 'quant',
-						scopeName: 'source.quant',
-						aliases: ['qa'],
-					}
-				],
+				shiki: {
+					langs: [quantGrammar],
+				},
 			},
 			sidebar: [
 				{
