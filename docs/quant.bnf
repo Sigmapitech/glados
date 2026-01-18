@@ -1,0 +1,110 @@
+<program> ::= <import_list> <function_list>
+
+<import_list> ::= <import_stmt>*
+
+<import_stmt> ::= "from" <identifier> "import" <identifier_list>
+                | "import" <identifier>
+
+<identifier_list> ::= <identifier> ("," <identifier>)*
+
+<function_list> ::= <function>+
+
+<function> ::= "fn" <identifier> "(" <param_list>? ")" "->" <type> "{" <stmt_list> "}"
+
+<param_list> ::= <param> ("," <param>)*
+
+<param> ::= <identifier> ":" <type>
+
+<type> ::= <base_type> | "const" <type> | <array_type>
+
+<base_type> ::= <int_type> | <float_type> | "bool"
+
+<int_type> ::= "int" ("<" <integer> "," ("s" | "u") ">")?
+
+<float_type> ::= "float" ("<" ("32" | "64") ">")?
+
+<array_type> ::= "[" <type> "]"
+
+<stmt_list> ::= <stmt>*
+
+<stmt> ::= <var_decl>
+         | <assignment>
+         | <if_stmt>
+         | <while_stmt>
+         | <for_stmt>
+         | <return_stmt>
+         | <expr_stmt>
+
+<var_decl> ::= <identifier> ":" <type> ("=" <expr>)? ";"
+
+<assignment> ::= <lvalue> <assign_op> <expr> ";"
+
+<assign_op> ::= "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>="
+
+<lvalue> ::= <identifier> ("[" <expr> "]")*
+
+<if_stmt> ::= "if" "(" <expr> ")" "{" <stmt_list> "}" ("else" "{" <stmt_list> "}")? ";"
+
+<while_stmt> ::= "while" "(" <expr> ")" "{" <stmt_list> "}" ";"
+
+<for_stmt> ::= "for" "(" <var_decl> <expr> ";" <expr> ")" "{" <stmt_list> "}" ";"
+
+<return_stmt> ::= "return" <expr>? ";"
+
+<expr_stmt> ::= <expr> ";"
+
+<expr> ::= <logical_or>
+
+<logical_or> ::= <logical_and> ("||" <logical_and>)*
+
+<logical_and> ::= <equality> ("&&" <equality>)*
+
+<equality> ::= <relational> (("==" | "!=") <relational>)*
+
+<relational> ::= <shift> (("<" | ">" | "<=" | ">=") <shift>)*
+
+<shift> ::= <additive> (("<<" | ">>") <additive>)*
+
+<additive> ::= <multiplicative> (("+" | "-") <multiplicative>)*
+
+<multiplicative> ::= <bitwise_or> (("*" | "/" | "%") <bitwise_or>)*
+
+<bitwise_or> ::= <bitwise_xor> ("|" <bitwise_xor>)*
+
+<bitwise_xor> ::= <bitwise_and> ("^" <bitwise_and>)*
+
+<bitwise_and> ::= <unary> ("&" <unary>)*
+
+<unary> ::= ("!" | "-" | "+" | "~")? <postfix>
+
+<postfix> ::= <primary> ("++" | "--" | "[" <expr> "]" | "(" <arg_list> ")")*
+
+<primary> ::= <identifier>
+            | <integer>
+            | <float>
+            | <boolean>
+            | <string>
+            | "(" <expr> ")"
+            | <type_cast>
+
+<type_cast> ::= <type> "(" <expr> ")"
+
+<arg_list> ::= (<expr> ("," <expr>)*)?
+
+<identifier> ::= <letter> (<letter> | <digit> | "_")*
+
+<integer> ::= <digit>+
+
+<float> ::= <digit>+ "." <digit>+ (<exponent>)?
+          | <digit>+ <exponent>
+
+<exponent> ::= ("e" | "E") ("+" | "-")? <digit>+
+
+<boolean> ::= "True" | "False"
+
+<string> ::= "\"" <char>* "\""
+
+<char>      ::= <letter> | <digit> | <symbol>
+<letter>         ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+<digit>          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<symbol>         ::= "|" | " " | "!" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | "," | "-" | "." | "/" | ":" | ";" | ">" | "=" | "<" | "?" | "@" | "[" | "\" | "]" | "^" | "_" | "`" | "{" | "}" | "~"
