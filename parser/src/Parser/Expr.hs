@@ -12,6 +12,7 @@ import Parser.Type (parsePrimitiveType)
 import Parser.Utils
   ( TokenParser,
     isIdentifier,
+    matchKeyword,
     matchSymbol,
   )
 import qualified Text.Megaparsec as MP
@@ -66,6 +67,12 @@ parseExprParen = do
   Located endSpan _ <- matchSymbol ")"
   return $ Located (startSpan <> endSpan) (ExprParen expr)
 
+parseExprMust :: TokenParser (Located (Expr ann))
+parseExprMust = do
+  Located startSpan _ <- matchKeyword "must"
+  expr <- parseExpr
+  return $ Located (startSpan <> getSpan expr) (ExprMust expr)
+
 parsePrimary :: TokenParser (Located (Expr ann))
 parsePrimary =
   MP.choice
@@ -80,7 +87,8 @@ parsePrimary =
 parseUnary :: TokenParser (Located (Expr ann))
 parseUnary =
   MP.choice
-    [ do
+    [ parseExprMust,
+      do
         op <- parseUnaryOp
         expr <- parseUnary
         let combinedSpan = getSpan op <> getSpan expr

@@ -11,6 +11,7 @@ import Parser.Expr
     parseExprCall,
     parseExprCast,
     parseExprLiteral,
+    parseExprMust,
     parseExprParen,
     parseExprVar,
   )
@@ -375,3 +376,44 @@ exprSpec = do
       case unLocated (fromRight result) of
         ExprParen (Located _ (ExprParen _)) -> True `shouldBe` True
         _ -> fail "Expected nested ExprParen"
+
+  describe "Parser.Expr - parseExprMust" $ do
+    it "parses must with a variable" $ do
+      let tokens = [loc (TokKeyword "must"), loc (TokIdentifier "x")]
+      let result = runExprParser parseExprMust tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprMust (Located _ (ExprVar _)) -> True `shouldBe` True
+        _ -> fail "Expected ExprMust with ExprVar"
+
+    it "parses must with a function call" $ do
+      let tokens = [loc (TokKeyword "must"), loc (TokIdentifier "foo"), loc (TokSymbol "("), loc (TokInt 42 BaseDec), loc (TokSymbol ")")]
+      let result = runExprParser parseExprMust tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprMust (Located _ (ExprCall _ _)) -> True `shouldBe` True
+        _ -> fail "Expected ExprMust with ExprCall"
+
+    it "parses must with a literal" $ do
+      let tokens = [loc (TokKeyword "must"), loc (TokInt 123 BaseDec)]
+      let result = runExprParser parseExprMust tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprMust (Located _ (ExprLiteral _)) -> True `shouldBe` True
+        _ -> fail "Expected ExprMust with ExprLiteral"
+
+    it "parses must with parenthesized expression" $ do
+      let tokens = [loc (TokKeyword "must"), loc (TokSymbol "("), loc (TokInt 5 BaseDec), loc (TokSymbol "+"), loc (TokInt 3 BaseDec), loc (TokSymbol ")")]
+      let result = runExprParser parseExprMust tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprMust (Located _ (ExprParen _)) -> True `shouldBe` True
+        _ -> fail "Expected ExprMust with ExprParen"
+
+    it "parses must in parseExpr context" $ do
+      let tokens = [loc (TokKeyword "must"), loc (TokIdentifier "foo"), loc (TokSymbol "("), loc (TokIdentifier "a"), loc (TokSymbol ","), loc (TokIdentifier "b"), loc (TokSymbol ")")]
+      let result = runExprParser parseExpr tokens
+      result `shouldSatisfy` isRight
+      case unLocated (fromRight result) of
+        ExprMust (Located _ (ExprCall _ args)) -> length args `shouldBe` 2
+        _ -> fail "Expected ExprMust with ExprCall with 2 args"

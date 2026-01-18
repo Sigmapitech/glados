@@ -107,7 +107,8 @@ reservedNames =
     "break",
     "continue",
     "const",
-    "from"
+    "from",
+    "must"
   ]
 
 tokInt :: Parser Token
