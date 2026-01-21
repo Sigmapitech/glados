@@ -46,6 +46,13 @@ export default defineConfig({
 					label: 'POC',
 					autogenerate: { directory: 'poc' },
 				},
+				{
+					label: 'Studies',
+					items: [
+						{ label: 'Documentation System Comparison', slug: 'studies/doc' },
+						{ label: 'Parsing libraries', slug: 'studies/parser' },
+					]
+				}
 			],
 		}),
 	],
