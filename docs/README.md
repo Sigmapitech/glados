@@ -2,7 +2,7 @@
 
 [![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
 
-```
+```sh
 pnpm create astro@latest -- --template starlight
 ```
 
@@ -12,7 +12,7 @@ pnpm create astro@latest -- --template starlight
 
 Inside of your Astro + Starlight project, you'll see the following folders and files:
 
-```
+```sh
 .
 ├── public/
 ├── src/

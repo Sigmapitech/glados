@@ -51,6 +51,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Documentation System Comparison', slug: 'studies/doc' },
 						{ label: 'Parsing libraries', slug: 'studies/parser' },
+						{ label: 'Data Persistence', slug: 'studies/persistence' }
 					]
 				}
 			],
