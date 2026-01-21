@@ -52,7 +52,8 @@ export default defineConfig({
 						{ label: 'Documentation System Comparison', slug: 'studies/doc' },
 						{ label: 'Parsing libraries', slug: 'studies/parser' },
 						{ label: 'Data Persistence', slug: 'studies/persistence' },
-						{ label: 'Virtual Machine', slug: 'studies/vm' }
+						{ label: 'Virtual Machine', slug: 'studies/vm' },
+						{ label: 'Security Vulnerabilities', slug: 'studies/vulnerabilities' },
 					]
 				}
 			],
